@@ -11,8 +11,8 @@
 
 - Dashboard Card API — `cb_core_dashboard_register_cards`, `cb_core_dashboard_card_shortcuts`; see `DASHBOARD-CARD-API.md`.
 - HUD Menu API — `cb_hud_register_section_types`, `cb_hud_register_sections`, `cb_hud_register_items`; see `HUD-MENU-API.md`.
-- Content Models — `CB\Core\ContentModels\Api` and `cb_core_content_models_register`; see `CONTENT-MODELS.md`.
-- Content Models JSON Schema v1 — `format: core-blueprint-content-models` + `format_version: 1` is the stable schema portability document described in `CONTENT-MODELS.md`; Native WordPress discovery/import classes are internal Base tooling.
+- Content Models — `CB\Core\ContentModels\Api` and `cb_core_content_models_register`; see `CONTENT_MODELS.md`.
+- Content Models JSON Schema v1 — `format: core-blueprint-content-models` + `format_version: 1` is the stable schema portability document described in `CONTENT_MODELS.md`; Native WordPress discovery/import classes are internal Base tooling.
 - Module activation — `cb_core_module_activation_definitions`; state classes must implement `CB\Core\Modules\ModuleStateInterface`.
 - Module health/status — `cb_core_module_status_definitions`; providers return the canonical `ok|warn|err|off` status shape.
 - Extension registry — `CB\Core\ExtensionRegistry` via `cb_core_register_extensions`; canonical identity/inventory/compatibility boundary.
@@ -137,7 +137,7 @@ PageRegistry::register(
 );
 ```
 
-Page slugs use strict lower-case kebab-case and must be globally unique. Base-owned slugs are reserved independently of plugin load order. Duplicate registrations are rejected; a later registration never replaces an existing page. Public extension pages use `null` position or a position of `100` or higher. Positions `1-99` belong to Base. Capabilities must be valid WordPress capability identifiers.
+Page slugs use strict lower-case kebab-case and must be globally unique. Base-owned slugs are reserved independently of registration order. Duplicate registrations are rejected; a later registration never replaces an existing page. Public extension pages use `null` position or a position of `100` or higher. Positions `1-99` belong to Base. Capabilities must be valid WordPress capability identifiers.
 
 A registered Core Admin page receives the semantic minimal Core Admin shell: Core Blueprint design tokens, baseline layout/typography and focus/accessibility behavior, standard Core Admin form/button geometry, and light/dark integration. This is a functional guarantee; CSS/JavaScript handles, filenames, bundle boundaries and enqueue order are implementation details.
 
