@@ -69,6 +69,7 @@ final class PageRegistry {
 		'form-controls',
 		'kv-table',
 		'master-switch',
+		'metric-tiles',
 		'nav-tabs',
 		'notices',
 		'panels',
