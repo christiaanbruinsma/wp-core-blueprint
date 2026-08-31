@@ -27,6 +27,14 @@
 	border-bottom: 0;
 }
 
+/* Pure table containers may opt into full-bleed table composition. The
+ * explicit modifier avoids changing mixed-content panels that intentionally
+ * keep normal inner padding around headings, copy, actions or other controls. */
+.cb-core-panel.cb-core-panel--table {
+	padding: 0;
+	overflow: hidden;
+}
+
 /* ─── Tables inside panels ─────────────────────────────────────────────────
  *
  * Panels can contain a single tabular block (Failsafe Layers, Permissions
@@ -42,7 +50,7 @@
  * with the panel border — visually neat for full-bleed content, but
  * crowded the table content against the panel's outer edge on every
  * page. Now tables breathe inside the panel like every other panel
- * child.
+ * child unless the explicit `cb-core-panel--table` modifier is used.
  *
  * Margin handling has two paths:
  *   - table is last child of panel → drop the bottom-margin so the
@@ -68,6 +76,12 @@
 	border-bottom: 1px solid var(--cb-border);
 	box-shadow: none;
 	border-collapse: collapse;
+}
+
+.cb-core-panel.cb-core-panel--table > table.widefat {
+	margin: 0;
+	border-top: 0;
+	border-bottom: 0;
 }
 
 /* When the table is the last child, drop the bottom-margin + bottom-border
