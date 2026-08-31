@@ -1,0 +1,110 @@
+/**
+ * components/modals.css - Core Blueprint Core Admin presentation adapter.
+ *
+ * Runtime/semantics live in assets/js/core/modal.js. This stylesheet is only
+ * for pages using the Core Admin Theme. Standalone WordPress admin screens
+ * must use components/modals-native.css via UI\Assets::enqueue_modals().
+ */
+
+dialog.cb-core-modal--core {
+	border: 1px solid var(--cb-surface-3);
+	border-radius: var(--cb-radius-md);
+	padding: 0;
+	max-width: 520px;
+	max-height: min(85vh, 720px);
+	width: 90%;
+	overflow: auto;
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+	box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+}
+
+dialog.cb-core-modal--core.cb-core-modal--wide {
+	max-width: 760px;
+}
+
+dialog.cb-core-modal--core::backdrop {
+	background: rgb(0 0 0 / 0.45);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__form {
+	padding: var(--cb-space-5) var(--cb-space-5) var(--cb-space-4);
+	margin: 0;
+}
+
+dialog.cb-core-modal--core .cb-core-modal__title {
+	margin: 0 0 var(--cb-space-3);
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+dialog.cb-core-modal--core.cb-core-modal--danger .cb-core-modal__title {
+	color: var(--cb-danger);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__body {
+	margin: 0 0 var(--cb-space-3);
+	line-height: 1.5;
+	color: var(--cb-text);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__body p {
+	margin: 0 0 var(--cb-space-3);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__body p:last-child {
+	margin-bottom: 0;
+}
+
+dialog.cb-core-modal--core .cb-core-modal__body code,
+dialog.cb-core-modal--core .cb-core-modal__hint code {
+	background: var(--cb-surface-2);
+	padding: 2px 6px;
+	border-radius: var(--cb-radius-sm);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.02em;
+	color: var(--cb-text-strong);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__hint {
+	margin: 0 0 var(--cb-space-2);
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-muted);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__input {
+	width: 100%;
+	margin: 0 0 var(--cb-space-2);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__hint + .cb-core-modal__input {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+dialog.cb-core-modal--core .cb-core-modal__status {
+	min-height: 1.4em;
+	margin: 0;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__status.is-error {
+	color: var(--cb-error);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--cb-space-2);
+	margin: var(--cb-space-4) 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+dialog.cb-core-modal--core .cb-core-modal__actions [disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

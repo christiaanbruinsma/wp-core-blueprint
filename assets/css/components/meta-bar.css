@@ -1,0 +1,57 @@
+/**
+ * components/meta-bar.css - Core Blueprint Suite
+ *
+ * Page-level navigation strip: small horizontal bar below an <h1>
+ * giving status-at-a-glance + an action handle to a related settings
+ * page. Used on Beacon for Beacon status + manage link.
+ *
+ * Extracted from admin.css in stap 6.2a - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── CB UI: Meta-bar ──────────────────────────────────────────────────────
+ *
+ * Page-level navigation strip: a small horizontal bar that sits below an
+ * <h1> and gives operators a status-at-a-glance plus an action handle to
+ * a settings page where the relevant feature lives. Used on Beacon
+ * to surface "Beacon active / ready / deactivated" with a link to the
+ * Safeguards toggle. Works for any page where status + secondary
+ * navigation belong above the main content.
+ *
+ *   <div class="cb-core-meta-bar">
+ *     <span class="cb-core-status …">…</span>
+ *     <a class="cb-core-meta-bar-link" href="…">Manage → </a>
+ *   </div>
+ */
+
+.cb-core-wrap .cb-core-meta-bar,
+.wrap.cb-core-beacon-wrap .cb-core-meta-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 10px 0;
+	margin: 0 0 16px;
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-meta-bar-link,
+.wrap.cb-core-beacon-wrap .cb-core-meta-bar-link {
+	color: var(--cb-text);
+	text-decoration: none;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-medium);
+	transition: color 150ms ease;
+}
+
+.cb-core-wrap .cb-core-meta-bar-link:hover,
+.cb-core-wrap .cb-core-meta-bar-link:focus-visible,
+.wrap.cb-core-beacon-wrap .cb-core-meta-bar-link:hover,
+.wrap.cb-core-beacon-wrap .cb-core-meta-bar-link:focus-visible {
+	color: var(--cb-text-strong);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	outline: none;
+}

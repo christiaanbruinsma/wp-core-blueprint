@@ -1,0 +1,194 @@
+/**
+ * components/badges.css - Core Blueprint Suite
+ *
+ * Badge variants:
+ *   tech         monospace, neutral surface (e.g. PHP version, MySQL build)
+ *   standard     accent-tinted (e.g. ISO 27001, BIO compliance markers)
+ *   identity     role/account classification, with optional muted modifier
+ *   cwe          warning-amber (vulnerability classification, CWE numbers)
+ *   compliance   success-green (audit pass markers)
+ *   cb           CB-baseline yellow (highlights CB Standard requirements)
+ *   ext          smaller follow-on (used after another badge as a continuation)
+ *
+ * Theme-aware: bg uses tint tokens (12% mix of the semantic colour), border
+ * + text use either tokens or hand-picked complementary shades for the cwe
+ * / compliance / cb variants where the semantic colour palette doesn't
+ * cover the needed contrast levels.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Badge layout ─────────────────────────────────────────────────────── */
+
+.cb-core-badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	margin: var(--cb-space-2) 0 0 26px;
+}
+
+.cb-core-module-header .cb-core-badges {
+	margin-left: 0;
+	margin-top: var(--cb-space-2);
+}
+
+/* ─── Base badge ───────────────────────────────────────────────────────── */
+
+.cb-core-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-1);
+	padding: 3px var(--cb-space-2);
+	border: 1px solid transparent;
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-2xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.3px;
+	line-height: var(--cb-lh-normal);
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+a.cb-core-badge:hover {
+	text-decoration: none;
+}
+
+/* ─── Neutral classification badge ────────────────────────────────────── */
+
+.cb-core-badge-neutral {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* ─── Severity classification badge ───────────────────────────────────── */
+/* Severity is classification metadata rather than workflow state. Use the
+ * shared Badge geometry with a semantic severity palette across Logs,
+ * Notifications, Mail and future consumers. */
+
+.cb-core-badge-severity {
+	text-transform: uppercase;
+}
+
+.cb-core-badge-severity--info {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.cb-core-badge-severity--notice {
+	background: var(--cb-tint-accent);
+	border-color: color-mix(in srgb, var(--cb-accent) 28%, transparent);
+	color: var(--cb-accent-strong);
+}
+
+.cb-core-badge-severity--warning {
+	background: var(--cb-tint-warning);
+	border-color: color-mix(in srgb, var(--cb-warning) 30%, transparent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-badge-severity--critical {
+	background: var(--cb-tint-error);
+	border-color: color-mix(in srgb, var(--cb-error) 30%, transparent);
+	color: var(--cb-text-strong);
+}
+
+/* ─── Identity classification badge ───────────────────────────────────── */
+/* Roles and account classifications are metadata, not workflow state. */
+
+.cb-core-badge-identity {
+	background: var(--cb-tint-accent);
+	border-color: color-mix(in srgb, var(--cb-accent) 30%, transparent);
+	color: var(--cb-accent-strong);
+}
+
+.cb-core-badge-identity--muted {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Tech badge (neutral surface) ─────────────────────────────────────── */
+
+.cb-core-badge-tech {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+	font-family: Consolas, Monaco, monospace;
+}
+
+/* ─── Standard badge (accent-tinted) ───────────────────────────────────── */
+
+.cb-core-badge-standard {
+	background: var(--cb-tint-accent);
+	border-color: color-mix(in srgb, var(--cb-accent) 30%, transparent);
+	color: var(--cb-accent-strong);
+}
+
+a.cb-core-badge-standard:hover {
+	background: color-mix(in srgb, var(--cb-accent) 18%, transparent);
+	color: var(--cb-accent-strong);
+}
+
+/* ─── CWE badge (amber palette - vulnerability classification) ─────────── */
+/* Uses an amber-leaning palette distinct from --cb-warning (yellow).
+ * Theme-aware via --cb-badge-cwe-* tokens (defined in tokens.css). */
+
+.cb-core-badge-cwe {
+	background: var(--cb-badge-cwe-bg);
+	border-color: var(--cb-badge-cwe-border);
+	color: var(--cb-badge-cwe-text);
+}
+
+a.cb-core-badge-cwe:hover {
+	background: color-mix(in srgb, var(--cb-badge-cwe-border) 30%, var(--cb-badge-cwe-bg));
+	color: var(--cb-badge-cwe-text);
+}
+
+/* ─── Compliance badge (success-green palette) ─────────────────────────── */
+/* Uses a deeper green than --cb-tint-success for stronger pass-marker feel.
+ * Theme-aware via --cb-badge-compliance-* tokens. */
+
+.cb-core-badge-compliance {
+	background: var(--cb-badge-compliance-bg);
+	border-color: var(--cb-badge-compliance-border);
+	color: var(--cb-badge-compliance-text);
+}
+
+/* ─── CB-baseline badge (yellow - CB Standard requirements) ────────────── */
+/* Theme-aware via --cb-badge-cb-* tokens. */
+
+.cb-core-badge-cb {
+	background: var(--cb-badge-cb-bg);
+	border-color: var(--cb-badge-cb-border);
+	color: var(--cb-badge-cb-text);
+}
+
+/* ─── Ext modifier (smaller follow-on, e.g. "v2.1.0" after standard) ───── */
+
+.cb-core-badge-ext {
+	font-size: var(--cb-fs-2xs);
+	opacity: 0.7;
+}
+
+/* ─── Risk metadata badges ────────────────────────────────────────────── */
+
+.cb-core-badge-risk-high {
+	background: var(--cb-tint-danger);
+	border-color: color-mix(in srgb, var(--cb-danger) 28%, transparent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-badge-risk-medium {
+	background: var(--cb-tint-warning);
+	border-color: color-mix(in srgb, var(--cb-warning) 30%, transparent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-badge-restrictive {
+	background: var(--cb-badge-restrictive-bg);
+	border-color: color-mix(in srgb, var(--cb-badge-restrictive-text) 28%, transparent);
+	color: var(--cb-badge-restrictive-text);
+}

@@ -1,0 +1,63 @@
+/**
+ * components/state-badges.css - Core Blueprint UI Foundation
+ *
+ * Compact semantic workflow/status badges. Distinct from cb-core-badge,
+ * which represents taxonomy, compliance and technology metadata.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-state-badge {
+	--cb-state-badge-color: var(--cb-text-muted);
+	--cb-state-badge-tint: color-mix(in srgb, var(--cb-state-badge-color) 10%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 100%;
+	border: 1px solid color-mix(in srgb, var(--cb-state-badge-color) 42%, var(--cb-border));
+	border-radius: var(--cb-radius-pill);
+	background: var(--cb-state-badge-tint);
+	color: var(--cb-state-badge-color);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+	letter-spacing: 0.045em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.cb-core-state-badge--compact {
+	min-height: 22px;
+	padding: 2px var(--cb-space-2);
+	font-size: var(--cb-fs-2xs);
+}
+
+.cb-core-state-badge--default {
+	min-height: 28px;
+	padding: 3px var(--cb-space-3);
+	font-size: var(--cb-fs-xs);
+}
+
+.cb-core-state-badge--neutral {
+	--cb-state-badge-color: var(--cb-text-muted);
+}
+
+.cb-core-state-badge--info {
+	--cb-state-badge-color: var(--cb-accent);
+}
+
+.cb-core-state-badge--success {
+	--cb-state-badge-color: var(--cb-success);
+}
+
+.cb-core-state-badge--warning {
+	--cb-state-badge-color: var(--cb-warning);
+}
+
+.cb-core-state-badge--danger {
+	--cb-state-badge-color: var(--cb-danger);
+}
+
+.cb-core-state-badge--error {
+	--cb-state-badge-color: var(--cb-error);
+}

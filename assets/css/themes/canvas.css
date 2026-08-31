@@ -1,0 +1,228 @@
+/**
+ * themes/canvas.css - Core Blueprint Suite
+ *
+ * Theme-level overrides for WP admin chrome (page background, admin
+ * notices) so the WP canvas matches the active CB theme rather than
+ * popping out as a foreign-body wp-admin grey.
+ *
+ * Two blocks:
+ *   - Per-theme canvas overrides (dark / light)
+ *   - FOUC-proof canvas via html[data-cb-theme] selectors
+ *
+ * Extracted from admin.css in stap 6.2c - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* =================================================================== */
+/* ─── WP admin chrome - page canvas per theme scope ───────────────── */
+/* =================================================================== */
+/* Without these rules, clicking a theme in the Appearance page only
+   repaints cb-core-wrap + its children; the WP page canvas (#wpwrap,
+   #wpcontent, body background) keeps its previous value - or stays
+   stuck on the anti-FOUC pre-paint style's !important.
+   The inline apply() now removes the pre-paint node once the body
+   attribute is set, so these scoped rules win cleanly on every switch.
+   Sidebar (#adminmenu) and top bar (#wpadminbar) intentionally keep
+   their WP defaults - a full sidebar re-theme is out of scope.
+*/
+
+/* ─── Dark theme - canvas ─────────────────────────────────────────── */
+
+body[data-cb-theme="core_blueprint_dark"],
+body[data-cb-theme="core_blueprint_dark"] #wpwrap,
+body[data-cb-theme="core_blueprint_dark"] #wpcontent,
+body[data-cb-theme="core_blueprint_dark"] #wpbody,
+body[data-cb-theme="core_blueprint_dark"] #wpbody-content {
+	background-color: #07090d;
+	color: #c5cbd4;
+}
+
+/* Right-side breathing room - mirrors WP's built-in padding-left so the
+   content column has equal gap to the admin menu (left) and the viewport
+   edge (right). Applies to both Core Blueprint themes. */
+body[data-cb-theme^="core_blueprint"] #wpcontent {
+	padding-right: 20px;
+}
+
+/* ─── WP admin notices - scifi theme ───────────────────────────────────── */
+/* WP places .notice directly inside .wrap (outside .cb-core-wrap), so these
+   rules must be body-scoped rather than wrap-scoped. */
+
+body[data-cb-theme^="core_blueprint"] .notice,
+body[data-cb-theme^="core_blueprint"] div.updated,
+body[data-cb-theme^="core_blueprint"] div.error {
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-surface-3);
+	border-left-width: 4px;
+	color: var(--cb-text);
+	box-shadow: none;
+}
+
+body[data-cb-theme^="core_blueprint"] .notice p,
+body[data-cb-theme^="core_blueprint"] div.updated p,
+body[data-cb-theme^="core_blueprint"] div.error p {
+	color: var(--cb-text);
+}
+
+body[data-cb-theme^="core_blueprint"] .notice strong,
+body[data-cb-theme^="core_blueprint"] div.updated strong,
+body[data-cb-theme^="core_blueprint"] div.error strong {
+	color: var(--cb-text-strong);
+}
+
+body[data-cb-theme^="core_blueprint"] .notice a,
+body[data-cb-theme^="core_blueprint"] div.updated a,
+body[data-cb-theme^="core_blueprint"] div.error a {
+	color: var(--cb-accent);
+}
+
+body[data-cb-theme^="core_blueprint"] .notice a:hover,
+body[data-cb-theme^="core_blueprint"] div.updated a:hover,
+body[data-cb-theme^="core_blueprint"] div.error a:hover {
+	color: var(--cb-accent-strong);
+}
+
+/* Success */
+body[data-cb-theme^="core_blueprint"] .notice-success,
+body[data-cb-theme^="core_blueprint"] div.updated {
+	background: color-mix(in srgb, var(--cb-success) 8%, transparent);
+	border-left-color: var(--cb-success);
+}
+
+/* Error */
+body[data-cb-theme^="core_blueprint"] .notice-error,
+body[data-cb-theme^="core_blueprint"] div.error {
+	background: color-mix(in srgb, var(--cb-danger) 8%, transparent);
+	border-left-color: var(--cb-danger);
+}
+
+/* Warning */
+body[data-cb-theme^="core_blueprint"] .notice-warning {
+	background: color-mix(in srgb, var(--cb-warning) 8%, transparent);
+	border-left-color: var(--cb-warning);
+}
+
+/* Info (default/fallback) */
+body[data-cb-theme^="core_blueprint"] .notice-info,
+body[data-cb-theme^="core_blueprint"] .notice:not(.notice-success):not(.notice-error):not(.notice-warning) {
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	border-left-color: var(--cb-accent);
+}
+
+/* Dismiss (X) button - core replaces the default content with a pseudo ×,
+   so we retheme the hover and focus states on the button itself. */
+body[data-cb-theme^="core_blueprint"] .notice-dismiss {
+	color: var(--cb-text-muted);
+}
+
+body[data-cb-theme^="core_blueprint"] .notice-dismiss::before {
+	color: var(--cb-text-muted);
+	transition: color 120ms ease;
+}
+
+body[data-cb-theme^="core_blueprint"] .notice-dismiss:hover::before,
+body[data-cb-theme^="core_blueprint"] .notice-dismiss:focus::before {
+	color: var(--cb-text-strong);
+}
+
+body[data-cb-theme^="core_blueprint"] .notice-dismiss:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--cb-accent);
+	border-radius: var(--cb-radius-sm);
+}
+
+/* Inline <code> inside notices */
+body[data-cb-theme^="core_blueprint"] .notice code,
+body[data-cb-theme^="core_blueprint"] div.updated code,
+body[data-cb-theme^="core_blueprint"] div.error code {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+	border: 1px solid var(--cb-surface-3);
+}
+
+body[data-cb-theme="core_blueprint_dark"] #wpfooter {
+	background-color: #07090d;
+	color: #565e6c;
+	border-top: 1px solid #1f2630;
+}
+
+body[data-cb-theme="core_blueprint_dark"] #wpfooter a {
+	color: #8a92a0;
+}
+
+body[data-cb-theme="core_blueprint_dark"] #wpfooter a:hover {
+	color: #00b4ff;
+}
+
+/* ─── Light theme - canvas ────────────────────────────────────────── */
+
+body[data-cb-theme="core_blueprint_light"],
+body[data-cb-theme="core_blueprint_light"] #wpwrap,
+body[data-cb-theme="core_blueprint_light"] #wpcontent,
+body[data-cb-theme="core_blueprint_light"] #wpbody,
+body[data-cb-theme="core_blueprint_light"] #wpbody-content {
+	background-color: #ffffff;
+	color: #2a3240;
+}
+
+body[data-cb-theme="core_blueprint_light"] #wpfooter {
+	background-color: #ffffff;
+	color: #9ba3af;
+	border-top: 1px solid #e4e8ed;
+}
+
+body[data-cb-theme="core_blueprint_light"] #wpfooter a {
+	color: #5a6472;
+}
+
+body[data-cb-theme="core_blueprint_light"] #wpfooter a:hover {
+	color: #0064c8;
+}
+
+/* =================================================================== */
+/* ─── FOUC-proof canvas via html[data-cb-theme] selectors ─────────── */
+/* =================================================================== */
+/* The inline script sets data-cb-theme on <html> IMMEDIATELY (before
+   body parse). These rules therefore apply at first paint without any
+   pre-paint <style> trickery and without !important. Chrome also
+   responds instantly to live-preview switches because the live-preview
+   JS updates both html and body attributes.
+*/
+
+/* Dark - html + body canvas and chrome */
+html[data-cb-theme="core_blueprint_dark"],
+html[data-cb-theme="core_blueprint_dark"] body,
+html[data-cb-theme="core_blueprint_dark"] #wpwrap,
+html[data-cb-theme="core_blueprint_dark"] #wpcontent,
+html[data-cb-theme="core_blueprint_dark"] #wpbody,
+html[data-cb-theme="core_blueprint_dark"] #wpbody-content {
+	background-color: #07090d;
+	color: #c5cbd4;
+}
+html[data-cb-theme="core_blueprint_dark"] #wpfooter {
+	background-color: #07090d;
+	color: #565e6c;
+	border-top: 1px solid #1f2630;
+}
+html[data-cb-theme="core_blueprint_dark"] #wpfooter a { color: #8a92a0; }
+html[data-cb-theme="core_blueprint_dark"] #wpfooter a:hover { color: #00b4ff; }
+
+/* Light - html + body canvas and chrome */
+html[data-cb-theme="core_blueprint_light"],
+html[data-cb-theme="core_blueprint_light"] body,
+html[data-cb-theme="core_blueprint_light"] #wpwrap,
+html[data-cb-theme="core_blueprint_light"] #wpcontent,
+html[data-cb-theme="core_blueprint_light"] #wpbody,
+html[data-cb-theme="core_blueprint_light"] #wpbody-content {
+	background-color: #ffffff;
+	color: #2a3240;
+}
+html[data-cb-theme="core_blueprint_light"] #wpfooter {
+	background-color: #ffffff;
+	color: #9ba3af;
+	border-top: 1px solid #e4e8ed;
+}
+html[data-cb-theme="core_blueprint_light"] #wpfooter a { color: #5a6472; }
+html[data-cb-theme="core_blueprint_light"] #wpfooter a:hover { color: #0064c8; }

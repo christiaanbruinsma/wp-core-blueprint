@@ -1,0 +1,343 @@
+/* Shared picker foundations: icon, capability and select pickers.
+ *
+ * Progressive enhancement over real text inputs. The original input remains
+ * the submitted value and is hidden only after JS upgrades the component.
+ */
+
+.cb-core-picker {
+	--cb-core-picker-bg: var(--cb-surface-0);
+	--cb-core-picker-bg-alt: var(--cb-surface-1);
+	--cb-core-picker-border: var(--cb-border);
+	--cb-core-picker-text: var(--cb-text);
+	--cb-core-picker-muted: var(--cb-text-muted);
+	--cb-core-picker-accent: var(--cb-accent);
+	position: relative;
+	max-width: 720px;
+}
+
+.cb-core-picker.is-enhanced > .cb-core-picker__input {
+	display: none;
+}
+
+.cb-core-picker__enhanced[hidden] {
+	display: none !important;
+}
+
+.cb-core-wrap .cb-core-picker__toggle,
+.cb-core-picker__toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-3);
+	box-sizing: border-box;
+	width: 100%;
+	min-height: calc(var(--cb-control-height) + var(--cb-space-4));
+	height: auto;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	background: var(--cb-core-picker-bg);
+	border: 1px solid var(--cb-core-picker-border);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-core-picker-text);
+	line-height: 1.25;
+	text-align: left;
+	white-space: normal;
+	cursor: pointer;
+}
+
+.cb-core-picker__toggle-main {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.cb-core-picker__toggle-copy {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: var(--cb-space-1);
+	min-width: 0;
+}
+
+.cb-core-picker__toggle-text {
+	display: block;
+	min-width: 0;
+	font-weight: var(--cb-fw-semibold);
+	line-height: 1.2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cb-core-picker__toggle-meta {
+	display: block;
+	min-width: 0;
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-regular);
+	line-height: 1.2;
+	color: var(--cb-core-picker-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cb-core-picker__toggle-icon,
+.cb-core-picker__option-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cb-icon-size-large);
+	height: var(--cb-icon-size-large);
+	flex: 0 0 var(--cb-icon-size-large);
+}
+
+.cb-core-picker__toggle-icon {
+	align-self: center;
+}
+
+.cb-core-picker__toggle-icon .dashicons,
+.cb-core-picker__option-icon .dashicons {
+	display: grid;
+	place-items: center;
+	width: var(--cb-icon-size-large);
+	height: var(--cb-icon-size-large);
+	font-size: var(--cb-icon-size-large);
+	line-height: 1;
+}
+
+.cb-core-picker__toggle-icon .dashicons::before,
+.cb-core-picker__option-icon .dashicons::before {
+	display: block;
+	line-height: 1;
+}
+
+.cb-core-picker__toggle-chevron {
+	flex: 0 0 var(--cb-icon-size-default);
+	width: var(--cb-icon-size-default);
+	height: var(--cb-icon-size-default);
+	color: var(--cb-core-picker-muted);
+	transition: transform var(--cb-interactive-transition), color var(--cb-interactive-transition);
+}
+
+.cb-core-picker__toggle[aria-expanded="true"] .cb-core-picker__toggle-chevron {
+	transform: rotate(180deg);
+	color: var(--cb-core-picker-text);
+}
+
+.cb-core-picker__panel {
+	position: absolute;
+	z-index: 1000;
+	top: calc(100% + var(--cb-space-2));
+	left: 0;
+	width: min(720px, 100%);
+	padding: var(--cb-space-3);
+	background: var(--cb-core-picker-bg);
+	border: 1px solid var(--cb-core-picker-border);
+	border-radius: var(--cb-radius-md);
+	box-shadow: var(--cb-shadow-lg);
+}
+
+.cb-core-picker__toolbar,
+.cb-core-picker__families {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	flex-wrap: wrap;
+}
+
+.cb-core-picker__search {
+	width: 100%;
+	max-width: none;
+}
+
+.cb-core-picker__families {
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-picker__family.is-active {
+	border-color: var(--cb-core-picker-accent);
+}
+
+.cb-core-picker__results {
+	margin-top: var(--cb-space-3);
+	max-height: 320px;
+	overflow: auto;
+	padding: 2px;
+}
+
+.cb-core-icon-picker__results {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--cb-space-2);
+}
+
+.cb-core-capability-picker__results {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-picker__option,
+.cb-core-picker__option {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	box-sizing: border-box;
+	width: 100%;
+	height: auto;
+	padding: var(--cb-space-3);
+	background: var(--cb-core-picker-bg-alt);
+	border: 1px solid var(--cb-core-picker-border);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-core-picker-text);
+	line-height: 1.3;
+	text-align: left;
+	white-space: normal;
+	cursor: pointer;
+}
+
+/* Icon choices are scan tiles rather than dashboard cards. Keep the content
+ * rhythm compact: one spacing step between items, exactly two between content
+ * and the tile edge. */
+.cb-core-wrap .cb-core-icon-picker .cb-core-picker__option,
+.cb-core-icon-picker .cb-core-picker__option {
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 0;
+	padding: var(--cb-space-4);
+}
+
+.cb-core-icon-picker .cb-core-picker__option-icon {
+	margin-bottom: var(--cb-space-2);
+}
+
+.cb-core-icon-picker .cb-core-picker__option-text {
+	gap: var(--cb-space-2);
+}
+
+.cb-core-picker__option:hover,
+.cb-core-picker__toggle:hover {
+	border-color: var(--cb-core-picker-accent);
+}
+
+.cb-core-picker__option:focus-visible,
+.cb-core-picker__toggle:focus-visible {
+	border-color: var(--cb-core-picker-accent);
+	box-shadow: 0 0 0 2px var(--cb-tint-accent);
+	outline: none;
+}
+
+.cb-core-picker__option-text {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-1);
+	min-width: 0;
+}
+
+.cb-core-picker__option-label,
+.cb-core-picker__option-value {
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cb-core-picker__option-value {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-core-picker-muted);
+}
+
+.cb-core-picker__empty {
+	padding: var(--cb-space-3);
+	border: 1px dashed var(--cb-core-picker-border);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-core-picker-muted);
+}
+
+/* Select Picker Foundation --------------------------------------------------
+ * Progressive enhancement over a real single-select. The native select owns
+ * the submitted value; this layer owns searchable grouped presentation only.
+ */
+.cb-core-select-picker {
+	width: 100%;
+}
+
+.cb-core-select-picker__chevron {
+	position: relative;
+	width: var(--cb-icon-size-default);
+	height: var(--cb-icon-size-default);
+	flex: 0 0 var(--cb-icon-size-default);
+	color: var(--cb-core-picker-muted);
+}
+
+.cb-core-select-picker__chevron::before {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: translate(-50%, -65%) rotate(45deg);
+	transition: transform var(--cb-interactive-transition), color var(--cb-interactive-transition);
+}
+
+.cb-core-select-picker.is-open .cb-core-select-picker__chevron::before {
+	transform: translate(-50%, -20%) rotate(225deg);
+	color: var(--cb-core-picker-text);
+}
+
+.cb-core-select-picker__panel {
+	width: 100%;
+}
+
+.cb-core-select-picker__results {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	max-height: 420px;
+	padding: 0;
+}
+
+.cb-core-select-picker__group {
+	padding: var(--cb-space-3) 0;
+	border-top: 1px solid var(--cb-core-picker-border);
+}
+
+.cb-core-select-picker__group:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.cb-core-select-picker__group:last-child {
+	padding-bottom: 0;
+}
+
+.cb-core-select-picker__group-label {
+	margin-bottom: var(--cb-space-2);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: var(--cb-core-picker-muted);
+}
+
+.cb-core-select-picker__group-options {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-select-picker__option,
+.cb-core-select-picker__option {
+	padding: var(--cb-space-3);
+	background: var(--cb-core-picker-bg);
+}
+
+.cb-core-select-picker__option.is-selected {
+	border-color: var(--cb-core-picker-accent);
+	background: var(--cb-tint-accent);
+}

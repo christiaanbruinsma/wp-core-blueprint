@@ -1,0 +1,63 @@
+/**
+ * components/status-indicators.css - Core Blueprint Base
+ *
+ * Status indicator: round colored dot + plain text label, NO outline
+ * or background fill. Reads as informational rather than interactive
+ * - distinct from .cb-core-tile-dot (used inline in tiles, smaller)
+ * and .cb-hub-chip (filter buttons, outlined).
+ *
+ * The dot communicates state via colour; the label provides explicit
+ * text equivalence for accessibility and monochrome contexts. States
+ * use the existing semantic tokens (--cb-success / --cb-warning /
+ * --cb-danger / --cb-text-muted).
+ *
+ * Usage:
+ *   <span class="cb-core-status">
+ *     <span class="cb-core-status__dot cb-core-status__dot--success"
+ *           aria-hidden="true"></span>
+ *     <span class="cb-core-status__label">Generated</span>
+ *   </span>
+ *
+ * The dot has aria-hidden because the label carries the same info in
+ * text - screen-readers should hear "Generated" once, not twice.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-status {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	font-size: var(--cb-fs-sm);
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+.cb-core-status__dot {
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--cb-text-muted);
+}
+
+.cb-core-status__dot--success { background: var(--cb-success); }
+.cb-core-status__dot--warning { background: var(--cb-warning); }
+.cb-core-status__dot--danger  { background: var(--cb-danger); }
+.cb-core-status__dot--info    { background: var(--cb-accent); }
+.cb-core-status__dot--muted   { background: var(--cb-text-faint); }
+
+.cb-core-status__label {
+	color: var(--cb-text);
+	font-weight: var(--cb-fw-medium);
+}
+
+/* Variant: small caps with letter-spacing for column-header styled
+ * status pills in tables (e.g. "GENERATED" / "FAILED" in Reports). */
+.cb-core-status--caps .cb-core-status__label {
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}

@@ -1,0 +1,72 @@
+/**
+ * components/spinner.css - Core Blueprint Suite
+ *
+ * Inline loading indicator. Drop next to a disabled button or in-line
+ * in a status message during async operations longer than ~1 second.
+ *
+ * For shorter operations, button-disabled is sufficient cue and no
+ * spinner is needed. For longer regions, pair the spinner with
+ * `aria-busy="true"` on the containing form/section (see Spinner::busy()).
+ *
+ * Visibility is controlled by the `is-active` class on the wrapper -
+ * helpers default to `is-active` when emitted; toggle from JS for
+ * click-driven flows.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-spinner {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
+	flex: 0 0 16px;
+	aspect-ratio: 1 / 1;
+	box-sizing: border-box;
+	vertical-align: middle;
+}
+
+.cb-core-spinner.is-active {
+	display: inline-flex;
+}
+
+.cb-core-spinner__ring {
+	width: 14px;
+	height: 14px;
+	min-width: 14px;
+	min-height: 14px;
+	flex: 0 0 14px;
+	aspect-ratio: 1 / 1;
+	box-sizing: border-box;
+	border: 2px solid var(--cb-border);
+	border-top-color: var(--cb-accent);
+	border-radius: 50%;
+	animation: cb-core-spinner-spin 0.7s linear infinite;
+}
+
+@keyframes cb-core-spinner-spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-core-spinner__ring {
+		animation-duration: 2s;
+	}
+}
+
+/* Region-level busy indication - when a form/section has aria-busy="true"
+ * its interactive controls dim slightly to signal frozen state. Pair with
+ * an inline spinner element for a visible cue. */
+[data-cb-core-busy-region="true"][aria-busy="true"] {
+	pointer-events: none;
+}
+
+[data-cb-core-busy-region="true"][aria-busy="true"] button:not(.cb-core-spinner *),
+[data-cb-core-busy-region="true"][aria-busy="true"] input:not(.cb-core-spinner *),
+[data-cb-core-busy-region="true"][aria-busy="true"] select:not(.cb-core-spinner *) {
+	opacity: 0.6;
+}

@@ -1,0 +1,232 @@
+/**
+ * Core Blueprint Mail admin page.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-mail-wrap .cb-core-panel {
+	margin-bottom: var(--cb-space-4);
+}
+
+/* Settings and Test Email use open WordPress-Pro sections. Panels remain
+ * in Logs until that tab is audited separately. */
+.cb-core-mail-section {
+	max-width: var(--cb-consequence-selector-max-width);
+	margin: 0 0 var(--cb-space-5);
+}
+
+.cb-core-mail-section > h2 {
+	margin: 0 0 var(--cb-space-3);
+}
+
+.cb-core-mail-form {
+	max-width: var(--cb-consequence-selector-max-width);
+}
+
+.cb-core-mail-form > .cb-core-mail-section {
+	margin: 0;
+	padding: 0 0 var(--cb-space-5);
+}
+
+.cb-core-mail-form > .cb-core-mail-section + .cb-core-mail-section {
+	padding-top: var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-mail-module .cb-core-master-switch-shell {
+	margin-bottom: 0;
+}
+
+
+.cb-core-mail-test-section {
+	max-width: 760px;
+}
+
+.cb-core-mail-test-feedback {
+	max-width: 760px;
+	margin-bottom: var(--cb-space-5);
+}
+
+.cb-core-mail-test-section + .cb-core-mail-test-section {
+	padding-top: var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-mail-test-recipient {
+	max-width: 640px;
+	margin-bottom: 0;
+}
+
+.cb-core-wrap .cb-core-field__control.cb-core-mail-test-action-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: var(--cb-space-3);
+	align-items: center;
+}
+
+.cb-core-mail-test-action-row input {
+	min-width: 0;
+}
+
+.cb-core-mail-test-action-row .cb-core-button {
+	justify-self: start;
+}
+
+.cb-core-mail-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-4);
+}
+
+.cb-core-mail-grid .cb-core-field {
+	max-width: none;
+}
+
+.cb-core-mail-wrap input[type="text"],
+.cb-core-mail-wrap input[type="email"],
+.cb-core-mail-wrap input[type="password"],
+.cb-core-mail-wrap input[type="number"],
+.cb-core-mail-wrap input[type="search"],
+.cb-core-mail-wrap select {
+	width: 100%;
+	max-width: 100%;
+}
+
+
+.cb-core-mail-status-list {
+	margin: 0;
+	max-width: 640px;
+}
+
+.cb-core-mail-status-list__row {
+	display: grid;
+	grid-template-columns: minmax(120px, 160px) minmax(0, 1fr);
+	gap: var(--cb-space-4);
+	align-items: center;
+	padding: var(--cb-space-3) 0;
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-mail-status-list__row:first-child {
+	padding-top: 0;
+}
+
+.cb-core-mail-status-list__row:last-child {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+.cb-core-mail-status-list dt,
+.cb-core-mail-status-list dd {
+	margin: 0;
+}
+
+.cb-core-mail-status-list dt {
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-mail-status-list dd {
+	color: var(--cb-text);
+}
+
+.cb-core-mail-status-row {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	flex-wrap: wrap;
+}
+
+/* Mail Log filters stay in normal document flow; this local layer owns only
+ * toolbar composition while the actual controls use Form Controls Foundation. */
+.cb-core-mail-filter-section {
+	margin: var(--cb-space-5) 0 var(--cb-space-4);
+}
+
+.cb-core-mail-filters {
+	display: grid;
+	grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr)) auto;
+	gap: var(--cb-space-3);
+	align-items: end;
+}
+
+.cb-core-mail-filters label {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-1);
+	font-weight: var(--cb-fw-medium);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-mail-filter-actions {
+	display: flex;
+	gap: var(--cb-space-2);
+	align-items: center;
+}
+
+.cb-core-mail-log-section {
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-mail-log-table-scroll {
+	overflow-x: auto;
+}
+
+.cb-core-mail-log-table {
+	min-width: 980px;
+	table-layout: fixed;
+}
+
+.cb-core-mail-log-table th,
+.cb-core-mail-log-table td {
+	vertical-align: top;
+}
+
+.cb-core-mail-log-table .cb-core-mail-log-col-time {
+	width: 215px;
+}
+
+.cb-core-mail-log-table .cb-core-mail-log-col-status {
+	width: 105px;
+}
+
+.cb-core-mail-log-table .cb-core-mail-log-col-provider {
+	width: 120px;
+}
+
+.cb-core-mail-log-time {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	white-space: nowrap;
+}
+
+.cb-core-mail-danger-zone {
+	max-width: 760px;
+	margin-top: var(--cb-space-6);
+	padding-top: var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-mail-danger-zone h2 {
+	margin-top: 0;
+}
+
+@media (max-width: 980px) {
+	.cb-core-mail-grid,
+	.cb-core-mail-filters {
+		grid-template-columns: 1fr;
+	}
+
+	.cb-core-mail-status-list__row {
+		grid-template-columns: 1fr;
+		gap: var(--cb-space-1);
+	}
+}
+
+@media (max-width: 640px) {
+	.cb-core-wrap .cb-core-field__control.cb-core-mail-test-action-row {
+		grid-template-columns: 1fr;
+	}
+}

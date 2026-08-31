@@ -1,0 +1,150 @@
+/**
+ * pages/safeguards-login-shield.css - Core Blueprint Suite
+ *
+ * Login Shield keeps only module-specific layout here. Shared state,
+ * notice, disclosure, button and master-switch presentation belongs to
+ * the Core Blueprint UI Foundation.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Section rhythm ─────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-ls-section {
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-wrap .cb-core-ls-section > h2 {
+	margin: 0 0 var(--cb-space-3);
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-ls-form {
+	max-width: 900px;
+}
+
+/* ─── Slug field: custom URL builder ────────────────────────────────── */
+
+.cb-core-wrap .cb-core-ls-slug-row {
+	display: flex;
+	align-items: stretch;
+	max-width: 640px;
+	min-height: var(--cb-control-height);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-core-ls-slug-row:focus-within {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-wrap .cb-core-ls-slug-prefix,
+.cb-core-wrap .cb-core-ls-slug-suffix {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 var(--cb-space-2);
+	background: var(--cb-surface-2);
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-sm);
+	white-space: nowrap;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-ls-slug-prefix {
+	border-right: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-ls-slug-suffix {
+	border-left: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-ls-slug-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 4px 8px;
+	background: var(--cb-surface-1);
+	border: 0;
+	outline: 0;
+	box-shadow: none;
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-ls-slug-input:focus {
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-ls-preview {
+	margin: var(--cb-space-2) 0 0;
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-ls-preview code {
+	padding: 2px var(--cb-space-1);
+	font-size: var(--cb-fs-sm);
+}
+
+/* ─── Redirect-after-login custom target ────────────────────────────── */
+
+.cb-core-wrap .cb-core-ls-redirect-custom {
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-ls-redirect-custom[hidden] {
+	display: none;
+}
+
+/* ─── Shared disclosure placement ───────────────────────────────────── */
+
+.cb-core-wrap .cb-core-ls-advanced {
+	margin-top: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-ls-notes {
+	max-width: 900px;
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-wrap .cb-core-ls-notes ul {
+	margin: 0;
+	padding-left: 18px;
+}
+
+.cb-core-wrap .cb-core-ls-notes li {
+	margin: 0 0 var(--cb-space-2);
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-ls-notes li:last-child {
+	margin-bottom: 0;
+}
+
+/* ─── Actions + recovery hint ───────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-ls-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	margin-top: var(--cb-space-4);
+	padding-top: var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-ls-failsafe-hint {
+	max-width: 900px;
+	margin: var(--cb-space-4) 0 0;
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}

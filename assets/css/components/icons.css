@@ -1,0 +1,28 @@
+/**
+ * Core Blueprint UI Foundation - Icon primitive.
+ *
+ * Lucide glyphs inherit text colour through currentColor. Component consumers
+ * own placement; this file owns only canonical icon geometry and sizes.
+ */
+.cb-core-icon {
+	display: inline-block;
+	flex: 0 0 auto;
+	width: var(--cb-core-icon-size, var(--cb-icon-size-default, 16px));
+	height: var(--cb-core-icon-size, var(--cb-icon-size-default, 16px));
+	vertical-align: -0.125em;
+	fill: none;
+	stroke: currentColor;
+	pointer-events: none;
+}
+
+.cb-core-icon--compact {
+	--cb-core-icon-size: var(--cb-icon-size-compact, 14px);
+}
+
+.cb-core-icon--default {
+	--cb-core-icon-size: var(--cb-icon-size-default, 16px);
+}
+
+.cb-core-icon--large {
+	--cb-core-icon-size: var(--cb-icon-size-large, 24px);
+}

@@ -1,0 +1,177 @@
+/**
+ * components/radio-card.css - Core Blueprint Suite
+ *
+ * Unified radio-card component. Replaces three legacy page-specific
+ * patterns (cb-core-ls-radio, cb-core-privacy-radio, cb-core-desc-radio)
+ * with one component plus variants.
+ *
+ * Used for any radio group where each option needs space for a title
+ * and a short description, rendered as a clickable card. The radio
+ * input remains semantic (label-wraps-input) so screen-readers and
+ * keyboard navigation work without ARIA hacks.
+ *
+ * Variants:
+ *   - default      flex row, label + description side-by-side with input
+ *   - --compact    smaller padding + smaller title font
+ *   - --checkable  with animated checkmark indicator + is-selected-* states
+ *
+ * Layout container: cb-core-radio-grid for grid arrangement (auto-fill,
+ * minmax 260px). Use as a sibling wrapper around multiple cards.
+ *
+ * Markup contract:
+ *   <label class="cb-core-radio-card">
+ *     <input type="radio" name="..." value="..." />
+ *     <span class="cb-core-radio-card__body">
+ *       <span class="cb-core-radio-card__label">Title</span>
+ *       <span class="cb-core-radio-card__desc">Description text...</span>
+ *     </span>
+ *   </label>
+ *
+ * For --checkable variant, append:
+ *     <span class="cb-core-radio-card__check" aria-hidden="true">✓</span>
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Grid container (optional) ────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-radio-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: var(--cb-space-3);
+	margin-top: var(--cb-space-4);
+}
+
+/* Explicit equal-column layouts for option sets whose cardinality is known.
+ * Consumers choose the semantic count; Foundation owns the responsive
+ * collapse so pages do not recreate radio-grid geometry locally. */
+.cb-core-wrap .cb-core-radio-grid--columns-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cb-core-wrap .cb-core-radio-grid--columns-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cb-core-wrap .cb-core-radio-grid--columns-4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+	.cb-core-wrap .cb-core-radio-grid--columns-4 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 960px) {
+	.cb-core-wrap .cb-core-radio-grid--columns-3 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 782px) {
+	.cb-core-wrap .cb-core-radio-grid--columns-2,
+	.cb-core-wrap .cb-core-radio-grid--columns-3,
+	.cb-core-wrap .cb-core-radio-grid--columns-4 {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ─── Default card ─────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-radio-card {
+	display: flex;
+	align-items: flex-start;
+	align-content: flex-start;
+	gap: var(--cb-space-3);
+	margin-top: var(--cb-space-2);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	cursor: pointer;
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cb-core-wrap .cb-core-radio-card:hover {
+	border-color: var(--cb-text-faint);
+}
+
+.cb-core-wrap .cb-core-radio-card:focus-within {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: 2px;
+}
+
+.cb-core-wrap .cb-core-radio-card input[type="radio"] {
+	flex: 0 0 auto;
+	align-self: flex-start;
+	margin-top: 3px;
+}
+
+.cb-core-wrap .cb-core-radio-card.is-active,
+.cb-core-wrap .cb-core-radio-card:not(.has-explicit-active-state):has(input[type="radio"]:checked) {
+	border-color: var(--cb-accent);
+}
+
+/* ─── Body wrapper (vertical stack of label + desc) ────────────────────── */
+
+.cb-core-wrap .cb-core-radio-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* ─── Title ────────────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-radio-card__label {
+	display: block;
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	transition: color 0.15s ease;
+}
+
+.cb-core-wrap .cb-core-radio-card.is-active .cb-core-radio-card__label,
+.cb-core-wrap .cb-core-radio-card:not(.has-explicit-active-state):has(input[type="radio"]:checked) .cb-core-radio-card__label {
+	color: var(--cb-accent-strong);
+}
+
+/* ─── Description ──────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-radio-card__desc {
+	display: block;
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Compact variant (smaller padding + title) ───────────────────────── */
+
+.cb-core-wrap .cb-core-radio-card--compact {
+	padding: var(--cb-space-2) var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-radio-card--compact .cb-core-radio-card__label {
+	font-size: var(--cb-fs-md);
+}
+
+/* ─── Checkable variant geometry ───────────────────────────────────── */
+/*
+ * Used for description-mode (Plain/Technical) and similar two-scope
+ * choices. Shared selected-user/site, badge, focus and checkmark state
+ * presentation lives in components/interactive-surfaces.css through the
+ * cb-core-choice-card contract.
+ */
+
+.cb-core-wrap .cb-core-radio-card--checkable {
+	position: relative;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+

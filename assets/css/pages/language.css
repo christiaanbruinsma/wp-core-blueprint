@@ -1,0 +1,35 @@
+/**
+ * pages/language.css - Core Blueprint Suite
+ *
+ * WordPress-Pro presentation for Preferences > Language. Locale remains a
+ * native select using shared form-control styling; Description Style keeps
+ * the shared checkable RadioCard because the choice needs explanatory copy.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap.cb-core-language .cb-core-lang-status {
+	margin: 0;
+	min-height: 20px;
+	text-align: right;
+}
+
+.cb-core-wrap.cb-core-language .cb-core-language-select {
+	width: 100%;
+	max-width: 480px;
+}
+
+.cb-core-wrap.cb-core-language .cb-core-pref-descmode > .description {
+	max-width: 760px;
+}
+
+.cb-core-wrap.cb-core-language .cb-core-radio-grid {
+	max-width: 920px;
+}
+
+@media (max-width: 782px) {
+	.cb-core-wrap.cb-core-language .cb-core-lang-status {
+		text-align: left;
+	}
+}

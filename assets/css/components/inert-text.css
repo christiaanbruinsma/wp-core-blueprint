@@ -1,0 +1,33 @@
+/**
+ * components/inert-text.css - Core Blueprint Suite
+ *
+ * Disabled-state text helper. Renders with link-like visual weight
+ * but is not interactive. Used as a placeholder when a future link
+ * is gated on a precondition.
+ *
+ * Extracted from admin.css in stap 6.2a - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── CB UI: Inert text helper ────────────────────────────────────────────
+ *
+ * Renders the same visual weight as a link without being clickable -
+ * used as a placeholder where a link will appear once a precondition
+ * is met. Anywhere "this would normally be a link, but right now you
+ * can't follow it because of state X" is honest UI.
+ *
+ *   <span class="cb-core-text-disabled" aria-disabled="true">Open Beacon →</span>
+ *
+ * Pair with a description-line explaining the precondition in
+ * goal-oriented language - tell the operator what they need to
+ * achieve, not where some menu item will reappear.
+ */
+
+.cb-core-text-disabled {
+	color: var(--cb-text-muted);
+	cursor: not-allowed;
+	user-select: none;
+}
+

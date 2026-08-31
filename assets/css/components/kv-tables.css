@@ -1,0 +1,73 @@
+/**
+ * components/kv-tables.css - Core Blueprint Suite
+ *
+ * Key/value table styling used across CB admin pages for rendering
+ * config tables, current-state summaries, and diagnostic outputs.
+ *
+ * Extracted from admin.css in stap 6.2a - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── KV tables ──────────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-kv {
+	background: var(--cb-surface-1);
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--cb-surface-3);
+	border-radius: var(--cb-radius-md);
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-core-kv,
+.cb-core-wrap .cb-core-kv * {
+	color: var(--cb-text);
+	background: transparent;
+	border-color: var(--cb-surface-3);
+}
+
+.cb-core-wrap .cb-core-kv thead th {
+	color: var(--cb-text-strong);
+	font-weight: var(--cb-fw-semibold);
+	background: var(--cb-surface-2);
+	font-size: var(--cb-fs-sm);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.cb-core-wrap .cb-core-kv th,
+.cb-core-wrap .cb-core-kv td {
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-surface-3);
+}
+
+.cb-core-wrap .cb-core-kv tbody tr:last-child th,
+.cb-core-wrap .cb-core-kv tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.cb-core-wrap .cb-core-kv th[scope="row"] {
+	color: var(--cb-text-strong);
+	font-weight: var(--cb-fw-medium);
+	text-align: left;
+	width: 28%;
+}
+
+.cb-core-wrap .cb-core-kv code {
+	background: var(--cb-surface-2);
+	color: var(--cb-accent);
+	padding: 1px 6px;
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-core-wrap .cb-core-kv tr.cb-core-current td {
+	background: color-mix(in srgb, var(--cb-accent) 6%, transparent);
+}
+
+.cb-core-wrap .cb-core-kv tr.cb-core-current code {
+	background: var(--cb-accent);
+	color: var(--cb-surface-0);
+}

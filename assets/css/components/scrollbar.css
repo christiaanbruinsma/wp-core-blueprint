@@ -1,0 +1,89 @@
+/**
+ * scrollbar.css - Core Blueprint Suite
+ *
+ * Suite-wide thin scrollbar style. Replaces the OS default scrollbar
+ * which looks alien against CB surface tokens - width reduced from
+ * the default ~16px to 6px, the thumb uses --cb-border so it blends
+ * with panel chrome, and the track stays transparent so it disappears
+ * entirely when no scrolling is needed.
+ *
+ * Two ways the styling activates:
+ *
+ *   1. Automatic - every scrollable element inside .cb-core-wrap
+ *      inherits the look. All built-in CB pages render inside the
+ *      wrap, so they're covered by default. Registered Core Admin extension
+ *      pages using the standard wrap receive the same shell behavior.
+ *
+ *   2. Opt-in via .cb-scrollbar - for portal / floating elements that
+ *      render OUTSIDE the wrap (modals appended to <body>, fixed-
+ *      position toasts, popovers). Add the class to the scrollable
+ *      container.
+ *
+ * Extension pages:
+ *   use PageRegistry/Core Admin semantic contracts rather than private asset
+ *   handles; render inside .cb-core-wrap or use .cb-scrollbar where appropriate.
+ *
+ * Brand / per-theme overrides:
+ *   re-declare the --cb-scrollbar-* tokens under your theme's
+ *   html[data-cb-theme="..."] block. The pseudo-element rules below
+ *   read from the tokens, so the look retheme without re-implementing
+ *   any of the rules.
+ *
+ * Cross-browser:
+ *   Firefox uses the standard scrollbar-width / scrollbar-color
+ *   properties (which inherit, so setting them on the wrap reaches
+ *   all descendants). WebKit/Chromium uses ::-webkit-scrollbar
+ *   pseudo-elements, which require explicit selectors per scope.
+ *   Safari supports both APIs.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Firefox + standard properties ─────────────────────────────────────
+ * Both `scrollbar-width` and `scrollbar-color` inherit, so a single
+ * declaration on the wrap reaches every scrollable descendant.
+ * `.cb-scrollbar` covers portal/floating elements outside the wrap. */
+.cb-core-wrap,
+.cb-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--cb-scrollbar-thumb) var(--cb-scrollbar-track);
+}
+
+/* ─── WebKit / Chromium / Safari ────────────────────────────────────────
+ * Pseudo-elements don't inherit - each level needs its own selector.
+ * The wrap itself + every descendant + the opt-in class are all
+ * targeted in the same rule blocks below. */
+
+.cb-core-wrap::-webkit-scrollbar,
+.cb-core-wrap ::-webkit-scrollbar,
+.cb-scrollbar::-webkit-scrollbar {
+	width: var(--cb-scrollbar-width);
+	height: var(--cb-scrollbar-width);
+}
+
+.cb-core-wrap::-webkit-scrollbar-track,
+.cb-core-wrap ::-webkit-scrollbar-track,
+.cb-scrollbar::-webkit-scrollbar-track {
+	background: var(--cb-scrollbar-track);
+}
+
+.cb-core-wrap::-webkit-scrollbar-thumb,
+.cb-core-wrap ::-webkit-scrollbar-thumb,
+.cb-scrollbar::-webkit-scrollbar-thumb {
+	background: var(--cb-scrollbar-thumb);
+	border-radius: var(--cb-scrollbar-radius);
+	transition: background 0.18s ease;
+}
+
+.cb-core-wrap::-webkit-scrollbar-thumb:hover,
+.cb-core-wrap ::-webkit-scrollbar-thumb:hover,
+.cb-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: var(--cb-scrollbar-thumb-hover);
+}
+
+.cb-core-wrap::-webkit-scrollbar-corner,
+.cb-core-wrap ::-webkit-scrollbar-corner,
+.cb-scrollbar::-webkit-scrollbar-corner {
+	background: var(--cb-scrollbar-track);
+}

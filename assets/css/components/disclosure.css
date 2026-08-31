@@ -1,0 +1,118 @@
+/**
+ * components/disclosure.css - Core Blueprint Suite
+ *
+ * Plain/Technical description block + inline toggle chip. The dual-
+ * description pattern is a Core Blueprint Suite primitive - any feature
+ * with a layperson description AND a technical description renders both
+ * in the DOM (one hidden via [hidden]) and lets the user flip which one
+ * shows via a small "tech"/"plain" pill in the top-right of the block.
+ *
+ * Mode resolution lives PHP-side in CB\Core\UI::current_mode(); the
+ * server-rendered active variant is set on .cb-core-dual via
+ * data-active="plain"|"technical" and the JS toggle module
+ * (@cb-core/description-toggle) flips it on click.
+ *
+ * Why this lives in components/:
+ *   The disclosure pattern is a shared Foundation primitive rather than a
+ *   page-specific Privacy style. Keeping it here makes the styling available
+ *   across Core Blueprint admin pages. Registered extension pages request
+ *   this component semantically through PageRegistry; asset handles and
+ *   filenames remain private implementation details.
+ *
+ *   pages/security.css still carries its own .cb-core-wrap-prefixed
+ *   override copy - that's intentional, page-level fine-tune kept
+ *   separate from the cross-page baseline shipped here.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Dual description block + Plain/Technical toggle ──────────────────── */
+
+.cb-core-desc {
+	margin: var(--cb-space-1) 0 0 26px;
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-desc.cb-core-dual {
+	position: relative;
+	min-height: 18px;
+	margin-top: var(--cb-space-1);
+	padding: var(--cb-space-2) 62px var(--cb-space-2) var(--cb-space-3); /* 62px reserves room for the toggle chip */
+	background: var(--cb-surface-1);
+	border-left: 3px solid transparent;
+	border-radius: var(--cb-radius-sm);
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Color-coded border-left + subtle background tint, keyed on active variant. */
+.cb-core-desc.cb-core-dual[data-active="plain"] {
+	border-left-color: var(--cb-success);
+	background: var(--cb-tint-success);
+}
+
+.cb-core-desc.cb-core-dual[data-active="technical"] {
+	border-left-color: var(--cb-accent);
+	background: var(--cb-tint-accent);
+}
+
+.cb-core-desc-text[hidden] {
+	display: none !important;
+}
+
+.cb-core-desc-toggle {
+	position: absolute;
+	top: var(--cb-space-1);
+	right: var(--cb-space-1);
+	padding: 2px var(--cb-space-2);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-pill);
+	font-size: var(--cb-fs-2xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.5px;
+	line-height: var(--cb-lh-normal);
+	text-transform: uppercase;
+	color: var(--cb-text);
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/* Toggle chip colour hints at the variant the user will move TO on click. */
+.cb-core-desc.cb-core-dual[data-active="plain"] .cb-core-desc-toggle {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-accent);
+	color: var(--cb-accent-strong);
+}
+
+.cb-core-desc.cb-core-dual[data-active="plain"] .cb-core-desc-toggle:hover {
+	background: var(--cb-tint-accent);
+}
+
+.cb-core-desc.cb-core-dual[data-active="technical"] .cb-core-desc-toggle {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-success);
+	color: var(--cb-success);
+}
+
+.cb-core-desc.cb-core-dual[data-active="technical"] .cb-core-desc-toggle:hover {
+	background: var(--cb-tint-success);
+}
+
+.cb-core-desc-toggle:focus {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: 1px;
+}
+
+/* Module header description lives in a different context (no 26px indent). */
+.cb-core-module-header .cb-core-desc {
+	margin-left: 0;
+	margin-top: var(--cb-space-1);
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-module-header .cb-core-desc.cb-core-dual {
+	padding-left: var(--cb-space-3);
+}

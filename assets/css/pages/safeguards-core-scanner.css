@@ -1,0 +1,1183 @@
+.cb-core-integrity-wrap {
+  max-width: 1280px;
+}
+
+.cb-core-integrity-header,
+.cb-core-integrity-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cb-space-4);
+  margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-integrity-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 2fr) repeat(3, minmax(140px, 1fr));
+  gap: var(--cb-space-4);
+  margin: var(--cb-space-4) 0;
+}
+
+.cb-core-integrity-card,
+.cb-core-integrity-panel {
+  background: var(--cb-surface-1);
+  color: var(--cb-text);
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  box-shadow: var(--cb-shadow-sm, none);
+}
+
+.cb-core-integrity-card {
+  padding: var(--cb-space-4);
+}
+
+.cb-core-integrity-card strong {
+  display: block;
+  margin-top: var(--cb-space-2);
+  font-size: var(--cb-fs-2xl);
+  color: var(--cb-text-strong, currentColor);
+}
+
+.cb-core-integrity-panel {
+  padding: var(--cb-space-4);
+  margin-top: var(--cb-space-4);
+}
+
+.cb-core-integrity-label,
+.cb-core-integrity-muted,
+.cb-core-integrity-panel-head p {
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--cb-space-3);
+}
+
+.cb-core-integrity-component {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cb-space-3);
+  padding: var(--cb-space-3);
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  background: var(--cb-surface-0);
+}
+
+.cb-core-integrity-findings {
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  background: var(--cb-surface-0);
+}
+
+.cb-core-integrity-finding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--cb-space-2);
+  padding: var(--cb-space-3);
+  border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-finding:last-child {
+  border-bottom: 0;
+}
+
+.cb-core-integrity-finding strong {
+  margin-right: var(--cb-space-2);
+}
+
+.cb-core-integrity-finding-critical strong {
+  color: var(--cb-danger);
+}
+
+.cb-core-integrity-finding-warning strong {
+  color: var(--cb-warning);
+}
+
+.cb-core-integrity-finding-ok strong {
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-technical {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--cb-text-muted);
+}
+
+@media (max-width: 900px) {
+  .cb-core-integrity-header,
+  .cb-core-integrity-panel-head {
+    flex-direction: column;
+  }
+
+  .cb-core-integrity-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .cb-core-integrity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cb-core-integrity-finding-group {
+  padding: var(--cb-space-3);
+  border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-finding-group:last-child {
+  border-bottom: 0;
+}
+
+.cb-core-integrity-finding-group h3 {
+  margin: 0 0 var(--cb-space-3);
+  color: var(--cb-text-strong, currentColor);
+}
+
+.cb-core-integrity-component-result {
+  margin-bottom: var(--cb-space-2);
+}
+
+.cb-core-integrity-component-result:last-child {
+  margin-bottom: 0;
+}
+
+.cb-core-integrity-component-title {
+  flex: 1;
+  font-weight: var(--cb-fw-semibold);
+  color: var(--cb-text-strong, currentColor);
+}
+
+.cb-core-integrity-component-details {
+  margin-top: var(--cb-space-3);
+}
+
+.cb-core-integrity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--cb-space-2);
+}
+
+.cb-core-integrity-path,
+.cb-core-integrity-finding-path {
+  margin: var(--cb-space-2) 0 0;
+  color: var(--cb-text-muted);
+  font-size: var(--cb-fs-sm);
+}
+
+.cb-core-integrity-path span,
+.cb-core-integrity-finding-path span {
+  font-weight: var(--cb-fw-semibold);
+  color: var(--cb-text);
+}
+
+.cb-core-integrity-path code,
+.cb-core-integrity-finding-path code {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  background: var(--cb-surface-2);
+  color: var(--cb-text-strong);
+  border-radius: var(--cb-radius-sm);
+  padding: 2px 6px;
+}
+
+.button.is-busy {
+  cursor: progress;
+}
+
+.cb-core-integrity-verification {
+  margin: var(--cb-space-2) 0 0;
+  color: var(--cb-text-muted);
+  font-size: var(--cb-fs-sm);
+}
+
+.cb-core-integrity-verification span {
+  font-weight: var(--cb-fw-semibold);
+  color: var(--cb-text);
+}
+
+.cb-core-integrity-verification em {
+  margin-left: 4px;
+  font-style: normal;
+}
+
+
+.cb-core-integrity-passed {
+  max-height: 420px;
+}
+
+.cb-core-integrity-summary-action {
+  margin-left: auto;
+}
+
+.cb-core-integrity-component-result summary .cb-core-integrity-summary-action {
+  flex: 0 0 auto;
+}
+
+.cb-core-integrity-progress-title .cb-core-spinner {
+  flex: 0 0 var(--cb-button-icon-size);
+}
+
+.cb-core-integrity-audit-children {
+  margin-top: var(--cb-space-2);
+  padding: var(--cb-space-2);
+  border: 1px dashed var(--cb-border);
+  border-radius: var(--cb-radius-sm);
+  background: var(--cb-surface-0);
+}
+
+.cb-core-integrity-audit-children summary {
+  cursor: pointer;
+  font-weight: var(--cb-fw-semibold);
+}
+
+.cb-core-integrity-audit-children ul {
+  margin: var(--cb-space-2) 0 0;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.cb-core-integrity-audit-children li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--cb-space-2);
+  padding: 3px 0;
+  border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-audit-children li:last-child {
+  border-bottom: 0;
+}
+
+.cb-core-integrity-audit-children code {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.cb-core-integrity-about-scan,
+.cb-core-integrity-verified-panel {
+  margin-top: var(--cb-space-4);
+}
+
+.cb-core-integrity-about-scan > summary {
+  padding: var(--cb-space-4);
+  cursor: pointer;
+  font-weight: var(--cb-fw-semibold);
+  color: var(--cb-text-strong);
+}
+
+.cb-core-integrity-about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--cb-space-4);
+  padding: 0 var(--cb-space-4) var(--cb-space-4);
+}
+
+.cb-core-integrity-about-grid h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.cb-core-integrity-about-grid ul {
+  margin: var(--cb-space-2) 0 0 18px;
+}
+
+.cb-core-integrity-about-grid li {
+  margin-bottom: 6px;
+}
+
+.cb-core-integrity-diff-panel {
+  border-left: 4px solid var(--cb-accent);
+}
+
+.cb-core-integrity-diff-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--cb-space-3);
+  margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-integrity-diff-summary span {
+  display: block;
+  padding: var(--cb-space-3);
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  background: var(--cb-surface-0);
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-diff-summary strong {
+  display: block;
+  color: var(--cb-text-strong);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.cb-core-integrity-diff-components {
+  display: grid;
+  gap: var(--cb-space-2);
+}
+
+.cb-core-integrity-diff-component {
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  background: var(--cb-surface-0);
+}
+
+.cb-core-integrity-diff-component > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--cb-space-3);
+  padding: var(--cb-space-3);
+  cursor: pointer;
+}
+
+.cb-core-integrity-diff-component > summary span {
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-diff-component h4 {
+  margin: var(--cb-space-3) var(--cb-space-3) var(--cb-space-1);
+}
+
+.cb-core-integrity-diff-component ul {
+  margin: 0 var(--cb-space-3) var(--cb-space-3) 22px;
+}
+
+.cb-core-integrity-diff-component li {
+  margin-bottom: 4px;
+}
+
+.cb-core-integrity-baseline-indicator,
+.cb-core-integrity-hint {
+  margin: var(--cb-space-2) 0 0;
+  font-size: var(--cb-fs-sm);
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-baseline-indicator span,
+.cb-core-integrity-hint::before {
+  font-weight: var(--cb-fw-semibold);
+  color: var(--cb-text);
+}
+
+.cb-core-integrity-baseline-indicator.is-approved {
+  color: var(--cb-success);
+}
+
+.cb-core-integrity-baseline-indicator.is-missing {
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-hint {
+  padding: 8px 10px;
+  border-left: 3px solid var(--cb-warning);
+  background: var(--cb-surface-0);
+  border-radius: var(--cb-radius-sm);
+}
+
+.cb-core-integrity-hint::before {
+  content: "Note: ";
+}
+
+/* v0.6.2 interface polish */
+.cb-core-integrity-no-result .cb-core-integrity-result-only,
+.cb-core-integrity-has-result .cb-core-integrity-no-result-only {
+  display: none;
+}
+
+.cb-core-integrity-overview-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: var(--cb-space-4) 0;
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-sm);
+  background: var(--cb-surface-1);
+  color: var(--cb-text);
+  overflow: hidden;
+}
+
+.cb-core-integrity-overview-main {
+  display: grid;
+  align-content: start;
+  gap: var(--cb-space-1);
+  padding: var(--cb-space-4);
+}
+
+.cb-core-integrity-current-status .cb-core-status {
+  font-size: var(--cb-fs-lg);
+  font-weight: var(--cb-fw-semibold);
+}
+
+.cb-core-integrity-overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-overview-metrics > div {
+  min-height: 72px;
+  padding: var(--cb-space-3) var(--cb-space-4);
+  border-right: 1px solid var(--cb-border);
+  background: transparent;
+}
+
+.cb-core-integrity-overview-metrics > div:last-child {
+  border-right: 0;
+}
+
+.cb-core-integrity-overview-metrics span,
+.cb-core-integrity-overview-metrics small {
+  display: block;
+  color: var(--cb-text-muted);
+}
+
+.cb-core-integrity-overview-metrics strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--cb-text-strong);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.cb-core-integrity-baseline-metric small {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.cb-core-integrity-history-section,
+.cb-core-integrity-settings-section {
+  margin-top: var(--cb-space-5);
+}
+
+.cb-core-integrity-history-table-wrap {
+  overflow-x: auto;
+}
+
+.cb-core-integrity-history-table {
+  min-width: 680px;
+}
+
+.cb-core-integrity-history-table th:first-child {
+  width: 130px;
+}
+
+.cb-core-integrity-history-table th:nth-child(2) {
+  width: 220px;
+}
+
+.cb-core-integrity-history-table tr.is-current td:first-child {
+  box-shadow: inset 3px 0 0 var(--cb-accent);
+}
+
+.cb-core-integrity-history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cb-core-integrity-history-table tr.is-current .cb-core-integrity-history-tags .cb-core-badge:first-child {
+  color: var(--cb-accent);
+  border-color: var(--cb-accent);
+}
+
+@media (max-width: 1100px) {
+  .cb-core-integrity-overview-metrics {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+
+  .cb-core-integrity-overview-metrics > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--cb-border);
+  }
+
+  .cb-core-integrity-overview-metrics > div:nth-child(odd) {
+    border-right: 1px solid var(--cb-border);
+  }
+
+  .cb-core-integrity-overview-metrics > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .cb-core-integrity-overview-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .cb-core-integrity-overview-metrics > div,
+  .cb-core-integrity-overview-metrics > div:nth-child(odd) {
+    min-height: 0;
+    border-right: 0;
+  }
+
+  .cb-core-integrity-overview-metrics > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* ─── Distribution Locale panel (1.3.12-dev) ──────────────────────────
+ * Always-visible info panel between the History timeline and the
+ * Settings details. Compact: a small status section, a definition
+ * list with the key facts, an inline collapsible "Tried locales".
+ * Uses existing theme tokens - no hardcoded colours. */
+
+.cb-core-integrity-locale-panel {
+  margin-top: 0;
+}
+
+.cb-core-integrity-locale-status {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: var(--cb-space-3);
+  row-gap: var(--cb-space-1);
+  margin: var(--cb-space-3) 0;
+}
+
+.cb-core-integrity-locale-status dt {
+  color: var(--cb-text-muted);
+  font-weight: 500;
+}
+
+.cb-core-integrity-locale-status dd {
+  margin: 0;
+  color: var(--cb-text);
+}
+
+.cb-core-integrity-locale-tried {
+  margin-top: var(--cb-space-2);
+}
+
+.cb-core-integrity-locale-tried > summary {
+  cursor: pointer;
+  color: var(--cb-text-muted);
+  font-size: 0.92em;
+}
+
+.cb-core-integrity-locale-tried ul {
+  margin: var(--cb-space-2) 0 0;
+  padding-left: var(--cb-space-4);
+}
+
+.cb-core-integrity-locale-tried li {
+  margin-bottom: 2px;
+}
+
+.cb-core-integrity-settings-panel {
+  padding-top: var(--cb-space-5);
+  border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-settings-table {
+  max-width: 920px;
+  margin: 0;
+}
+
+.cb-core-integrity-settings-table th {
+  width: 190px;
+  padding: var(--cb-space-3) var(--cb-space-4) var(--cb-space-3) 0;
+  color: var(--cb-text-strong);
+  vertical-align: top;
+}
+
+.cb-core-integrity-settings-table td {
+  padding: var(--cb-space-3) var(--cb-space-2);
+  color: var(--cb-text);
+}
+
+.cb-core-integrity-settings-table select {
+  min-width: 180px;
+}
+
+.cb-core-integrity-settings-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--cb-space-2);
+  margin-top: var(--cb-space-3);
+}
+
+@media (max-width: 782px) {
+  .cb-core-integrity-settings-table th,
+  .cb-core-integrity-settings-table td {
+    display: block;
+    width: auto;
+    padding: var(--cb-space-2) 0;
+  }
+
+  .cb-core-integrity-settings-table th {
+    padding-top: var(--cb-space-4);
+  }
+}
+
+/* Distribution-drift findings get info treatment, not the rounded
+ * red of `critical`. The category lives on the finding payload; the
+ * renderer can flip a class when it reads `category === 'distribution_drift'`. */
+.cb-core-integrity-finding[data-category="distribution_drift"] {
+  border-left-color: var(--cb-accent);
+}
+
+.cb-core-integrity-finding[data-category="distribution_drift"] .cb-core-integrity-severity {
+  background: color-mix(in srgb, var(--cb-accent) 14%, transparent);
+  color: var(--cb-accent);
+}
+
+/* ─── State-based UI + Progress block (1.3.13-dev) ────────────────────
+ *
+ * The Core Scanner page is one of three discrete states: idle,
+ * scanning, result. Server-rendered. JS doesn't switch states; it
+ * polls progress and reloads the page on completion.
+ *
+ * In scanning state, the progress block is sticky-positioned so the
+ * operator always sees timer + percentage + phase even if the
+ * underlying content scrolls. Underlying content is dimmed and made
+ * non-interactive - but per CP-10 we don't body-lock (would create
+ * scrollbar layout shifts in WP admin).
+ */
+
+.cb-core-integrity-progress-panel {
+  position: sticky;
+  top: 32px;                      /* admin-bar height (desktop) */
+  z-index: 10;
+  margin-bottom: var(--cb-space-4);
+  background: var(--cb-surface-2);
+  border: 1px solid var(--cb-border);
+  border-left: 3px solid var(--cb-accent);
+  padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+@media (max-width: 782px) {
+  .cb-core-integrity-progress-panel {
+    top: 46px;                    /* admin-bar height (mobile) */
+  }
+}
+
+.cb-core-integrity-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cb-space-3);
+  margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-integrity-progress-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cb-space-2);
+  font-size: 1.05em;
+}
+
+.cb-core-integrity-progress-timer {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.1em;
+  color: var(--cb-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cb-core-integrity-progress-bar {
+  height: 8px;
+  background: color-mix(in srgb, var(--cb-text) 8%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cb-core-integrity-progress-bar-fill {
+  height: 100%;
+  background: var(--cb-accent);
+  transition: width 200ms linear;
+  width: 0%;
+}
+
+.cb-core-integrity-progress-phase {
+  margin: var(--cb-space-2) 0 0;
+  color: var(--cb-text-muted);
+  font-size: 0.95em;
+}
+
+/* Dim everything below the progress block while scanning. The
+ * progress block itself is sticky and stays bright; everything in
+ * the same wrap that comes after gets dimmed via the state class. */
+.cb-core-integrity-state-scanning .cb-core-integrity-progress-panel ~ * {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+
+/* ─── Anomaly indicator (1.3.13-dev) ──────────────────────────────── */
+
+/* ─── Components-as-filter (1.3.13-dev) ───────────────────────────── */
+
+.cb-core-integrity-component-filter {
+  /* `<button>` defaults override the inherited `.cb-core-integrity-component`
+   * styling (background, color, font). Explicitly set everything that
+   * the browser would otherwise apply via user-agent stylesheet - this
+   * is what makes the card visually identical to the previous div-based
+   * version while still being a real button. */
+  cursor: pointer;
+  color: var(--cb-text);
+  background: var(--cb-surface-0);
+  text-align: left;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.cb-core-integrity-component-filter:hover {
+  border-color: color-mix(in srgb, var(--cb-accent) 50%, var(--cb-border));
+}
+
+.cb-core-integrity-component-filter:focus-visible {
+  outline: 2px solid var(--cb-interactive-focus);
+  outline-offset: 2px;
+}
+
+.cb-core-integrity-component-filter-active {
+  border-color: var(--cb-accent);
+  background: color-mix(in srgb, var(--cb-accent) 8%, var(--cb-surface-0));
+}
+
+.cb-core-integrity-component-show-all {
+  margin-top: var(--cb-space-2);
+}
+
+/* ─── Empty-state in idle (1.3.13-dev) ────────────────────────────── */
+
+.cb-core-integrity-empty-state {
+  text-align: center;
+  padding: var(--cb-space-5) var(--cb-space-4);
+  border-left: 4px solid var(--cb-accent);
+}
+
+.cb-core-integrity-empty-state h2 {
+  margin-top: 0;
+}
+
+/* Scanner Quarantine Workspace */
+.cb-core-integrity-remediation-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.cb-core-integrity-remediation-actions .cb-core-integrity-muted {
+	flex-basis: 100%;
+}
+
+.cb-core-quarantine-list {
+	display: grid;
+	gap: 10px;
+	margin-top: 14px;
+}
+
+.cb-core-quarantine-item {
+	padding: 12px;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-quarantine-item.is-closed {
+	opacity: .72;
+}
+
+.cb-core-quarantine-item__main,
+.cb-core-quarantine-item__actions,
+.cb-core-quarantine-item__meta {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.cb-core-quarantine-item__main {
+	justify-content: space-between;
+}
+
+.cb-core-quarantine-item__main > div {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.cb-core-quarantine-item__meta {
+	margin: 10px 0;
+}
+
+.cb-core-quarantine-item__meta code {
+	max-width: 100%;
+	overflow-wrap: anywhere;
+}
+
+.cb-core-quarantine-inspect__meta {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 6px 12px;
+	margin: 0 0 14px;
+}
+
+.cb-core-quarantine-inspect__meta dt {
+	font-weight: 600;
+}
+
+.cb-core-quarantine-inspect__meta dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.cb-core-quarantine-inspect__file {
+	margin-bottom: 10px;
+}
+
+.cb-core-quarantine-preview {
+	max-height: 52vh;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+	padding: 12px;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: var(--cb-surface-0);
+}
+
+/* ─── Core Scanner UX 2.0 ─────────────────────────────────────────── */
+.cb-core-integrity-wrap {
+  max-width: 1440px;
+}
+
+.cb-core-integrity-local-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  margin: 0 0 var(--cb-space-5);
+  padding: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--cb-border);
+  background: transparent;
+}
+
+.cb-core-integrity-local-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-bottom: -1px;
+  padding: 7px 10px;
+  border-bottom: 2px solid transparent;
+  color: var(--cb-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cb-core-integrity-local-nav__item:hover,
+.cb-core-integrity-local-nav__item:focus-visible {
+  color: var(--cb-text-strong);
+  background: transparent;
+}
+
+.cb-core-integrity-local-nav__item.is-active {
+  color: var(--cb-text-strong);
+  border-bottom-color: var(--cb-accent);
+  background: transparent;
+}
+
+.cb-core-integrity-local-nav__item strong {
+  min-width: 22px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--cb-surface-2);
+  font-size: var(--cb-fs-xs);
+  text-align: center;
+}
+
+.cb-core-integrity-findings-workspace {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cb-core-integrity-findings-toolbar .cb-core-toolbar__field:not(.cb-core-toolbar__field--grow) {
+  flex: 0 1 170px;
+}
+
+.cb-core-integrity-findings-toolbar .cb-core-integrity-search-field {
+  min-width: min(280px, 100%);
+}
+
+.cb-core-integrity-findings-meta {
+  margin: 0 0 var(--cb-space-3);
+  color: var(--cb-text-muted);
+}
+
+/* Findings use the page scroll. Progressive rendering remains server-side. */
+.cb-core-integrity-findings,
+.cb-core-integrity-passed {
+  max-height: none;
+  overflow: visible;
+}
+
+.cb-core-integrity-findings {
+  border: 0;
+  background: transparent;
+}
+
+.cb-core-integrity-finding-group {
+  padding: 0;
+  border: 0;
+}
+
+.cb-core-integrity-finding-group + .cb-core-integrity-finding-group {
+  margin-top: var(--cb-space-3);
+}
+
+.cb-core-integrity-finding-group h3 {
+  margin: 0 0 var(--cb-space-2);
+}
+
+.cb-core-integrity-component-result > p,
+.cb-core-integrity-component-result > .cb-core-integrity-path,
+.cb-core-integrity-component-result > .cb-core-integrity-baseline-indicator,
+.cb-core-integrity-component-result > .cb-core-integrity-hint {
+  margin-left: 14px;
+  margin-right: 14px;
+}
+
+.cb-core-integrity-component-details {
+  display: grid;
+  gap: 8px;
+  margin: 12px 14px 14px;
+}
+
+.cb-core-integrity-finding {
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-sm);
+  background: var(--cb-surface-1);
+}
+
+.cb-core-integrity-finding:last-child {
+  border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-integrity-finding-path {
+  margin-top: 0;
+}
+
+.cb-core-integrity-remediation-actions {
+  margin-top: 2px;
+}
+
+
+.cb-core-quarantine-workspace {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  .cb-core-integrity-component-result > summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .cb-core-integrity-summary-action {
+    margin-left: 0;
+  }
+}
+
+/* ─── Core Scanner Overview workflow refinement ──────────────────────── */
+
+/* Scanner consumes the shared transparent MasterSwitch shell; local layout
+ * no longer adds a second panel surface around the consequence selector. */
+
+.cb-core-integrity-review-findings {
+  justify-self: start;
+  width: max-content;
+  margin-top: var(--cb-space-2);
+}
+
+.cb-core-integrity-maintenance-actions {
+  position: relative;
+  margin-left: auto;
+}
+
+.cb-core-integrity-maintenance-actions > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.cb-core-integrity-maintenance-actions > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cb-core-integrity-maintenance-actions__menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  gap: var(--cb-space-2);
+  min-width: 210px;
+  padding: var(--cb-space-3);
+  border: 1px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  background: var(--cb-surface-1);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.22);
+}
+
+.cb-core-integrity-maintenance-actions__menu .button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.cb-core-integrity-findings-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--cb-space-2);
+}
+
+@media (max-width: 720px) {
+  .cb-core-integrity-maintenance-actions {
+    margin-left: 0;
+  }
+
+  .cb-core-integrity-maintenance-actions__menu {
+    right: auto;
+    left: 0;
+  }
+
+  .cb-core-integrity-findings-head-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ─── Core Scanner Findings governance + disclosure polish ───────────── */
+.cb-core-integrity-filter-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.cb-core-integrity-reset-filters {
+  color: var(--cb-text-muted);
+  font-size: var(--cb-fs-sm);
+  text-decoration: none;
+}
+
+.cb-core-integrity-reset-filters:hover,
+.cb-core-integrity-reset-filters:focus-visible {
+  color: var(--cb-text-strong);
+  text-decoration: underline;
+}
+
+.cb-core-integrity-review-progress {
+  color: var(--cb-text-muted);
+  font-size: var(--cb-fs-sm);
+  font-weight: var(--cb-fw-medium);
+  white-space: nowrap;
+}
+
+.cb-core-integrity-reviewed-pill {
+  margin-left: auto;
+}
+
+.cb-core-integrity-review-action {
+  color: var(--cb-warning) !important;
+  border-color: color-mix(in srgb, var(--cb-warning) 55%, var(--cb-border)) !important;
+}
+
+.cb-core-integrity-baseline-review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cb-space-3);
+  margin: 0 14px 14px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--cb-warning) 45%, var(--cb-border));
+  border-radius: var(--cb-radius-sm);
+  background: color-mix(in srgb, var(--cb-warning) 7%, var(--cb-surface-1));
+}
+
+.cb-core-integrity-baseline-review-footer > div {
+  display: grid;
+  gap: 3px;
+}
+
+.cb-core-integrity-finding-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cb-core-integrity-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  min-height: 22px;
+  padding: 1px 8px;
+  border: 1px solid var(--cb-border);
+  border-radius: 999px;
+  background: var(--cb-surface-1);
+  color: var(--cb-text-muted);
+  font-size: var(--cb-fs-xs);
+  font-weight: var(--cb-fw-semibold);
+  line-height: 1;
+}
+
+/* Shared interactive primitives live in components/interactive-surfaces.css.
+ * Scanner keeps only layout/content overrides that are specific to findings. */
+.cb-core-disclosure--compact .cb-core-integrity-technical {
+  padding: var(--cb-space-2);
+  border-radius: var(--cb-radius-sm);
+  background: var(--cb-surface-0);
+}
+
+.cb-core-interactive-row .cb-core-integrity-summary-action {
+  position: relative;
+  z-index: 1;
+}
+
+#cb-core-integrity-approve-baseline:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .cb-core-integrity-filter-actions,
+  .cb-core-integrity-baseline-review-footer {
+    align-items: stretch;
+  }
+
+  .cb-core-integrity-filter-actions {
+    justify-content: space-between;
+  }
+
+  .cb-core-integrity-baseline-review-footer {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,109 @@
+/* Content Models media fields — WordPress-native post editor adapter. */
+.cb-cm-media-field,
+.cb-cm-gallery-field {
+	margin-top: 8px;
+}
+
+.cb-cm-media-preview:empty {
+	display: none;
+}
+
+.cb-cm-media-preview {
+	margin: 0 0 10px;
+}
+
+.cb-cm-media-thumbnail {
+	display: block;
+	width: auto;
+	max-width: 160px;
+	height: auto;
+	max-height: 120px;
+	padding: 4px;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, currentColor 3%, transparent);
+}
+
+.cb-cm-file-preview {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	max-width: 100%;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, currentColor 3%, transparent);
+}
+
+.cb-cm-file-preview img {
+	width: 32px;
+	height: 32px;
+	object-fit: contain;
+}
+
+.cb-cm-file-preview span {
+	overflow-wrap: anywhere;
+}
+
+.cb-cm-media-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.cb-cm-gallery-items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+	gap: 10px;
+	max-width: 640px;
+	margin: 0 0 10px;
+}
+
+.cb-cm-gallery-item {
+	position: relative;
+	min-height: 86px;
+	padding: 5px;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, currentColor 3%, transparent);
+	cursor: move;
+}
+
+.cb-cm-gallery-item.is-dragging {
+	opacity: 0.5;
+}
+
+.cb-cm-gallery-item.is-drop-target {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.cb-cm-gallery-thumbnail {
+	display: block;
+	width: 100%;
+	height: 76px;
+	object-fit: cover;
+}
+
+.cb-cm-gallery-remove {
+	position: absolute;
+	top: 3px;
+	right: 5px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.9);
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 22px;
+	text-align: center;
+	text-decoration: none;
+}
+
+@media (max-width: 782px) {
+	.cb-cm-gallery-items {
+		grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+	}
+}

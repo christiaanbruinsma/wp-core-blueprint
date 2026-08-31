@@ -1,0 +1,58 @@
+/* Choice Group Foundation - grouped native checkbox/radio collections.
+ *
+ * Domain-neutral by design: consumers own names, values and persistence.
+ * This stylesheet only establishes Core Admin presentation and geometry.
+ */
+
+.cb-core-choice-group {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: var(--cb-space-2) var(--cb-space-4);
+	padding: var(--cb-space-3);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+}
+
+.cb-core-choice-group--scrollable {
+	max-height: 320px;
+	overflow: auto;
+}
+
+.cb-core-choice-group--compact {
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	padding: var(--cb-space-2);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-choice-group__option {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--cb-space-2);
+	min-width: 0;
+	margin: 0;
+	color: var(--cb-text);
+	cursor: pointer;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-choice-group__option > input[type="checkbox"],
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-choice-group__option > input[type="radio"] {
+	flex: 0 0 auto;
+	margin: 2px 0 0;
+}
+
+.cb-core-choice-group__label {
+	min-width: 0;
+	line-height: var(--cb-lh-normal);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-choice-group__option:has( > input:disabled ) {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+@media (max-width: 782px) {
+	.cb-core-choice-group,
+	.cb-core-choice-group--compact {
+		grid-template-columns: 1fr;
+	}
+}

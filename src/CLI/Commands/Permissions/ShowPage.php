@@ -1,0 +1,79 @@
+<?php
+declare(strict_types=1);
+/**
+ * Permissions\ShowPage - `wp cb permissions show-page` (state).
+ *
+ * Reverses hide-from-admins. The Permissions tab becomes visible to
+ * administrators again. State-change because it widens the audience that
+ * can see (and modify) permissions; banner-warning, no confirm-modal.
+ *
+ * @package Core_Blueprint
+ * @since   1.0.0
+ */
+
+
+namespace CB\Core\CLI\Commands\Permissions;
+
+use CB\Core\Console\CommandInterface;
+use CB\Core\Console\Result;
+use CB\Core\Log\AuditLog;
+use CB\Core\Settings;
+
+defined( 'ABSPATH' ) || exit;
+
+final class ShowPage implements CommandInterface {
+
+	public function execute( array $args ): Result {
+		$settings    = Settings::get();
+		$permissions = is_array( $settings['permissions'] ?? null ) ? $settings['permissions'] : [];
+
+		if ( empty( $permissions['hide_from_admins'] ) ) {
+			return Result::warning(
+				__( 'Permissions tab is already visible to administrators.', 'core-blueprint' ),
+				[ 'No change - Permissions tab was already visible.' ],
+				[ 'hide_from_admins' => false, 'changed' => false ]
+			);
+		}
+
+		$permissions['hide_from_admins'] = false;
+		Settings::set_key( 'permissions', $permissions, 'console' );
+
+		AuditLog::log( 'permissions.hide_changed', 'notice', [
+			'enabled' => false,
+			'by'      => 'console',
+		] );
+
+		return Result::success(
+			__( 'Permissions tab is now visible to administrators.', 'core-blueprint' ),
+			[ 'Permissions tab is now visible to administrators.' ],
+			[ 'hide_from_admins' => false, 'changed' => true ]
+		);
+	}
+
+	public function args_schema(): array {
+		return [];
+	}
+
+	public function side_effects(): string {
+		return 'state';
+	}
+
+	/**
+	 * Make the Permissions tab visible to administrators.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp cb permissions show-page
+	 *
+	 * @when after_wp_load
+	 */
+	public function __invoke( array $args, array $assoc_args ): void {
+		$result = $this->execute( $args );
+
+		if ( 'warning' === $result->status ) {
+			\WP_CLI::warning( $result->message );
+			return;
+		}
+		\WP_CLI::success( $result->message );
+	}
+}

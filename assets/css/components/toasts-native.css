@@ -1,0 +1,117 @@
+/**
+ * components/toasts-native.css - Core Blueprint Toast / WP Native adapter
+ *
+ * Standalone Core Blueprint admin pages use this adapter instead of the Core
+ * Admin Theme toast stylesheet. It intentionally follows WordPress admin
+ * notice geometry and colours and does not depend on Core Blueprint tokens.
+ *
+ * Scoped to the dedicated WP Native container adapter so an extension cannot accidentally
+ * override the Core Admin presentation when both asset paths are present.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+body.wp-admin .cb-core-toast-container--wp-native {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: calc(100vw - 40px);
+	pointer-events: none;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	box-sizing: border-box;
+	min-width: 300px;
+	max-width: 440px;
+	padding: 12px 12px 12px 16px;
+	background: #fff;
+	color: #1d2327;
+	border: 1px solid #c3c4c7;
+	border-left-width: 4px;
+	box-shadow: 0 1px 1px rgb(0 0 0 / 0.04), 0 3px 12px rgb(0 0 0 / 0.12);
+	font-size: 13px;
+	line-height: 1.5;
+	pointer-events: auto;
+	opacity: 0;
+	transform: translateY(8px);
+	transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast--success { border-left-color: #00a32a; }
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast--error   { border-left-color: #d63638; }
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast--warning { border-left-color: #dba617; }
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast--info    { border-left-color: #72aee6; }
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* WordPress-native adapter uses the familiar notice stripe instead of a dot. */
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast__dot {
+	display: none;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast__body {
+	flex: 1;
+	min-width: 0;
+	word-break: break-word;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast__dismiss {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin: -4px -4px -4px 0;
+	padding: 0;
+	border: 0;
+	border-radius: 2px;
+	background: transparent;
+	color: #646970;
+	font: inherit;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast__dismiss:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast__dismiss:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+	body.wp-admin .cb-core-toast-container--wp-native {
+		left: 12px;
+		right: 12px;
+		bottom: 12px;
+		max-width: none;
+	}
+
+	body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast {
+		min-width: 0;
+		max-width: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	body.wp-admin .cb-core-toast-container--wp-native .cb-core-toast {
+		transition: none;
+		transform: none;
+	}
+}

@@ -1,0 +1,335 @@
+/**
+ * tokens.css - Core Blueprint Suite design tokens
+ *
+ * Scope: html[data-cb-theme="..."] - so portal elements (dialogs via
+ * .showModal(), fixed-position toasts, future popovers/tooltips) that
+ * render outside .cb-core-wrap can still resolve CB tokens.
+ *
+ * SCOPE WARNING - tokens technically inherit to WP admin chrome
+ * (#wpadminbar, #adminmenu, #wpfooter) because CSS variable inheritance
+ * follows the DOM tree. Inheritance does NOT apply visual styling - only
+ * an explicit `var(--cb-...)` reference does that. The rule for CB
+ * stylesheets: do NOT target WP admin chrome elements unless absolutely
+ * necessary. WP chrome must keep its native admin look across all CB
+ * themes.
+ *
+ * ─── Token contract ─────────────────────────────────────────────────────
+ *
+ * Surfaces        --cb-surface-0..3            Layered surfaces (deepest → highest)
+ * Text            --cb-text-{strong,_,muted,faint}
+ * Accent          --cb-accent / --cb-accent-strong / --cb-accent-soft
+ * Brand           --cb-grad
+ * Semantic        --cb-success / --cb-warning / --cb-danger / --cb-error
+ *
+ * Border          --cb-border                  Container outline; semantic-first-class
+ *
+ * Tints           --cb-tint-{accent,success,warning,danger,error}
+ *                 12% alpha overlays via color-mix(); use for info/state
+ *                 backgrounds (banner fills, KPI tile tints, etc.)
+ *
+ * Shadows         --cb-shadow-{sm,md,lg}       Neutral elevation shadows
+ * Glows           --cb-glow-{accent,success,danger,error}
+ *                 Coloured glow rings (hover/focus rings, attention pulse)
+ *
+ * Radius          --cb-radius-{sm,md,pill}     Corner radii
+ *                 (lg omitted because it is not used by the design system)
+ *
+ * Spacing         --cb-space-1..7              4 8 12 16 24 32 48 px
+ *
+ * Type            --cb-fs-{2xs..4xl}           10 11 12 13 14 16 20 24 28 px
+ * Weight          --cb-fw-{regular,medium,semibold,bold}    400 500 600 700
+ * Family          --cb-ff-{sans,mono}          HUD chrome + Console/CLI mono
+ * Line-height     --cb-lh-{tight,normal,relaxed}            1.2 1.4 1.6
+ *
+ * Scrollbar       --cb-scrollbar-{width,radius,thumb,thumb-hover,track}
+ *                 Suite-wide thin scrollbar style; see scrollbar.css.
+ *
+ * ─── Themes ─────────────────────────────────────────────────────────────
+ *
+ * Themes that ship with CB Base:
+ *   core_blueprint_dark    Default (futuristic dark)
+ *   core_blueprint_light   Light variant - same token names, light values
+ *
+ * Partner themes that register via the cb_admin_themes filter MUST
+ * provide their own values for the colour-related tokens (surfaces,
+ * text, accent, semantic states) under their own
+ * html[data-cb-theme="{slug}"] block. Spacing, radius, typography,
+ * shadow, glow and tint tokens inherit from the baseline block and
+ * do NOT need to be redeclared.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BASELINE - applies to both built-in CB themes
+ * Values match the historical "dark" baseline. Light theme overrides a
+ * subset below (surfaces, text, accent - see "LIGHT THEME" block).
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-cb-theme="core_blueprint_dark"],
+html[data-cb-theme="core_blueprint_light"] {
+	/* ─── Surfaces ─────────────────────────────────────────────────────── */
+	--cb-surface-0:     #07090d;
+	--cb-surface-1:     #0d1117;
+	--cb-surface-2:     #161b22;
+	--cb-surface-3:     #1f2630;
+
+	/* ─── Text ─────────────────────────────────────────────────────────── */
+	--cb-text-strong:   #f4f6fa;
+	--cb-text:          #c5cbd4;
+	--cb-text-muted:    #8a92a0;
+	--cb-text-faint:    #565e6c;
+
+	/* ─── Accent + brand ──────────────────────────────────────────────── */
+	--cb-accent:        #00b4ff;
+	--cb-accent-strong: #00ffdd;
+	--cb-accent-soft:   #d6f1fc;
+	--cb-grad:          linear-gradient(135deg, #00ffdd 0%, #00b4ff 50%, #0037ff 100%);
+
+	/* ─── Semantic states ─────────────────────────────────────────────── */
+	/* Semantic distinction:
+	 *   --cb-danger  = potential / intent (delete buttons, "are you sure?",
+	 *                  warnings about consequences before action).
+	 *   --cb-error   = manifest failure (scan found tampered files, save
+	 *                  failed, REST returned 500). Visually deeper / redder
+	 *                  than danger so the eye separates "this WILL go wrong
+	 *                  if you continue" from "this HAS gone wrong, deal
+	 *                  with it now". */
+	--cb-danger:        #ff5c7a;
+	--cb-error:         #c83342;
+	--cb-warning:       #ffb547;
+	--cb-success:       #35e0a1;
+
+	/* ─── Border ──────────────────────────────────────────────────────────
+	 * Semantic-first-class. Currently shares its value with surface-3 but
+	 * exposed as its own token so a future design pass can decouple
+	 * "highest surface layer" from "container outline colour" without a
+	 * cross-page sweep. */
+	--cb-border:        var(--cb-surface-3);
+
+	/* ─── On-fill text colours ────────────────────────────────────────────
+	 * Foreground colour for text/icons placed on top of a coloured fill
+	 * (accent button, danger button, success badge fill, etc.). White on
+	 * the saturated dark fills (accent, danger, success, error); black on
+	 * the warning fill because amber is too light for white to clear AA
+	 * contrast (#ffb547 → wit ≈ 3.0:1, zwart ≈ 12:1). Exposed as tokens
+	 * so a future theme with different fills can override centrally. */
+	--cb-on-accent:     #ffffff;
+	--cb-on-success:    #ffffff;
+	--cb-on-danger:     #ffffff;
+	--cb-on-error:      #ffffff;
+	--cb-on-warning:    #000000;
+
+	/* ─── Tints ───────────────────────────────────────────────────────────
+	 * 12% alpha overlays of the semantic colours. Use for info-banner
+	 * fills, KPI tile tints, soft state backgrounds. Resolved via
+	 * color-mix() - baseline support since Safari 16.2 / Firefox 113. */
+	--cb-tint-accent:   color-mix(in srgb, var(--cb-accent)  12%, transparent);
+	--cb-tint-success:  color-mix(in srgb, var(--cb-success) 12%, transparent);
+	--cb-tint-warning:  color-mix(in srgb, var(--cb-warning) 12%, transparent);
+	--cb-tint-danger:   color-mix(in srgb, var(--cb-danger)  12%, transparent);
+	--cb-tint-error:    color-mix(in srgb, var(--cb-error)   12%, transparent);
+
+	/* ─── Domain-specific badge palettes ──────────────────────────────────
+	 * Three semantic palettes used in vulnerability / compliance / CB-
+	 * standards badges. Distinct from --cb-warning / --cb-success because
+	 * they encode meaning ("amber = vulnerability classification, green =
+	 * compliance pass, yellow = CB Standard requirement") rather than
+	 * generic state. Light theme overrides further down map them
+	 * to the light-friendly palette used in printed-style contexts. */
+
+	/* CWE (vulnerability classification - amber) */
+	--cb-badge-cwe-bg:           color-mix(in srgb, #f4d7b8 14%, transparent);
+	--cb-badge-cwe-border:       #f4d7b8;
+	--cb-badge-cwe-text:         #f4d7b8;
+
+	/* Compliance (pass marker - deep green) */
+	--cb-badge-compliance-bg:    color-mix(in srgb, var(--cb-success) 14%, transparent);
+	--cb-badge-compliance-border: var(--cb-success);
+	--cb-badge-compliance-text:  var(--cb-success);
+
+	/* CB-baseline (CB Standard requirement marker - yellow, distinct from warning) */
+	--cb-badge-cb-bg:            color-mix(in srgb, #f4e1a0 14%, transparent);
+	--cb-badge-cb-border:        #f4e1a0;
+	--cb-badge-cb-text:          #f4e1a0;
+
+	/* Restrictive (module risk classifier - purple, distinct from warning/danger
+	 * because "restrictive" is informational, not an alarm: the module works
+	 * but constrains user behaviour, e.g. login-shield rate limits.) */
+	--cb-badge-restrictive-bg:   color-mix(in srgb, #c39bf0 14%, transparent);
+	--cb-badge-restrictive-text: #c39bf0;
+
+	/* ─── Shadows (neutral elevation) ─────────────────────────────────── */
+	--cb-shadow-sm:     0 1px  2px rgb(0 0 0 / 0.04);
+	--cb-shadow-md:     0 4px 14px rgb(0 0 0 / 0.08);
+	--cb-shadow-lg:     0 8px 24px rgb(0 0 0 / 0.18);
+
+	/* ─── Glows (coloured, for hover/focus rings + attention pulse) ─── */
+	--cb-glow-accent:   0 0 20px color-mix(in srgb, var(--cb-accent)  22%, transparent);
+	--cb-glow-success:  0 0 14px color-mix(in srgb, var(--cb-success) 25%, transparent);
+	--cb-glow-danger:   0 0 14px color-mix(in srgb, var(--cb-danger)  30%, transparent);
+	--cb-glow-error:    0 0 14px color-mix(in srgb, var(--cb-error)   34%, transparent);
+
+	/* ─── Radius scale ───────────────────────────────────────────────── */
+	--cb-radius-sm:     4px;
+	--cb-radius-md:     6px;
+	--cb-radius-pill:   999px;
+
+	/* ─── Spacing scale (4 8 12 16 24 32 48) ─────────────────────────── */
+	--cb-space-1:       4px;
+	--cb-space-2:       8px;
+	--cb-space-3:       12px;
+	--cb-space-4:       16px;
+	--cb-space-5:       24px;
+	--cb-space-6:       32px;
+	--cb-space-7:       48px;
+
+	/* ─── Consequence selector geometry ────────────────────────────────
+	 * Shared layout contract for Access Mode and MasterSwitch: two
+	 * consequence surfaces around a central binary toggle. */
+	--cb-consequence-selector-max-width:      920px;
+	--cb-consequence-selector-gap:            var(--cb-space-3);
+	--cb-consequence-selector-option-padding: var(--cb-space-4);
+	--cb-consequence-selector-radius:         var(--cb-radius-sm);
+
+	/* ─── Form-control height ────────────────────────────────────────────
+	 * One canonical height for inputs, selects, buttons, and segmented
+	 * controls inside CB form/filter contexts. Matches WordPress
+	 * core's .button height (32px) so WP-themed buttons drop in
+	 * without measurement drift. Filter bars, modal footers, and
+	 * any toolbar-like row reach for this token. */
+	--cb-control-height: 32px;
+
+	/* ─── Icon component ───────────────────────────────────────────────
+	 * Canonical Lucide sizes. Icons own geometry; consumers such as
+	 * Button reference these tokens rather than defining icon sizes. */
+	--cb-icon-size-compact: 14px;
+	--cb-icon-size-default: 16px;
+	--cb-icon-size-large:   24px;
+
+	/* ─── Interactive surface states ───────────────────────────────────
+	 * Shared visual state language for disclosures and interactive rows.
+	 * Variants may change their accent, while hover/focus/open remain
+	 * states with one suite-wide treatment. */
+	--cb-interactive-hover:        color-mix(in srgb, var(--cb-accent) 6%, transparent);
+	--cb-interactive-open:         color-mix(in srgb, var(--cb-accent) 4%, transparent);
+	--cb-interactive-border-hover: color-mix(in srgb, var(--cb-accent) 18%, var(--cb-border));
+	--cb-interactive-focus:        var(--cb-accent);
+	--cb-interactive-transition:   120ms ease;
+
+	/* ─── Button component ──────────────────────────────────────────────
+	 * Semantic variants, density, and states are independent axes.
+	 * The base/default button follows the canonical control height; the
+	 * compact density is for dense rows/toolbars, never a different
+	 * semantic action. */
+	--cb-button-height-default:         var(--cb-control-height);
+	--cb-button-height-compact:         calc( var(--cb-control-height) - var(--cb-space-1) );
+	--cb-button-padding-inline-default: var(--cb-space-4);
+	--cb-button-padding-inline-compact: var(--cb-space-3);
+	--cb-button-padding-block-default:  var(--cb-space-2);
+	--cb-button-padding-block-compact:  var(--cb-space-1);
+	--cb-button-gap:                    var(--cb-space-2);
+	--cb-button-icon-size:              var(--cb-icon-size-default);
+	--cb-button-icon-size-compact:      var(--cb-icon-size-compact);
+	--cb-button-radius:                 var(--cb-radius-sm);
+
+	/* ─── Type scale ──────────────────────────────────────────────────────
+	 * 9 steps. Maps to the values that appeared in the historical
+	 * admin.css after stap-6 split - outliers (15px, 18px, 22px, 30px)
+	 * round to the nearest step. */
+	--cb-fs-2xs:        10px;
+	--cb-fs-xs:         11px;
+	--cb-fs-sm:         12px;
+	--cb-fs-md:         13px;
+	--cb-fs-lg:         14px;
+	--cb-fs-xl:         16px;
+	--cb-fs-2xl:        20px;
+	--cb-fs-3xl:        24px;
+	--cb-fs-4xl:        28px;
+
+	/* ─── Font weights ───────────────────────────────────────────────── */
+	--cb-fw-regular:    400;
+	--cb-fw-medium:     500;
+	--cb-fw-semibold:   600;
+	--cb-fw-bold:       700;
+
+	/* ─── Font families ───────────────────────────────────────────────────
+	 * Sans inherits from WP admin (we don't override system-ui). Mono is
+	 * exposed as a token because Console + CLI Preferences pages need
+	 * deterministic monospace for command output, code samples, hashes.
+	 *
+	 * Sans is also exposed because the HUD chrome runs across the whole
+	 * page (admin AND frontend) - frontend pages may set a different
+	 * body font and we want the HUD to keep the WP-admin look. */
+	--cb-ff-sans:       system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+	--cb-ff-mono:       ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+	/* ─── Line heights ───────────────────────────────────────────────────
+	 * Tight   - UI elements, status pills, dense rows
+	 * Normal  - headings, titles, single-line labels
+	 * Relaxed - body prose, intro paragraphs, multi-line descriptions */
+	--cb-lh-tight:      1.2;
+	--cb-lh-normal:     1.4;
+	--cb-lh-relaxed:    1.6;
+
+	/* ─── Scrollbars ──────────────────────────────────────────────────────
+	 * Thin scrollbar style applied suite-wide via scrollbar.css. Sibling
+	 * CB plugins inherit the look automatically when their pages render
+	 * inside .cb-core-wrap. White-label brands and per-theme overrides
+	 * can retheme the scrollbar by re-declaring just these tokens -
+	 * pseudo-element rules in scrollbar.css read from them. */
+	--cb-scrollbar-width:        0.375rem;
+	--cb-scrollbar-radius:       0.1875rem;
+	--cb-scrollbar-thumb:        var(--cb-border);
+	--cb-scrollbar-thumb-hover:  var(--cb-text-muted);
+	--cb-scrollbar-track:        transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * LIGHT THEME - overrides the baseline values above
+ * Same token names, light-mode values. Spacing, radius, typography,
+ * shadow, glow and tint tokens inherit unchanged from the baseline.
+ *
+ * (Glows in light mode resolve to softer rings automatically because the
+ * accent colour is darker and the alpha mix sits on a brighter background.
+ * If a future pass wants noticeably subtler glows in light mode, override
+ * the --cb-glow-* tokens here.)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-cb-theme="core_blueprint_light"] {
+	/* Surfaces */
+	--cb-surface-0:     #ffffff;
+	--cb-surface-1:     #fafbfc;
+	--cb-surface-2:     #f4f6f8;
+	--cb-surface-3:     #e4e8ed;
+
+	/* Text */
+	--cb-text-strong:   #0d1117;
+	--cb-text:          #2a3240;
+	--cb-text-muted:    #5a6472;
+	--cb-text-faint:    #9ba3af;
+
+	/* Accent - darker shade for contrast on light backgrounds */
+	--cb-accent:        #0064c8;
+	--cb-accent-strong: #0090ff;
+
+	/* Error - darker shade for contrast on light backgrounds */
+	--cb-error:         #a02430;
+
+	/* Domain-specific badge palettes - light-mode values */
+	--cb-badge-cwe-bg:           #fcf0e8;
+	--cb-badge-cwe-border:       #f4d7b8;
+	--cb-badge-cwe-text:         #7a4a00;
+
+	--cb-badge-compliance-bg:    #e8f5e9;
+	--cb-badge-compliance-border: #c8e6c9;
+	--cb-badge-compliance-text:  #1b5e20;
+
+	--cb-badge-cb-bg:            #fff4d6;
+	--cb-badge-cb-border:        #f4e1a0;
+	--cb-badge-cb-text:          #7a5d00;
+
+	--cb-badge-restrictive-bg:   #f0e6fb;
+	--cb-badge-restrictive-text: #5a2a8a;
+}

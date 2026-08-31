@@ -1,0 +1,113 @@
+/**
+ * pages/preferences-cli.css - Core Blueprint Suite
+ *
+ * WordPress-Pro presentation for Preferences → CLI. The page is reference
+ * documentation, so command metadata is shown as native management data and
+ * only the copy interaction remains custom.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap.cb-core-cli {
+	max-width: 1180px;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__intro {
+	max-width: 900px;
+	margin: var(--cb-space-3) 0 var(--cb-space-5);
+	color: var(--cb-text);
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-relaxed);
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__section {
+	max-width: 1180px;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__heading {
+	margin: 0 0 var(--cb-space-2);
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__lede {
+	max-width: 900px;
+	margin: 0 0 var(--cb-space-4);
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-relaxed);
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table-wrap {
+	overflow-x: auto;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table {
+	min-width: 980px;
+	table-layout: fixed;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table th:nth-child(1),
+.cb-core-wrap.cb-core-cli .cb-core-cli__table td:nth-child(1) {
+	width: 18%;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table th:nth-child(2),
+.cb-core-wrap.cb-core-cli .cb-core-cli__table td:nth-child(2) {
+	width: 34%;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table th:nth-child(3),
+.cb-core-wrap.cb-core-cli .cb-core-cli__table td:nth-child(3) {
+	width: 14%;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__table th:nth-child(4),
+.cb-core-wrap.cb-core-cli .cb-core-cli__table td:nth-child(4) {
+	width: 34%;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__name {
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	white-space: nowrap;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__desc {
+	line-height: var(--cb-lh-relaxed);
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__example {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__example > code {
+	min-width: 0;
+	padding: 3px 6px;
+	overflow: hidden;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-xs);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__copy {
+	flex: 0 0 auto;
+}
+
+
+.cb-core-wrap.cb-core-cli .cb-core-cli__section > p:not(.cb-core-cli__lede) {
+	max-width: 900px;
+	line-height: var(--cb-lh-relaxed);
+}
+
+.cb-core-wrap.cb-core-cli .cb-core-notice {
+	max-width: 900px;
+	margin-top: var(--cb-space-4);
+}

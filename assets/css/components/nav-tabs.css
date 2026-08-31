@@ -1,0 +1,73 @@
+/**
+ * components/nav-tabs.css - Core Blueprint Suite
+ *
+ * Core Admin theme adapter for WP's native <nav class="nav-tab-wrapper">
+ * markup. Used on every CB admin page that has multiple tabs:
+ * Logs (5 tabs), Preferences, Reports, Safeguards.
+ *
+ * Extracted from admin.css in stap 6.2c - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* =================================================================== */
+/* ─── M4.4: CB-themed nav tabs ──────────────────────────────────── */
+/* =================================================================== */
+/* Core Blueprint keeps WordPress tab geometry and interaction grammar,
+   then applies Core Admin colour/dark-mode tokens. The structure should
+   remain immediately recognisable as WordPress admin navigation. */
+
+.cb-core-tab-wrapper {
+	border-bottom: 1px solid var(--cb-border);
+	margin: var(--cb-space-2) 0 var(--cb-space-4);
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-tab-wrapper .nav-tab {
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-bottom: 0;
+	color: var(--cb-text-muted);
+	padding: 5px 10px;
+	margin: 0;
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	line-height: 1.7;
+	border-radius: 0;
+	transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+	position: relative;
+	top: 1px;
+}
+
+.cb-core-tab-wrapper .nav-tab:hover {
+	color: var(--cb-text-strong);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-tab-wrapper .nav-tab-active,
+.cb-core-tab-wrapper .nav-tab-active:hover {
+	background: var(--cb-surface-0);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+	box-shadow: none;
+}
+
+.cb-core-tab-wrapper .nav-tab-active::after {
+	content: '';
+	position: absolute;
+	bottom: -1px;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: var(--cb-surface-0);
+}
+
+.cb-core-tab-wrapper .nav-tab:focus-visible {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: -2px;
+}
+

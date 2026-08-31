@@ -1,0 +1,80 @@
+/**
+ * meta.css - Core Blueprint Suite
+ *
+ * Page metadata strip - the row of contextual facts that sits under
+ * a page title and intro paragraph. Each item is one fact (total
+ * count, retention policy, access rule, export options, etc.); items
+ * are visually separated by a middle dot.
+ *
+ * Markup contract:
+ *
+ *   <ul class="cb-core-meta">
+ *     <li class="cb-core-meta__item">Total events: <strong>929</strong></li>
+ *     <li class="cb-core-meta__item">Retention: 180 days</li>
+ *     <li class="cb-core-meta__item">Visible to administrators only</li>
+ *   </ul>
+ *
+ * Why <ul>:
+ *   The items are peers - four equally-weighted facts about the
+ *   page. That's a list, semantically. Screen readers announce it
+ *   as "list with N items, item 1 of N", which matches what a
+ *   sighted reader gets visually. A <p> with mixed text and spans
+ *   doesn't have the same affordance.
+ *
+ * Why no leading bullet:
+ *   The first item is the start of the strip, not a continuation.
+ *   `:not(:first-child)::before` adds the separator only between
+ *   items, never in front of the first one. This works for any
+ *   number of items and for pages with or without a "lead" fact -
+ *   no per-page modifier needed.
+ *
+ * Sentence-final punctuation:
+ *   Items don't carry trailing periods. The middle dot is the
+ *   separator; a period before it is double-punctuation. Keep the
+ *   translator-facing strings clean: "Retention: 180 days", not
+ *   "Retention: 180 days.".
+ *
+ * Extension pages:
+ *   use the registered Core Admin shell rather than private asset handles.
+ *   The class is generic on purpose - meta.css isn't log-specific.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-meta {
+	list-style: none;
+	margin: 0 0 var(--cb-space-4);
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--cb-space-1) var(--cb-space-3);
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-meta__item {
+	/* Default display (list-item) is fine - the <li> is already a
+	 * flex CHILD of .cb-core-meta, so it doesn't need to be a flex
+	 * container itself. Normal text-flow inside the <li> preserves
+	 * whitespace between text nodes and inline elements (e.g. the
+	 * space before <strong>). The ::before separator below renders
+	 * as inline content, no inner flex needed. */
+}
+
+/* Separator between items. Never before the first item - the strip
+ * starts there, it isn't a continuation of anything. */
+.cb-core-meta__item:not(:first-child)::before {
+	content: "·";
+	margin-right: var(--cb-space-3);
+	opacity: 0.6;
+}
+
+/* Strong used inline to highlight a single value (a count, a name).
+ * Inherit the muted text colour so the highlight is weight-only,
+ * not colour-shift. */
+.cb-core-meta__item strong {
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text);
+}

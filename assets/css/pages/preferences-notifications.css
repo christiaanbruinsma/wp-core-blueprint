@@ -1,0 +1,91 @@
+/**
+ * pages/preferences-notifications.css - Core Blueprint Suite
+ *
+ * WordPress-Pro presentation for Preferences > Notifications. Each
+ * notification source remains a distinct semantic section, but ordinary
+ * routing settings are no longer wrapped in dashboard-style panels.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap .cb-core-notification-group {
+	max-width: 920px;
+}
+
+.cb-core-wrap .cb-core-notification-group__header {
+	margin: 0 0 var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-notification-group__title-wrap {
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-notification-group__title {
+	margin: 0 0 var(--cb-space-1);
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-notification-group__desc {
+	max-width: 760px;
+	margin: 0;
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-notification-group .cb-core-policy-table {
+	max-width: 920px;
+	margin-top: var(--cb-space-3);
+	border-radius: 0;
+}
+
+.cb-core-wrap .cb-core-notification-group .cb-core-policy-table th {
+	width: 190px;
+	padding: 10px 12px;
+	vertical-align: top;
+}
+
+.cb-core-wrap .cb-core-notification-group .cb-core-policy-table td {
+	padding: 10px 12px;
+	vertical-align: top;
+}
+
+.cb-core-wrap .cb-core-alert-recipient-input {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.cb-core-wrap .cb-core-notification-group .cb-core-field--inline .cb-core-alert-recipient-input {
+	flex: 1 1 360px;
+	max-width: 520px;
+}
+
+.cb-core-wrap .cb-core-event-toggle {
+	padding: 3px 0;
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-core-event-toggle + .cb-core-event-toggle {
+	margin-top: var(--cb-space-1);
+}
+
+.cb-core-wrap .cb-core-notification-footer {
+	max-width: 920px;
+	margin-top: var(--cb-space-2);
+}
+
+@media (max-width: 782px) {
+	.cb-core-wrap .cb-core-notification-group .cb-core-policy-table th,
+	.cb-core-wrap .cb-core-notification-group .cb-core-policy-table td {
+		display: block;
+		width: auto;
+	}
+
+	.cb-core-wrap .cb-core-notification-group .cb-core-policy-table th {
+		padding-bottom: 2px;
+		border-bottom: 0;
+	}
+}

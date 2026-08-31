@@ -1,0 +1,133 @@
+/**
+ * mode-switcher.css - Core Blueprint Suite
+ *
+ * Suite-wide reading-mode switcher: Plain / Technical / Sync. The
+ * three buttons sit in a single segmented control, identical look
+ * across page-level and HUD contexts.
+ *
+ * Two size variants:
+ *
+ *   Default (full text)
+ *     <div class="cb-core-mode-switcher" role="radiogroup">
+ *       <button class="cb-core-mode-switcher__btn is-active"
+ *               data-cb-mode="plain" role="radio" aria-checked="true">
+ *         Plain
+ *       </button>
+ *       ...
+ *     </div>
+ *
+ *   Compact (single letters - HUD header, narrow toolbars)
+ *     <div class="cb-core-mode-switcher cb-core-mode-switcher--compact" ...>
+ *       <button class="cb-core-mode-switcher__btn ..." ...>P</button>
+ *       ...
+ *     </div>
+ *
+ * Mode semantics:
+ *   plain     - explicit user preference, plain copy everywhere
+ *   technical - explicit user preference, technical copy everywhere
+ *   sync      - "follow the site default" - functionally inherits;
+ *               the UI shows it as a third selectable state.
+ *
+ * Both variants share shape (rounded square), colours (accent fill +
+ * on-accent text on active, muted text on inactive), and behaviour.
+ * Pages override only the size via the --compact modifier.
+ *
+ * Accessibility:
+ *   role="radiogroup" on container, role="radio" on each button,
+ *   aria-checked reflects active state. Keyboard arrow-key navigation
+ *   is implemented in mode-switcher.js.
+ *
+ * Extension pages:
+ *   use the registered Core Admin shell/semantic requirements instead of
+ *   private asset handles. UI::render_mode_switcher() owns the markup contract.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Container ───────────────────────────────────────────────────────── */
+
+.cb-core-mode-switcher {
+	display: inline-flex;
+	align-items: stretch;
+	gap: 0.125rem;
+	padding: 0.1875rem;
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	font-size: var(--cb-fs-sm);
+}
+
+/* ─── Button ──────────────────────────────────────────────────────────── */
+
+.cb-core-mode-switcher__btn {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--cb-space-1) var(--cb-space-3);
+	background: transparent;
+	border: 0;
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-muted);
+	font-size: inherit;
+	font-weight: var(--cb-fw-medium);
+	line-height: var(--cb-lh-tight);
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cb-core-mode-switcher__btn:hover:not(.is-active) {
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	color: var(--cb-text);
+}
+
+.cb-core-mode-switcher__btn:focus-visible {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: -2px;
+}
+
+.cb-core-mode-switcher__btn.is-active {
+	background: var(--cb-accent);
+	color: var(--cb-on-accent);
+	font-weight: var(--cb-fw-semibold);
+}
+
+.cb-core-mode-switcher__btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ─── Compact variant (single-letter, HUD header) ─────────────────────── */
+
+.cb-core-mode-switcher--compact .cb-core-mode-switcher__btn {
+	min-width: 1.625rem;
+	padding: 0.125rem 0.375rem;
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.02em;
+}
+
+/* ─── Cycle variant (single visible button, click cycles modes) ───────── */
+
+/* DOM keeps all three buttons rendered (sync layer in mode-switcher.js
+   relies on them) — CSS hides every button except the active one so
+   visually it reads as a single button. Click is intercepted by the
+   handler which detects [data-cb-mode-cycle] and advances to the
+   next mode instead of early-returning on self-click. */
+.cb-core-mode-switcher--cycle {
+	gap: 0;
+	background: var(--cb-surface-2);
+}
+
+.cb-core-mode-switcher--cycle .cb-core-mode-switcher__btn {
+	min-width: 1.625rem;
+	padding: 0.125rem 0.5rem;
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.02em;
+}
+
+.cb-core-mode-switcher--cycle .cb-core-mode-switcher__btn:not(.is-active) {
+	display: none;
+}

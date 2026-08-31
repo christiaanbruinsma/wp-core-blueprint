@@ -1,0 +1,102 @@
+/**
+ * Core Blueprint TimePicker Foundation - Core Admin presentation.
+ * Native text/select controls remain the accessibility and form substrate.
+ */
+.cb-core-time-picker--core {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	max-width: 100%;
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__input[type="text"] {
+	width: 7.5em;
+	min-width: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--cb-control-height);
+	padding-inline: var(--cb-space-2);
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__panel {
+	position: absolute;
+	z-index: 100000;
+	top: calc(100% + var(--cb-space-2));
+	left: 0;
+	min-width: 224px;
+	box-sizing: border-box;
+	padding: var(--cb-space-3);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	box-shadow: 0 8px 24px color-mix(in srgb, var(--cb-surface-0) 70%, transparent);
+	color: var(--cb-text);
+}
+
+.cb-core-time-picker--core.is-align-right .cb-core-time-picker__panel {
+	right: 0;
+	left: auto;
+}
+
+.cb-core-time-picker--core.is-above .cb-core-time-picker__panel {
+	top: auto;
+	bottom: calc(100% + var(--cb-space-2));
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__controls {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-3);
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__field {
+	display: grid;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__field > label {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	font-weight: 600;
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__select {
+	width: 100%;
+	min-width: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__footer {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: var(--cb-space-3);
+	padding-top: var(--cb-space-3);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__input[aria-invalid="true"] {
+	border-color: var(--cb-error);
+}
+
+.cb-core-time-picker--core .cb-core-time-picker__input[aria-invalid="true"]:focus {
+	box-shadow: 0 0 0 2px var(--cb-tint-error);
+}
+
+@media (max-width: 480px) {
+	.cb-core-time-picker--core .cb-core-time-picker__panel {
+		min-width: min(224px, calc(100vw - 32px));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-core-time-picker--core .cb-core-time-picker__input,
+	.cb-core-time-picker--core .cb-core-time-picker__toggle {
+		transition: none;
+	}
+}

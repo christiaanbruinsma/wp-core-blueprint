@@ -1,0 +1,27 @@
+/**
+ * components/empty-state.css - Core Blueprint Suite
+ *
+ * Shared empty-state primitive for "nothing to show" sections.
+ * Used standalone - for empty states inside cards, see the
+ * .cb-core-card__empty modifier in components/cards.css.
+ *
+ * Replaces the historical cb-core-audit-empty and cb-core-modules-empty
+ * page-rolled variants.
+ *
+ *   <p class="cb-core-empty">
+ *       <?php esc_html_e( 'No events recorded yet.', 'core-blueprint' ); ?>
+ *   </p>
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap .cb-core-empty {
+	padding: var(--cb-space-5);
+	background: var(--cb-surface-1);
+	border: 1px dashed var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-md);
+	text-align: center;
+}

@@ -1,0 +1,305 @@
+/**
+ * components/interactive-surfaces.css - Core Blueprint UI Foundation
+ *
+ * Shared interactive surface primitives for Core Blueprint admin screens.
+ * Variants describe semantic emphasis; hover, focus and open/expanded are
+ * states and therefore share one suite-wide visual language.
+ *
+ * These components belong to the Core Admin Theme. Standalone/native
+ * WordPress admin screens should keep WordPress-native presentation unless
+ * they explicitly opt into a Core Blueprint presentation component.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Disclosure ─────────────────────────────────────────────────────── */
+
+.cb-core-disclosure > .cb-core-disclosure__summary {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	min-width: 0;
+	min-height: 44px;
+	margin: 0;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border: 1px solid transparent;
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-text);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color var(--cb-interactive-transition),
+		border-color var(--cb-interactive-transition);
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary::-webkit-details-marker {
+	display: none;
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary::marker {
+	content: '';
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary .cb-core-disclosure__icon {
+	color: var(--cb-text-muted);
+	transition:
+		transform var(--cb-interactive-transition),
+		color var(--cb-interactive-transition);
+}
+
+.cb-core-disclosure[open] > .cb-core-disclosure__summary .cb-core-disclosure__icon {
+	transform: rotate(90deg);
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary:hover {
+	background: var(--cb-interactive-hover);
+	border-color: var(--cb-interactive-border-hover);
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary:hover .cb-core-disclosure__icon {
+	color: var(--cb-text-strong);
+}
+
+.cb-core-disclosure > .cb-core-disclosure__summary:focus-visible {
+	outline: 2px solid var(--cb-interactive-focus);
+	outline-offset: 2px;
+}
+
+.cb-core-disclosure[open] > .cb-core-disclosure__summary {
+	background: var(--cb-interactive-open);
+}
+
+.cb-core-disclosure__title {
+	min-width: 0;
+	margin: 0;
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+	letter-spacing: .05em;
+	text-transform: uppercase;
+}
+
+.cb-core-disclosure__meta {
+	flex: 0 0 auto;
+	margin-left: auto;
+}
+
+.cb-core-disclosure__body {
+	min-width: 0;
+	padding: var(--cb-space-2) var(--cb-space-4) var(--cb-space-4);
+}
+
+.cb-core-disclosure--section {
+	padding: var(--cb-space-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+	box-shadow: var(--cb-shadow-sm, none);
+}
+
+.cb-core-disclosure--section > .cb-core-disclosure__body > :first-child {
+	margin-top: 0;
+}
+
+.cb-core-disclosure--subtle .cb-core-disclosure__title {
+	font-size: var(--cb-fs-sm);
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.cb-core-disclosure--compact {
+	margin-top: var(--cb-space-2);
+	overflow: hidden;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: color-mix(in srgb, var(--cb-surface-1) 82%, var(--cb-surface-0));
+}
+
+.cb-core-disclosure--compact > .cb-core-disclosure__summary {
+	min-height: 38px;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	border: 0;
+	border-radius: 0;
+}
+
+.cb-core-disclosure--compact .cb-core-disclosure__title {
+	font-size: var(--cb-fs-sm);
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.cb-core-disclosure--compact > .cb-core-disclosure__body {
+	display: grid;
+	gap: var(--cb-space-2);
+	padding: var(--cb-space-3);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-disclosure--compact > .cb-core-disclosure__body > * {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* ─── Choice card state layer ───────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-choice-card {
+	position: relative;
+	transition:
+		background-color var(--cb-interactive-transition),
+		border-color var(--cb-interactive-transition);
+}
+
+.cb-core-wrap .cb-core-choice-card:hover {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+}
+
+.cb-core-wrap .cb-core-choice-card:focus-visible,
+.cb-core-wrap .cb-core-choice-card:focus-within {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: 2px;
+}
+
+.cb-core-wrap .cb-core-choice-card.is-selected-user {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+}
+
+.cb-core-wrap .cb-core-choice-card.is-selected-site::after {
+	content: attr(data-site-badge);
+	position: absolute;
+	top: var(--cb-space-3);
+	right: var(--cb-space-3);
+	padding: 2px var(--cb-space-2);
+	background: var(--cb-tint-accent);
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-2xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0;
+	color: var(--cb-accent-strong);
+}
+
+.cb-core-wrap .cb-core-choice-card.is-selected-user.is-selected-site::after {
+	display: none;
+}
+
+.cb-core-wrap .cb-core-choice-card__check {
+	position: absolute;
+	top: var(--cb-space-3);
+	right: var(--cb-space-3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--cb-success);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-bold);
+	color: var(--cb-surface-0);
+	opacity: 0;
+	transform: scale(0.7);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+	pointer-events: none;
+}
+
+.cb-core-wrap .cb-core-choice-card.is-selected-user .cb-core-choice-card__check {
+	opacity: 1;
+	transform: scale(1);
+}
+
+/* ─── Interactive row ────────────────────────────────────────────────── */
+
+.cb-core-interactive-surface {
+	--cb-interactive-accent: var(--cb-accent);
+}
+
+.cb-core-interactive-row {
+	--cb-interactive-accent: var(--cb-accent);
+	overflow: hidden;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-0);
+	transition:
+		border-color var(--cb-interactive-transition),
+		background-color var(--cb-interactive-transition);
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-height: 52px;
+	padding: var(--cb-space-3);
+	border: 1px solid transparent;
+	border-radius: calc(var(--cb-radius-md) - 1px);
+	background: var(--cb-surface-1);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		background-color var(--cb-interactive-transition),
+		border-color var(--cb-interactive-transition);
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary::-webkit-details-marker {
+	display: none;
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary::marker {
+	content: '';
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary .cb-core-interactive-row__icon {
+	color: var(--cb-text-muted);
+	transition:
+		transform var(--cb-interactive-transition),
+		color var(--cb-interactive-transition);
+}
+
+.cb-core-interactive-row[open] > .cb-core-interactive-row__summary .cb-core-interactive-row__icon {
+	color: var(--cb-interactive-accent);
+	transform: rotate(90deg);
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary:hover {
+	background: var(--cb-interactive-hover);
+	border-color: var(--cb-interactive-border-hover);
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary:hover .cb-core-interactive-row__icon,
+.cb-core-interactive-row[open] > .cb-core-interactive-row__summary .cb-core-interactive-row__icon {
+	color: var(--cb-interactive-accent);
+}
+
+.cb-core-interactive-row > .cb-core-interactive-row__summary:focus-visible {
+	outline: 2px solid var(--cb-interactive-focus);
+	outline-offset: -2px;
+}
+
+.cb-core-interactive-row[open] {
+	border-color: color-mix(in srgb, var(--cb-interactive-accent) 28%, var(--cb-border));
+}
+
+.cb-core-interactive-row[open] > .cb-core-interactive-row__summary {
+	background: var(--cb-interactive-open);
+	border-bottom-color: color-mix(in srgb, var(--cb-interactive-accent) 20%, var(--cb-border));
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.cb-core-interactive-row--warning {
+	--cb-interactive-accent: var(--cb-warning);
+}
+
+.cb-core-interactive-row--critical,
+.cb-core-interactive-row--failed {
+	--cb-interactive-accent: var(--cb-danger);
+}
+
+.cb-core-interactive-row--ok {
+	--cb-interactive-accent: var(--cb-success);
+}

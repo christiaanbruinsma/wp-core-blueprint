@@ -1,0 +1,50 @@
+/**
+ * components/policy-table.css - Core Blueprint Suite
+ *
+ * Audit and retention policy table styling. Used on Logs Retention
+ * tab and Preferences > Notifications page (cross-page, three+
+ * usages per page so well above the rule-of-three threshold).
+ *
+ * Extracted from admin.css in stap 6.2d - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Audit & retention policy table ──────────────────────────────────── */
+
+.cb-core-policy-table th {
+    text-align: left;
+    padding: 10px 12px;
+    vertical-align: top;
+    font-weight: var(--cb-fw-semibold);
+    color: var(--cb-text-strong);
+    background: var(--cb-surface-2);
+}
+
+.cb-core-policy-table td {
+    padding: 10px 12px;
+    vertical-align: top;
+}
+
+.cb-core-policy-table code {
+    font-size: var(--cb-fs-sm);
+}
+
+
+/* ─── Theme overrides - scifi theme ──────────────────────────────────────
+ *
+ * Theme-specific styling for header and body cells. Activates on
+ * cb-dark and cb-light. Originally lived in the Security gap-fill
+ * block in admin.css; reunited with the rest of policy-table here. */
+
+.cb-core-wrap .cb-core-policy-table th {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+	border-bottom: 1px solid var(--cb-surface-3);
+}
+
+.cb-core-wrap .cb-core-policy-table td {
+	color: var(--cb-text);
+	border-bottom: 1px solid var(--cb-surface-3);
+}

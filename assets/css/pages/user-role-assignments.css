@@ -1,0 +1,73 @@
+/**
+ * Core Blueprint - additive roles on native WordPress user profiles.
+ * Keep this intentionally lightweight: the page belongs to WordPress, not to
+ * the Core Blueprint app shell, so native admin typography and form controls
+ * remain authoritative.
+ */
+
+.cb-core-user-roles-table code {
+	margin-inline-start: 0.4rem;
+}
+
+.cb-core-additional-roles-description {
+	max-width: 760px;
+	margin-block: 0 0.8rem;
+}
+
+.cb-core-additional-roles {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.55rem 1.5rem;
+	max-width: 820px;
+}
+
+.cb-core-additional-role {
+	min-width: 0;
+	padding-block: 0.2rem;
+}
+
+.cb-core-user-roles-table .cb-core-additional-role-control {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	min-width: 0;
+	margin: 0 !important;
+}
+
+.cb-core-additional-role-control > input[type="checkbox"] {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.cb-core-additional-role-control strong {
+	min-width: 0;
+}
+
+.cb-core-additional-role-status {
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: #646970;
+}
+
+.cb-core-additional-role-meta {
+	margin-block-start: 0.2rem;
+	padding-inline-start: 1.65rem;
+	font-size: 12px;
+	line-height: 1.4;
+	opacity: 0.76;
+}
+
+.cb-core-additional-role-meta code {
+	margin: 0;
+}
+
+.cb-core-additional-role.is-locked {
+	opacity: 0.68;
+}
+
+@media (max-width: 782px) {
+	.cb-core-additional-roles {
+		grid-template-columns: 1fr;
+	}
+}

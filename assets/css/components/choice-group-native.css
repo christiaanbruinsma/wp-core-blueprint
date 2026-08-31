@@ -1,0 +1,55 @@
+/* Choice Group Foundation - WordPress-native presentation adapter. */
+
+.cb-core-choice-group {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 8px 16px;
+	padding: 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.cb-core-choice-group--scrollable {
+	max-height: 320px;
+	overflow: auto;
+}
+
+.cb-core-choice-group--compact {
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	padding: 8px;
+}
+
+.cb-core-choice-group__option {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	min-width: 0;
+	margin: 0;
+	color: #1d2327;
+	cursor: pointer;
+}
+
+.cb-core-choice-group__option > input[type="checkbox"],
+.cb-core-choice-group__option > input[type="radio"] {
+	flex: 0 0 auto;
+	margin: 2px 0 0;
+}
+
+.cb-core-choice-group__label {
+	min-width: 0;
+	line-height: 1.4;
+}
+
+.cb-core-choice-group__option:has( > input:disabled ) {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+@media (max-width: 782px) {
+	.cb-core-choice-group,
+	.cb-core-choice-group--compact {
+		grid-template-columns: 1fr;
+	}
+}

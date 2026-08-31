@@ -1,0 +1,170 @@
+/**
+ * components/panels.css - Core Blueprint Suite
+ *
+ * Shared panel container with optional mode-grid (radio-card) pattern.
+ * Used by Core Shield, Failsafe, Login Shield, Notifications, and Logs
+ * Retention. Reports Overview intentionally keeps native management tables
+ * outside panel surfaces.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Panel container ──────────────────────────────────────────────────── */
+
+.cb-core-panel {
+	padding: var(--cb-space-4);
+	margin-bottom: var(--cb-space-4);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+}
+
+.cb-core-panel > h2 {
+	margin-top: 0;
+	margin-bottom: var(--cb-space-3);
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+/* ─── Tables inside panels ─────────────────────────────────────────────────
+ *
+ * Panels can contain a single tabular block (Failsafe Layers, Permissions
+ * Operators, Privacy verbosity/retention). The default
+ * WP `widefat striped` styling fights the panel surface - own border, own
+ * background, own text colours that don't follow the CB theme. Override
+ * here so tables read as part of the panel rather than an inset WP-admin
+ * component.
+ *
+ * As of 1.7.0-dev tables sit within the panel's inner padding (no
+ * negative pull-out). Earlier the side margins were
+ * `calc( -1 * var(--cb-space-5) )` which pulled the table edge-to-edge
+ * with the panel border — visually neat for full-bleed content, but
+ * crowded the table content against the panel's outer edge on every
+ * page. Now tables breathe inside the panel like every other panel
+ * child.
+ *
+ * Margin handling has two paths:
+ *   - table is last child of panel → drop the bottom-margin so the
+ *     table sits flush with the panel's inner bottom padding (for example,
+ *     Failsafe).
+ *   - table is followed by other content (actions row, etc.)  → positive
+ *     bottom-margin so there's breathing room between table and what
+ *     comes after (Permissions Operators, Privacy verbosity).
+ *
+ * The :last-child rule below the base rule overrides the bottom-margin
+ * for the no-content-after case.
+ */
+
+.cb-core-panel > table.widefat,
+.cb-core-panel > table.cb-core-failsafe-layers,
+.cb-core-panel > table.cb-core-privacy-table,
+.cb-core-panel > table.cb-core-operator-list {
+	margin: var(--cb-space-3) 0 var(--cb-space-4);
+	width: 100%;
+	background: transparent;
+	border: 0;
+	border-top: 1px solid var(--cb-border);
+	border-bottom: 1px solid var(--cb-border);
+	box-shadow: none;
+	border-collapse: collapse;
+}
+
+/* When the table is the last child, drop the bottom-margin + bottom-border
+ * so it sits flush with the panel's inner bottom padding. */
+.cb-core-panel > table.widefat:last-child,
+.cb-core-panel > table.cb-core-failsafe-layers:last-child,
+.cb-core-panel > table.cb-core-privacy-table:last-child,
+.cb-core-panel > table.cb-core-operator-list:last-child {
+	margin-bottom: 0;
+	border-bottom: 0;
+}
+
+.cb-core-panel > table.widefat thead th,
+.cb-core-panel > table.cb-core-failsafe-layers thead th,
+.cb-core-panel > table.cb-core-privacy-table thead th,
+.cb-core-panel > table.cb-core-operator-list thead th {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+	border-bottom: 1px solid var(--cb-border);
+	padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-core-panel > table.widefat tbody td,
+.cb-core-panel > table.cb-core-failsafe-layers tbody td,
+.cb-core-panel > table.cb-core-privacy-table tbody td,
+.cb-core-panel > table.cb-core-operator-list tbody td {
+	background: transparent;
+	color: var(--cb-text);
+	border: 0;
+	border-top: 1px solid var(--cb-surface-2);
+	padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-core-panel > table.widefat tbody tr:first-child td,
+.cb-core-panel > table.cb-core-failsafe-layers tbody tr:first-child td,
+.cb-core-panel > table.cb-core-privacy-table tbody tr:first-child td,
+.cb-core-panel > table.cb-core-operator-list tbody tr:first-child td {
+	border-top: 0;
+}
+
+/* Strip the WP striped alternating background - the bare panel surface
+ * with row-separator borders is enough visual structure for these tables. */
+
+.cb-core-panel > table.widefat.striped tbody tr,
+.cb-core-panel > table.widefat.striped tbody tr:nth-child(odd) {
+	background: transparent;
+}
+
+/* Keep the panel's bottom corners visible: the absorbed table's bottom edge
+ * needs to stop just short of the panel border. The negative bottom margin
+ * does this naturally because the table sits flush with the panel's
+ * inner edge, and the panel's own border-radius clips anything overflowing.
+ * Restore overflow:hidden on the panel to enforce the clip when a table is
+ * present. */
+.cb-core-panel:has( > table.widefat ),
+.cb-core-panel:has( > table.cb-core-failsafe-layers ),
+.cb-core-panel:has( > table.cb-core-privacy-table ),
+.cb-core-panel:has( > table.cb-core-operator-list ) {
+	overflow: hidden;
+}
+
+/* ─── Mode-grid (radio-card pattern) ───────────────────────────────────── */
+
+.cb-core-mode-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: var(--cb-space-2);
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-mode-option {
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s;
+}
+
+.cb-core-mode-option:hover {
+	border-color: var(--cb-text-faint);
+}
+
+.cb-core-mode-option.is-active {
+	border-color: var(--cb-accent);
+	background: var(--cb-accent-soft);
+}
+
+.cb-core-mode-option .title {
+	margin-bottom: var(--cb-space-1);
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-mode-option .desc {
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}

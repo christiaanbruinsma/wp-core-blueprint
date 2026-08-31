@@ -1,0 +1,74 @@
+/**
+ * pages/privacy.css - Core Blueprint Suite
+ *
+ * WordPress-Pro presentation for Preferences > Privacy. The governance
+ * preset remains a purpose-built selector, while ordinary privacy settings
+ * use normal page sections, shared radio cards and native widefat tables.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-privacy-intro {
+	max-width: 760px;
+}
+
+/* Governance preset ---------------------------------------------------- */
+/* Radio-card geometry and explicit option-count grids are owned by the
+ * shared RadioCard Foundation. Privacy only owns surrounding workflow
+ * spacing and contextual notices. */
+
+.cb-core-privacy-custom-notice,
+.cb-core-privacy-guidance {
+	max-width: 920px;
+	margin: var(--cb-space-3) 0;
+}
+
+.cb-core-privacy-apply-preset {
+	margin-top: var(--cb-space-1);
+}
+
+/* Tables --------------------------------------------------------------- */
+.cb-core-privacy-table {
+	max-width: 760px;
+	margin-top: var(--cb-space-3);
+	border-radius: 0;
+}
+
+.cb-core-privacy-table th,
+.cb-core-privacy-table td {
+	padding: 9px 12px;
+	vertical-align: middle;
+}
+
+.cb-core-privacy-table th:first-child,
+.cb-core-privacy-table td:first-child {
+	width: 48%;
+}
+
+.cb-core-privacy-table select,
+.cb-core-privacy-form select {
+	min-width: 180px;
+}
+
+/* Storage estimate ----------------------------------------------------- */
+.cb-core-privacy-estimate-value {
+	margin: var(--cb-space-2) 0 0;
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text);
+}
+
+.cb-core-privacy-estimate-value strong {
+	margin-right: 4px;
+	font-size: var(--cb-fs-xl);
+	font-variant-numeric: tabular-nums;
+	color: var(--cb-text-strong);
+}
+
+/* Save area ------------------------------------------------------------ */
+.cb-core-privacy-actions {
+	max-width: 920px;
+	padding-top: var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+}
+

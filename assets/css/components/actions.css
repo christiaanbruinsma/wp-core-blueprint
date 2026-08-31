@@ -1,0 +1,47 @@
+/**
+ * components/actions.css - Core Blueprint Suite
+ *
+ * Unified action-row container. Replaces page-specific patterns
+ * (cb-core-ls-actions, cb-core-logo-actions, plain `<p>` with
+ * inline margin-top, etc.) with one reusable class.
+ *
+ * Use on a `<p>`, `<div>`, or other block element that contains
+ * one or more buttons / links acting as actions.
+ *
+ * Layout:
+ *   - Default: inline-block flow with 12px top spacing
+ *   - With multiple buttons: flex-wrap row with 12px gap
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap .cb-core-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--cb-space-3);
+	margin-top: var(--cb-space-3);
+}
+
+/* When the action row contains a single inline form (e.g. confirm-submit
+ * with a hidden input pattern), make the form an inline flex item so
+ * the button sits alongside any sibling links. */
+.cb-core-wrap .cb-core-actions .cb-core-form-inline {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Small spacing helper for buttons inside an inline cluster (e.g. inside
+ * a tbody row). Use sparingly - prefer .cb-core-actions for top-level
+ * action rows. */
+.cb-core-wrap .button.cb-core-button-spaced + .button,
+.cb-core-wrap .button.cb-core-button-spaced + a.button,
+.cb-core-wrap a.button + .button.cb-core-button-spaced,
+.cb-core-wrap .button + a.button.cb-core-button-spaced {
+	margin-left: var(--cb-space-1);
+}
+
+.cb-core-wrap .button.cb-core-button-spaced {
+	margin-left: var(--cb-space-1);
+}

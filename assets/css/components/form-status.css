@@ -1,0 +1,61 @@
+/**
+ * components/form-status.css - Core Blueprint Suite
+ *
+ * Inline form-status feedback line - small text under or next to a
+ * save button that announces save / pending / error states without
+ * a full toast.
+ *
+ * Canonical component for all save-feedback across the suite. Used
+ * by Login Shield, Privacy, Notifications (alert-recipient inputs),
+ * Appearance, Language, Permissions (3x), Reports Maintenance, and
+ * Report Branding.
+ *
+ * State is driven by the `data-kind` attribute on the element:
+ *   - data-kind="pending"  - saving in progress (default muted look)
+ *   - data-kind="success"  - save succeeded (green)
+ *   - data-kind="error"    - save failed (red)
+ *
+ * Markup contract:
+ *   <span class="cb-core-form-status"
+ *         data-target="..."
+ *         role="status"
+ *         aria-live="polite"></span>
+ *
+ * JS sets `el.textContent = "..."` and `el.dataset.kind = "..."`
+ * on save-flow events. See the canonical setStatus helper in
+ * features/permissions.js as the reference implementation.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-wrap .cb-core-form-status {
+	display: inline-block;
+	min-height: 1.4em;
+	margin-left: var(--cb-space-3);
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-muted);
+	transition: color 180ms ease;
+}
+
+/* Pending state is the same colour as the baseline - explicit selector
+ * exists so JS can use the same data-kind path uniformly without
+ * special-casing the initial state. */
+.cb-core-wrap .cb-core-form-status[data-kind="pending"] {
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-form-status[data-kind="success"] {
+	color: var(--cb-success);
+}
+
+.cb-core-wrap .cb-core-form-status[data-kind="error"] {
+	color: var(--cb-error);
+}
+
+/* When placed inside a tight inline context (e.g. next to an input
+ * in a tbody row) the default left-margin reads as too generous. */
+.cb-core-wrap .cb-core-field--inline .cb-core-form-status,
+.cb-core-wrap .cb-core-form-status--tight {
+	margin-left: var(--cb-space-2);
+}

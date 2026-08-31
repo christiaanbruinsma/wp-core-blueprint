@@ -1,0 +1,158 @@
+/**
+ * pages/safeguards-core-shield.css - Core Blueprint Suite
+ *
+ * Core Shield-specific layout only. Shared status, notice, buttons, panels and
+ * MasterSwitch presentation belongs to the UI Foundation.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Master switch metadata ──────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-shield-panel {
+	margin-bottom: var(--cb-space-6);
+}
+
+.cb-core-wrap .cb-core-shield-controls {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--cb-space-4);
+	margin-top: var(--cb-space-4);
+	padding-inline: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-shield-status-group {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-wrap .cb-core-shield-control-label {
+	font-weight: 600;
+	color: var(--cb-text);
+}
+
+.cb-core-wrap .cb-core-shield-status {
+	display: flex;
+	align-items: center;
+	min-height: var(--cb-control-height);
+}
+
+.cb-core-wrap .cb-core-shield-recommended {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-wrap .cb-core-shield-recommended .cb-core-muted {
+	max-width: 620px;
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-core-detector-details {
+	margin: calc(-1 * var(--cb-space-3)) 0 var(--cb-space-6);
+}
+
+.cb-core-wrap .cb-core-detector-list {
+	margin: 0;
+	padding-left: var(--cb-space-5);
+}
+
+/* ─── Privileged Access Guard ─────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-privileged-access {
+	margin-bottom: var(--cb-space-6);
+}
+
+.cb-core-wrap .cb-core-privileged-access__header {
+	align-items: flex-start;
+	gap: var(--cb-space-3);
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-privileged-access__header .description {
+	max-width: 980px;
+	margin: var(--cb-space-1) 0 0;
+}
+
+.cb-core-wrap .cb-core-privileged-access__summary {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	margin: var(--cb-space-3) 0;
+}
+
+.cb-core-wrap .cb-core-privileged-access__table td,
+.cb-core-wrap .cb-core-privileged-access__table th {
+	vertical-align: top;
+}
+
+.cb-core-wrap .cb-core-privileged-access__table code {
+	white-space: normal;
+	word-break: break-word;
+}
+
+.cb-core-wrap .cb-core-table-scroll {
+	overflow-x: auto;
+	margin: var(--cb-space-3) 0;
+}
+
+.cb-core-wrap .cb-core-privileged-access__table {
+	min-width: 1180px;
+	table-layout: fixed;
+}
+
+.cb-core-wrap .cb-core-privileged-access__col-account { width: 22%; }
+.cb-core-wrap .cb-core-privileged-access__col-roles { width: 12%; }
+.cb-core-wrap .cb-core-privileged-access__col-capabilities { width: 38%; }
+.cb-core-wrap .cb-core-privileged-access__col-detected { width: 17%; }
+.cb-core-wrap .cb-core-privileged-access__col-action { width: 11%; }
+
+.cb-core-wrap .cb-core-privileged-access__email,
+.cb-core-wrap .cb-core-privileged-access__detected-at,
+.cb-core-wrap .cb-core-privileged-approve {
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-core-privileged-access__detected-source {
+	overflow-wrap: anywhere;
+}
+
+
+.cb-core-wrap .cb-core-privileged-access__clear {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-privileged-review {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-privileged-review .cb-core-table-scroll {
+	margin-bottom: var(--cb-space-2);
+}
+
+
+/* ─── Core Shield section rhythm ──────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-module-rack--compact {
+	margin-bottom: var(--cb-space-6);
+}
+
+.cb-core-wrap .cb-core-diagnostics {
+	margin-top: 0;
+}
+
+@media (max-width: 720px) {
+	.cb-core-wrap .cb-core-shield-controls {
+		padding-inline: 0;
+	}
+}

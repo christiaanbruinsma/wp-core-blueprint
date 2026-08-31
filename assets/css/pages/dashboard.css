@@ -1,0 +1,120 @@
+/**
+ * pages/dashboard.css - Core Blueprint Suite
+ *
+ * Page-specific styling for the Core Blueprint Dashboard. Most of the
+ * visual weight lives in the shared tile-grid component
+ * (components/tile-grid.css); this file only adds:
+ *
+ *   - Section spacing rhythm
+ *   - About-card variant (footer marker, full-width)
+ *
+ * Status menus, milestone list, and description helper
+ * styles from the previous dashboard structure were removed in 1.1.7-dev
+ * along with the corresponding template structure.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Section rhythm ──────────────────────────────────────────────────── */
+
+.cb-core-wrap.cb-core-dashboard .cb-core-section {
+	margin-bottom: var(--cb-space-6);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-section:last-of-type {
+	margin-bottom: 0;
+}
+
+/* Section headings - slightly smaller than the page title, aligned with
+ * the muted-secondary feel of a navigation surface. */
+.cb-core-wrap.cb-core-dashboard .cb-core-section > h2 {
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	margin: 0 0 var(--cb-space-3);
+}
+
+/* ─── About card (full-width footer) ──────────────────────────────────── */
+
+.cb-core-wrap.cb-core-dashboard .cb-core-section--about {
+	margin-top: var(--cb-space-6);
+	padding-top: var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--about {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	justify-content: flex-start;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-5);
+	background: transparent;
+	border-color: var(--cb-border);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--about .cb-core-tile__title {
+	margin: 0;
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--about .cb-core-tile__meta {
+	margin: 0;
+}
+
+/* ─── Managed module / extension cards ──────────────────────────────── */
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed {
+	overflow: visible;
+	min-height: 112px;
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed:hover,
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed:focus-within,
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed.is-menu-open {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed:focus-within {
+	box-shadow: var(--cb-interactive-focus);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed .cb-core-tile__bodylink {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+	min-width: 0;
+	padding-right: 112px;
+	color: inherit;
+	text-decoration: none;
+	outline: none;
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed .cb-core-tile__bodylink--static {
+	cursor: default;
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed > .cb-core-status-menu {
+	position: absolute;
+	top: var(--cb-space-4);
+	right: var(--cb-space-4);
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed[data-state="off"],
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed[data-state="inactive"] {
+	background: color-mix(in srgb, var(--cb-surface-1) 88%, var(--cb-canvas));
+}
+
+@media (max-width: 600px) {
+	.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed .cb-core-tile__bodylink {
+		padding-right: 96px;
+	}
+}
+
+.cb-core-wrap.cb-core-dashboard .cb-core-tile--managed.is-menu-open {
+	z-index: 40;
+}

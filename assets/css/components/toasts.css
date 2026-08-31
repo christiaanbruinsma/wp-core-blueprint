@@ -1,0 +1,128 @@
+/**
+ * components/toasts.css - Core Blueprint Base
+ *
+ *
+ *
+ *
+ * Container is created lazily by JS on first call - no DOM cost on
+ * pages that never trigger a toast.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-toast-container--core {
+	position: fixed;
+	bottom: var(--cb-space-5);
+	right: var(--cb-space-5);
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+	pointer-events: none;
+	max-width: calc(100vw - var(--cb-space-7));
+}
+
+.cb-core-toast-container--core .cb-core-toast {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	min-width: 280px;
+	max-width: 420px;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+	color: var(--cb-text-strong);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	box-shadow:
+		0 1px 3px rgb(0 0 0 / 0.08),
+		0 6px 16px rgb(0 0 0 / 0.12);
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-normal);
+	cursor: default;
+	pointer-events: auto;
+	opacity: 0;
+	transform: translateX(16px);
+	transition:
+		opacity 200ms ease-out,
+		transform 200ms ease-out;
+}
+
+.cb-core-toast-container--core .cb-core-toast.is-visible {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+.cb-core-toast-container--core .cb-core-toast__dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--cb-text-muted);
+}
+
+.cb-core-toast-container--core .cb-core-toast__dot--success { background: var(--cb-success); }
+.cb-core-toast-container--core .cb-core-toast__dot--error   { background: var(--cb-error); }
+.cb-core-toast-container--core .cb-core-toast__dot--warning { background: var(--cb-warning); }
+.cb-core-toast-container--core .cb-core-toast__dot--info    { background: var(--cb-accent); }
+
+/* The full Core Admin toast border carries the same semantic state as the dot. */
+.cb-core-toast-container--core .cb-core-toast--success { border-color: var(--cb-success); }
+.cb-core-toast-container--core .cb-core-toast--error   { border-color: var(--cb-error); }
+.cb-core-toast-container--core .cb-core-toast--warning { border-color: var(--cb-warning); }
+.cb-core-toast-container--core .cb-core-toast--info    { border-color: var(--cb-accent); }
+
+.cb-core-toast-container--core .cb-core-toast__body {
+	flex: 1;
+	word-break: break-word;
+}
+
+.cb-core-toast-container--core .cb-core-toast__dismiss {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin: -4px -6px -4px 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--cb-radius-sm);
+	background: transparent;
+	color: var(--cb-text-muted);
+	font: inherit;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.cb-core-toast-container--core .cb-core-toast__dismiss:hover {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-toast-container--core .cb-core-toast__dismiss:focus-visible {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: 1px;
+}
+
+/* Mobile: full-width minus the container margin. */
+@media (max-width: 640px) {
+	.cb-core-toast-container--core {
+		left: var(--cb-space-4);
+		right: var(--cb-space-4);
+		bottom: var(--cb-space-4);
+		max-width: none;
+	}
+	.cb-core-toast-container--core .cb-core-toast {
+		min-width: 0;
+		max-width: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-core-toast-container--core .cb-core-toast {
+		transition: none;
+		transform: none;
+	}
+}

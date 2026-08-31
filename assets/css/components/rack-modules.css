@@ -1,0 +1,570 @@
+/**
+ * components/rack-modules.css - Core Blueprint Suite
+ *
+ * Shared module/feature row pattern with a compact status dot, content in
+ * the middle and a toggle on the right. Used by Safeguards page module list and Privacy page
+ * feature list. Includes section-header (with master toggle) and
+ * collapse-chevron animation.
+ *
+ * Extracted from admin.css in stap 6.2a - content unchanged.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Rack-style modules & features ────────────────────────────────────── */
+/* Each module/feature becomes a row in a "19-inch rack" - left pulse-dot
+   for status-at-a-glance, content in the middle, toggle-switch on the
+   right. Pulse states mirror the dashboard status tiles. */
+
+/* Module panel - zero internal padding, rows draw their own */
+.cb-core-wrap .cb-core-module {
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-surface-3);
+	border-radius: var(--cb-radius-md);
+	margin-bottom: var(--cb-space-3);
+	overflow: hidden;
+}
+
+/* Module header row - the chassis row */
+.cb-core-wrap .cb-core-module-header {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: start;
+	gap: var(--cb-space-4);
+	padding: var(--cb-space-4) var(--cb-space-5);
+	background: var(--cb-surface-2);
+	border-bottom: 1px solid transparent;
+}
+
+.cb-core-wrap .cb-core-module.is-enabled .cb-core-module-header {
+	border-bottom-color: var(--cb-surface-3);
+}
+
+.cb-core-wrap .cb-core-module-header-content {
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-module-header .title {
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	margin-bottom: var(--cb-space-2);
+}
+
+/* Feature rows - no list padding, rows are full-width */
+.cb-core-wrap .cb-core-feature-list {
+	padding: 0;
+	border-top: 0;
+}
+
+.cb-core-wrap .cb-core-feature {
+	padding: var(--cb-space-4) var(--cb-space-5);
+	border-bottom: 1px solid var(--cb-surface-3);
+}
+
+.cb-core-wrap .cb-core-feature:last-child {
+	border-bottom: 0;
+}
+
+.cb-core-wrap .cb-core-feature-main {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: var(--cb-space-4);
+	cursor: default;
+}
+
+.cb-core-wrap .cb-core-feature-label-wrap {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	cursor: pointer;
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-feature-label {
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-feature-body {
+	margin-top: var(--cb-space-3);
+	padding-left: calc(12px + var(--cb-space-4));
+}
+
+.cb-core-wrap .cb-core-feature-body:empty {
+	display: none;
+}
+
+/* Disabled/idle module - dim the features as a group */
+.cb-core-wrap .cb-core-module:not(.is-enabled) .cb-core-feature-list {
+	opacity: 0.55;
+}
+
+/* ── Status dot (reused across module-header + features) ─────────────── */
+
+.cb-core-wrap .cb-core-rack-dot {
+	position: relative;
+	display: inline-block;
+	flex-shrink: 0;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: currentColor;
+	margin-top: 4px;
+}
+
+.cb-core-wrap .cb-core-feature-main .cb-core-rack-dot {
+	margin-top: 0;
+}
+
+.cb-core-wrap .cb-core-rack-dot-pulse {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: currentColor;
+	animation: cb-core-breathe 4s ease-in-out infinite;
+	pointer-events: none;
+}
+
+/* Per-state: active = green pulse, idle = muted static, delegated = accent static */
+.cb-core-wrap .cb-core-rack-dot.is-active {
+	color: var(--cb-success);
+}
+
+.cb-core-wrap .cb-core-rack-dot.is-idle {
+	color: var(--cb-text-faint);
+}
+
+.cb-core-wrap .cb-core-rack-dot.is-idle .cb-core-rack-dot-pulse {
+	animation: none;
+	opacity: 0;
+}
+
+.cb-core-wrap .cb-core-rack-dot.is-delegated {
+	color: var(--cb-accent);
+}
+
+.cb-core-wrap .cb-core-rack-dot.is-delegated .cb-core-rack-dot-pulse {
+	animation: none;
+	opacity: 0;
+}
+
+/* ── Toggle switch (replaces native checkbox) ────────────────────────── */
+
+.cb-core-wrap .cb-core-rack-toggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	cursor: pointer;
+	user-select: none;
+}
+
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"] {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:disabled {
+	cursor: not-allowed;
+}
+
+.cb-core-wrap .cb-core-rack-toggle-track {
+	position: relative;
+	display: inline-block;
+	width: 38px;
+	height: 22px;
+	background: var(--cb-surface-3);
+	border: 1px solid var(--cb-surface-3);
+	border-radius: 999px;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.cb-core-wrap .cb-core-rack-toggle-thumb {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 16px;
+	height: 16px;
+	background: var(--cb-text-muted);
+	border-radius: 50%;
+	transition: transform 150ms ease, background 150ms ease;
+}
+
+/* Checked state - accent fill + white thumb slides right */
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:checked ~ .cb-core-rack-toggle-track {
+	background: var(--cb-accent);
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--cb-accent-strong) 25%, transparent);
+}
+
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:checked ~ .cb-core-rack-toggle-track .cb-core-rack-toggle-thumb {
+	transform: translateX(16px);
+	background: var(--cb-surface-0);
+}
+
+/* Focus ring */
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:focus-visible ~ .cb-core-rack-toggle-track {
+	box-shadow: 0 0 0 2px var(--cb-accent-strong);
+}
+
+/* Disabled state - muted across the board */
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:disabled ~ .cb-core-rack-toggle-track {
+	opacity: 0.4;
+	box-shadow: none;
+}
+
+/* Responsive - rack rows stack on narrow viewports */
+@media (max-width: 720px) {
+	.cb-core-wrap .cb-core-feature-main {
+		grid-template-columns: auto 1fr;
+	}
+	.cb-core-wrap .cb-core-feature-main .cb-core-rack-toggle {
+		grid-column: 2;
+		justify-self: end;
+		margin-top: var(--cb-space-2);
+	}
+}
+
+/* ─── Section header with master toggle ────────────────────────────────── */
+/* The "Security modules" h2 row - title on the left, global toggle right. */
+
+.cb-core-wrap .cb-core-section-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-4);
+	margin-bottom: var(--cb-space-4);
+	flex-wrap: wrap;
+}
+
+.cb-core-wrap .cb-core-section-header h2 {
+	margin: 0;
+}
+
+.cb-core-wrap .cb-core-global-toggle {
+	gap: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-global-toggle-label {
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-medium);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+/* Indeterminate state - some modules on, some off. The native :indeterminate
+   pseudoclass is set via JS. Paint the track half-filled and the thumb mid. */
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:indeterminate ~ .cb-core-rack-toggle-track {
+	background: linear-gradient(to right, var(--cb-accent) 50%, var(--cb-surface-3) 50%);
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--cb-accent-strong) 20%, transparent);
+}
+
+.cb-core-wrap .cb-core-rack-toggle input[type="checkbox"]:indeterminate ~ .cb-core-rack-toggle-track .cb-core-rack-toggle-thumb {
+	transform: translateX(8px);
+	background: var(--cb-surface-0);
+}
+
+/* ─── Collapse chevron + module body animation ────────────────────────── */
+
+.cb-core-wrap .cb-core-module-collapse {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-muted);
+	cursor: pointer;
+	transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.cb-core-wrap .cb-core-module-collapse:hover {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-surface-3);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-module-collapse:focus-visible {
+	outline: none;
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 2px var(--cb-accent);
+}
+
+.cb-core-wrap .cb-core-chevron {
+	transition: transform 200ms ease;
+}
+
+/* Collapsed = chevron points right (rotated -90deg) */
+.cb-core-wrap .cb-core-module:not(.is-expanded) .cb-core-chevron {
+	transform: rotate(-90deg);
+}
+
+/* Module body - uses grid-template-rows trick for smooth collapse without
+   knowing the content height. The child needs overflow:hidden for the clip. */
+.cb-core-wrap .cb-core-module-body {
+	display: grid;
+	grid-template-rows: 1fr;
+	transition: grid-template-rows 250ms ease;
+}
+
+.cb-core-wrap .cb-core-module:not(.is-expanded) .cb-core-module-body {
+	grid-template-rows: 0fr;
+}
+
+.cb-core-wrap .cb-core-module-body > * {
+	min-height: 0;
+	overflow: hidden;
+}
+
+
+/* ─── Compact WordPress-Pro rack variant ─────────────────────────────── */
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module {
+	border-color: var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	margin-bottom: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-header {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-header .title {
+	margin-bottom: var(--cb-space-1);
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-summary {
+	max-width: 820px;
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-details {
+	padding: var(--cb-space-4) var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+	background: var(--cb-surface-0);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-details .cb-core-desc {
+	max-width: 980px;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-details .cb-core-badges {
+	margin: var(--cb-space-3) 0 0;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-body-inner {
+	min-height: 0;
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature {
+	padding: var(--cb-space-4) var(--cb-space-5);
+	border-bottom-color: var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-main {
+	gap: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-label {
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-body {
+	margin-top: var(--cb-space-2);
+	padding-left: calc(8px + var(--cb-space-3));
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-dot {
+	width: 8px;
+	height: 8px;
+	margin-top: 5px;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-main .cb-core-rack-dot {
+	margin-top: 0;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle-track {
+	width: 34px;
+	height: 20px;
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle-thumb {
+	width: 14px;
+	height: 14px;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle input[type="checkbox"]:checked ~ .cb-core-rack-toggle-track {
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle input[type="checkbox"]:checked ~ .cb-core-rack-toggle-track .cb-core-rack-toggle-thumb {
+	transform: translateX(14px);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle input[type="checkbox"]:indeterminate ~ .cb-core-rack-toggle-track {
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-rack-toggle input[type="checkbox"]:indeterminate ~ .cb-core-rack-toggle-track .cb-core-rack-toggle-thumb {
+	transform: translateX(7px);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-global-toggle-label {
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module:not(.is-expanded) .cb-core-chevron {
+	transform: rotate(0deg);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module.is-expanded .cb-core-chevron {
+	transform: rotate(90deg);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-delegated {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	margin-top: var(--cb-space-2);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+}
+
+/* ─── Compact feature progressive disclosure ─────────────────────────── */
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-module-description {
+	max-width: 980px;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-main {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	align-items: center;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-copy {
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-heading {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-summary {
+	margin-top: 2px;
+	min-width: 0;
+	max-width: 760px;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-summary > span:not([hidden]) {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-details-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--cb-radius-sm);
+	background: transparent;
+	color: var(--cb-text-muted);
+	cursor: pointer;
+	transition: background var(--cb-interactive-transition), border-color var(--cb-interactive-transition), color var(--cb-interactive-transition);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-details-toggle:hover {
+	background: var(--cb-interactive-hover);
+	border-color: var(--cb-interactive-border-hover);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-details-toggle:focus-visible {
+	outline: none;
+	box-shadow: var(--cb-interactive-focus);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-chevron {
+	transition: transform var(--cb-interactive-transition);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-details-toggle[aria-expanded="true"] .cb-core-feature-chevron {
+	transform: rotate(90deg);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-body {
+	margin: var(--cb-space-3) 0 0 calc(8px + var(--cb-space-4));
+	padding: var(--cb-space-4) var(--cb-space-5);
+	border-left: 2px solid var(--cb-border-strong);
+	background: var(--cb-surface-0);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-description {
+	max-width: 980px;
+	color: var(--cb-text);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+}
+
+.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-body .cb-core-badges {
+	margin: var(--cb-space-3) 0 0;
+}
+
+@media (max-width: 782px) {
+	.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-main {
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+		gap: var(--cb-space-2);
+	}
+
+	.cb-core-wrap .cb-core-module-rack--compact .cb-core-feature-summary {
+		white-space: normal;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+	}
+}

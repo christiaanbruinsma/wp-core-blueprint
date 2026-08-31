@@ -1,0 +1,13 @@
+/**
+ * Core Blueprint UI Foundation - Clipboard control glue.
+ *
+ * Clipboard owns behavior, not button appearance. Core Admin buttons keep
+ * Button Foundation geometry; standalone WordPress buttons only receive the
+ * minimal inline icon alignment required by the shared copy control.
+ */
+button.cb-core-clipboard-control:not(.cb-core-button),
+.button.cb-core-clipboard-control:not(.cb-core-button) {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}

@@ -1,0 +1,150 @@
+/**
+ * components/utility.css - Core Blueprint Suite
+ *
+ * Generic utility helpers used across CB admin pages: bypass banner,
+ * inline copy chip, muted text helper, no-wrap helper.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Bypass banner (Layer 3 token-rotation warning) ───────────────────── */
+
+.cb-core-bypass-banner {
+	margin: var(--cb-space-4) 0;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-tint-danger);
+	border: 1px solid var(--cb-danger);
+	border-radius: var(--cb-radius-sm);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-bypass-banner .layers {
+	display: block;
+	margin-top: var(--cb-space-1);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-regular);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Inline copy chip ─────────────────────────────────────────────────── */
+
+.cb-core-inline-copy {
+	padding: 6px 10px;
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-sm);
+	cursor: pointer;
+	user-select: all;
+}
+
+.cb-core-inline-copy:hover {
+	background: var(--cb-surface-1);
+}
+
+/* ─── Muted text + nowrap helpers ──────────────────────────────────────── */
+
+.cb-core-muted {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-nowrap {
+	white-space: nowrap;
+}
+
+/* ─── Inline-spacing helpers for muted spans ───────────────────────────── */
+/* Replace inline margin styles on spans that follow another element with
+ * a small gap-like spacing. */
+
+.cb-core-muted--gap {
+	margin-left: var(--cb-space-1);
+}
+
+.cb-core-muted--inset {
+	margin-left: var(--cb-space-3);
+}
+
+/* ─── Description as block (used inside .cb-core-actions) ──────────────── */
+/* Some descriptions need to render as a block under their preceding
+ * element rather than inline. */
+
+.cb-core-wrap .description.cb-core-description-block {
+	display: block;
+	margin-top: var(--cb-space-1);
+}
+
+/* ─── Disabled-look text helper ────────────────────────────────────────── */
+/* Defined in components/inert-text.css - used as inert anchor-text
+ * placeholder when a link's target is currently unreachable. Documented
+ * here as a cross-reference for utility-class consumers. */
+
+/* ─── Semantic text colour utilities ──────────────────────────────────── */
+
+.cb-core-wrap .cb-core-text-danger {
+	color: var(--cb-danger);
+}
+
+/* ─── Divider helpers ──────────────────────────────────────────────────── */
+
+.cb-core-wrap hr.cb-core-divider {
+	margin: var(--cb-space-5) 0;
+	border: 0;
+	border-top: 1px solid var(--cb-border);
+}
+
+/* ─── Inline-form helper (for confirm-submit forms next to other actions) */
+
+.cb-core-wrap .cb-core-form-inline {
+	display: inline;
+}
+
+/* ─── Inline separator (for stat groups: "12 ms · 2.4 KB · 2026-01-15") */
+
+.cb-core-wrap .cb-core-separator {
+	margin: 0 var(--cb-space-3);
+	color: var(--cb-text-faint);
+}
+
+/* ─── Notifications footer note (smaller, denser) ──────────────────────── */
+
+.cb-core-wrap .description.cb-core-notification-footer {
+	margin-top: var(--cb-space-5);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+}
+
+/* ─── Notifications severity-checkbox group label spacing ──────────────── */
+
+.cb-core-wrap label.cb-core-severity-option {
+	margin-right: var(--cb-space-4);
+}
+
+/* ─── Notifications event-toggle (block label with vertical rhythm) ────── */
+
+.cb-core-wrap label.cb-core-event-toggle {
+	display: block;
+}
+
+.cb-core-wrap label.cb-core-event-toggle--first {
+	display: block;
+	margin-bottom: var(--cb-space-2);
+}
+
+/* ─── Maintenance-report meta (small role tag below actor name) ────────── */
+
+.cb-core-wrap .cb-core-maintenance-meta {
+	display: block;
+	margin-top: 3px;
+	font-size: var(--cb-fs-xs);
+}
+
+/* ─── Failsafe layer-list (numbered/dashed mini-list) ──────────────────── */
+
+.cb-core-wrap ul.cb-core-failsafe-layer-list {
+	margin: var(--cb-space-2) 0 0 var(--cb-space-5);
+}
+

@@ -1,0 +1,206 @@
+/**
+ * pages/safeguards-site-mode.css - Core Blueprint Suite
+ *
+ * Access Mode page-specific composition. Shared fields, buttons, notices,
+ * ObjectPicker, TimePicker and status indicators remain Foundation-owned.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Four-state mode selector ─────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-access-form {
+	max-width: var(--cb-consequence-selector-max-width);
+}
+
+.cb-core-wrap .cb-core-access-panel {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-3);
+	margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-access-option {
+	--cb-access-option-accent: var(--cb-warning);
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: var(--cb-consequence-selector-option-padding);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-consequence-selector-radius);
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+	text-align: left;
+	cursor: pointer;
+	transition:
+		background-color var(--cb-interactive-transition),
+		border-color var(--cb-interactive-transition);
+}
+
+.cb-core-wrap .cb-core-access-option[data-cb-core-access-mode="public"] {
+	--cb-access-option-accent: var(--cb-success);
+}
+
+.cb-core-wrap .cb-core-access-option:hover {
+	border-color: var(--cb-interactive-border-hover);
+	background: var(--cb-interactive-hover);
+}
+
+.cb-core-wrap .cb-core-access-option:focus-within {
+	outline: 2px solid var(--cb-interactive-focus);
+	outline-offset: 2px;
+}
+
+.cb-core-wrap .cb-core-access-option.is-active {
+	border-color: color-mix(in srgb, var(--cb-access-option-accent) 62%, var(--cb-border));
+	background: color-mix(in srgb, var(--cb-access-option-accent) 7%, var(--cb-surface-1));
+}
+
+.cb-core-wrap .cb-core-access-option__head {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-core-access-option__copy {
+	display: grid;
+	gap: var(--cb-space-1);
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-access-option__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 24px;
+	height: 24px;
+	margin-top: 1px;
+	color: var(--cb-text-muted);
+	transition: color var(--cb-interactive-transition);
+}
+
+.cb-core-wrap .cb-core-access-option.is-active .cb-core-access-option__icon {
+	color: var(--cb-access-option-accent);
+}
+
+.cb-core-wrap .cb-core-access-option__title {
+	display: block;
+	margin: 0;
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-core-access-option__desc {
+	display: block;
+	margin: 0;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+}
+
+/* ─── Mode-specific configuration ─────────────────────────────────── */
+
+.cb-core-wrap .cb-core-access-config {
+	margin: 0 0 var(--cb-space-4);
+	padding: var(--cb-space-4);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-wrap .cb-core-access-config[hidden],
+.cb-core-wrap .cb-core-access-notice[hidden] {
+	display: none !important;
+}
+
+.cb-core-wrap .cb-core-access-config > h2 {
+	margin-top: 0;
+	margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-access-config__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-5);
+}
+
+.cb-core-wrap .cb-core-access-config .cb-core-field {
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-core-access-config .cb-core-field__label {
+	display: block;
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-access-config .cb-core-field__optional {
+	font-weight: var(--cb-fw-regular);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-access-datetime {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--cb-space-2);
+	flex-wrap: wrap;
+}
+
+.cb-core-wrap .cb-core-access-datetime input[type="date"] {
+	min-height: var(--cb-control-height);
+}
+
+.cb-core-wrap .cb-core-access-notice {
+	margin: 0 0 var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-access-notice .cb-core-notice {
+	margin: 0;
+}
+
+.cb-core-wrap .cb-core-access-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	margin: 0 0 var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-access-actions .cb-core-form-status {
+	margin: 0;
+}
+
+/* ─── Current effective status ────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-access-status-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	max-width: var(--cb-consequence-selector-max-width);
+	min-height: 32px;
+	color: var(--cb-text);
+}
+
+.cb-core-wrap .cb-core-access-status-label {
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-medium);
+	color: var(--cb-text-muted);
+}
+
+@media (max-width: 960px) {
+	.cb-core-wrap .cb-core-access-panel,
+	.cb-core-wrap .cb-core-access-config__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ─── Admin bar notice ────────────────────────────────────────────── */
+
+#wpadminbar .cb-core-access-mode-bar-notice > .ab-item {
+	color: #ffcc55 !important; /* WordPress admin bar is always dark. */
+}

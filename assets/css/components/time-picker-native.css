@@ -1,0 +1,92 @@
+/**
+ * Core Blueprint TimePicker Foundation - WordPress-native admin adapter.
+ * Uses native wp-admin geometry; no Core Admin theme tokens are imported.
+ */
+.wp-admin .cb-core-time-picker--wp-native {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__input[type="text"] {
+	width: 82px;
+	min-width: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	padding-inline: 7px;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__panel {
+	position: absolute;
+	z-index: 100000;
+	top: calc(100% + 6px);
+	left: 0;
+	min-width: 224px;
+	box-sizing: border-box;
+	padding: 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	color: #2c3338;
+}
+
+.wp-admin .cb-core-time-picker--wp-native.is-align-right .cb-core-time-picker__panel {
+	right: 0;
+	left: auto;
+}
+
+.wp-admin .cb-core-time-picker--wp-native.is-above .cb-core-time-picker__panel {
+	top: auto;
+	bottom: calc(100% + 6px);
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__controls {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__field {
+	display: grid;
+	gap: 4px;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__field > label {
+	color: #50575e;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__select {
+	width: 100%;
+	min-width: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__footer {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid #dcdcde;
+}
+
+.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__input[aria-invalid="true"] {
+	border-color: #d63638;
+	box-shadow: 0 0 0 1px #d63638;
+}
+
+@media (max-width: 480px) {
+	.wp-admin .cb-core-time-picker--wp-native .cb-core-time-picker__panel {
+		min-width: min(224px, calc(100vw - 32px));
+	}
+}

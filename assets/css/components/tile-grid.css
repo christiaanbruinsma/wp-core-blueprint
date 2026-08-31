@@ -1,0 +1,260 @@
+/**
+ * components/tile-grid.css - Core Blueprint Suite
+ *
+ * Tile component. Three variants share a common base:
+ *
+ *   .cb-core-tile                       BASE - flex-column, surface, border, radius
+ *   .cb-core-tile--navigation           Calm navigation target
+ *   .cb-core-tile--status-nav           Navigation target with state-dot
+ *   .cb-core-tile--quick                Legacy nav target with hover-gradient strip
+ *   .cb-core-tile--metric               KPI display with label/value/state
+ *
+ * State modifiers (apply to metric tiles and shared state helpers):
+ *
+ *   .cb-core-tile--ok                   Green left-edge / dot
+ *   .cb-core-tile--warn                 Amber left-edge / dot
+ *   .cb-core-tile--danger               Red   left-edge / dot
+ *   .cb-core-tile--idle                 Grey  left-edge / dot
+ *   .cb-core-tile--neutral              Muted (no accent strip)
+ *
+ * Sub-elements (BEM):
+ *
+ *   __kicker     small uppercase top label (quick variant)
+ *   __title      main heading
+ *   __subtitle   secondary line under title
+ *   __icon       dashicon
+ *   __note       small text body
+ *   __meta       footer-left muted text
+ *   __dot        static state-dot (quick variant, top-right)
+ *   __dot--*     state colour for the static dot
+ *   __label      KPI label (metric variant)
+ *   __value      KPI value (metric variant)
+ *   __state      KPI state-line (metric variant)
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Tile grid container ─────────────────────────────────────────────── */
+
+.cb-core-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: var(--cb-space-4);
+	margin: 0 0 var(--cb-space-4);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * BASE - common to all variants
+ * ═════════════════════════════════════════════════════════════════════ */
+
+.cb-core-tile {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+	padding: var(--cb-space-5);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-text);
+	text-decoration: none;
+	transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.cb-core-tile__title {
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-tile__subtitle {
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text);
+}
+
+.cb-core-tile__note {
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-tile__meta {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-faint);
+}
+
+.cb-core-tile__icon {
+	color: var(--cb-accent);
+	font-size: var(--cb-fs-2xl);
+	width: var(--cb-fs-2xl);
+	height: var(--cb-fs-2xl);
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * VARIANTS - navigation / status-nav
+ *
+ * Formal dashboard-card variants. They intentionally preserve the base
+ * card geometry while using a calmer WordPress-Pro interaction language:
+ * surface + border change, no lift and no decorative gradient strip.
+ * ═════════════════════════════════════════════════════════════════════ */
+
+.cb-core-tile--navigation:hover,
+.cb-core-tile--navigation:focus-visible,
+.cb-core-tile--status-nav:hover,
+.cb-core-tile--status-nav:focus-visible {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+	outline: none;
+}
+
+.cb-core-tile--navigation:focus-visible,
+.cb-core-tile--status-nav:focus-visible {
+	box-shadow: var(--cb-interactive-focus);
+}
+
+.cb-core-tile--navigation .cb-core-tile__kicker,
+.cb-core-tile--status-nav .cb-core-tile__kicker {
+	display: block;
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-tile--navigation .cb-core-tile__title,
+.cb-core-tile--status-nav .cb-core-tile__title {
+	margin-top: var(--cb-space-1);
+}
+
+.cb-core-tile--navigation .cb-core-tile__meta,
+.cb-core-tile--status-nav .cb-core-tile__meta {
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-tile--status-nav[data-state="inactive"] {
+	opacity: 0.55;
+}
+
+.cb-core-tile--status-nav[data-state="inactive"]:hover,
+.cb-core-tile--status-nav[data-state="inactive"]:focus-visible {
+	opacity: 0.85;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * VARIANT - quick (nav target)
+ * ═════════════════════════════════════════════════════════════════════ */
+
+.cb-core-tile--quick:hover,
+.cb-core-tile--quick:focus-visible {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+	transform: translateY(-1px);
+	outline: none;
+}
+
+.cb-core-tile--quick::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 2px;
+	background: var(--cb-grad);
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.cb-core-tile--quick:hover::before {
+	opacity: 1;
+}
+
+.cb-core-tile--quick .cb-core-tile__kicker {
+	display: block;
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-tile--quick .cb-core-tile__title {
+	margin-top: var(--cb-space-1);
+}
+
+.cb-core-tile--quick .cb-core-tile__meta {
+	margin-top: var(--cb-space-2);
+}
+
+/* Quick-tile state-dot (top-right, static). Keep its visual treatment
+ * identical to the Status Menu Foundation indicator: a flat 8px state dot
+ * without a ring or ambient glow. Positioning remains tile-specific. */
+.cb-core-tile__dot {
+	position: absolute;
+	top: var(--cb-space-4);
+	right: var(--cb-space-4);
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--cb-text-faint);
+	flex-shrink: 0;
+}
+
+.cb-core-tile__dot--active { background: var(--cb-success); }
+.cb-core-tile__dot--warning { background: var(--cb-warning); }
+.cb-core-tile__dot--error { background: var(--cb-danger); }
+.cb-core-tile__dot--idle,
+.cb-core-tile__dot--inactive { background: var(--cb-text-faint); }
+
+.cb-core-tile--quick[data-state="inactive"] {
+	opacity: 0.55;
+}
+
+.cb-core-tile--quick[data-state="inactive"]:hover {
+	opacity: 0.85;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * VARIANT - metric (KPI tile: label / value / state)
+ * ═════════════════════════════════════════════════════════════════════ */
+
+.cb-core-tile--metric {
+	gap: var(--cb-space-1);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-left-width: 4px;
+	min-height: 96px;
+}
+
+.cb-core-tile--metric.cb-core-tile--ok      { border-left-color: var(--cb-success); }
+.cb-core-tile--metric.cb-core-tile--warn    { border-left-color: var(--cb-warning); }
+.cb-core-tile--metric.cb-core-tile--danger  { border-left-color: var(--cb-danger);  }
+.cb-core-tile--metric.cb-core-tile--idle    { border-left-color: var(--cb-text-faint); }
+.cb-core-tile--metric.cb-core-tile--neutral { /* default border */ }
+
+.cb-core-tile__label {
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-tile__value {
+	font-size: var(--cb-fs-2xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-tight);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-tile__state {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-tile--metric.cb-core-tile--ok     .cb-core-tile__state { color: var(--cb-success); }
+.cb-core-tile--metric.cb-core-tile--warn   .cb-core-tile__state { color: var(--cb-warning); }
+.cb-core-tile--metric.cb-core-tile--danger .cb-core-tile__state { color: var(--cb-danger);  }

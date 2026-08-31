@@ -1,0 +1,51 @@
+/**
+ * components/table-cols.css - Core Blueprint Suite
+ *
+ * Column-width utility classes applied to <col> elements inside
+ * <colgroup>. Replaces the legacy `<th style="width:Npx">` inline
+ * pattern with semantic column-naming.
+ *
+ * Width tokens are content-driven where possible - a column named
+ * 'recipient' is always 220px in CB, 'status' is always 140px.
+ * Where a width is unique to a single table the class is named
+ * after that table's role (e.g. 'layer' for the Failsafe Layer
+ * column). Sizes are normalised across the suite - a Status column
+ * in Permissions and a Status column in Failsafe both use 140px,
+ * not 120/140 split.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* Form-table label column (e.g. notifications policy tables) */
+.cb-core-wrap col.cb-core-col-recipient {
+	width: 220px;
+}
+
+/* Operator icon column - narrow checkbox cell (Permissions). 80px is the
+ * minimum that keeps the header text "Operator" on a single line at the
+ * default font size; 40px (the original) caused the header to break into
+ * three vertical fragments (Op|era|tor). */
+.cb-core-wrap col.cb-core-col-operator-icon {
+	width: 80px;
+}
+
+/* Status column - used across multiple tables, normalised to 140px */
+.cb-core-wrap col.cb-core-col-status {
+	width: 140px;
+}
+
+/* Failsafe Layer column */
+.cb-core-wrap col.cb-core-col-layer {
+	width: 120px;
+}
+
+/* Reports overview - leading icon column */
+.cb-core-wrap col.cb-core-col-icon {
+	width: 140px;
+}
+
+/* Actions column - buttons cluster, allows ~3 small buttons side-by-side */
+.cb-core-wrap col.cb-core-col-actions {
+	width: 220px;
+}

@@ -1,0 +1,514 @@
+/**
+ * components/buttons.css - Core Blueprint Suite
+ *
+ * Semantic button variants that extend WordPress core's .button.
+ *
+ *   - primary: normal primary workflow action
+ *   - secondary: neutral/cancel/supporting action
+ *   - remediation: impactful but reversible corrective action
+ *   - danger: destructive or irreversible action
+ *
+ * Legacy WP .button / .button-primary selectors remain supported so
+ * existing Core Blueprint screens can migrate progressively.
+ *
+ * WP .button / .button-primary scifi overrides give WP's
+ *      native admin buttons CB theming inside CB themes (cb-dark /
+ *      cb-light) so they don't pop out as wp-admin defaults.
+ *
+ * Each rule has two selector forms:
+ *
+ *   .cb-core-wrap .button…
+ *     → buttons inside CB admin pages
+ *
+ *   dialog.cb-core-modal--core .button…
+ *     → buttons inside CB modal dialogs (top-layer)
+ *
+ * The split exists because <dialog> opened via .showModal() renders
+ * in the browser's top-layer - outside .cb-core-wrap. A single
+ * .cb-core-wrap-scoped selector would miss buttons in modals; a
+ * scope-less selector would risk styling WP admin chrome buttons
+ * (admin-bar, dashboard widgets, plugin notices) we don't own.
+ *
+ * Adding a third dialog-scope is the explicit, safe extension.
+ *
+ * Theme-aware via --cb-* tokens.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Button primitive - formal Core Blueprint UI Foundation contract
+ *
+ * Required for new CB-admin UI:
+ *   .cb-core-button
+ *   + one semantic variant: --primary | --secondary | --remediation | --danger
+ *   + optional density: --compact (default density needs no modifier)
+ *   + optional shape: --icon-only (requires an accessible name)
+ *
+ * Semantic variant, density, and state are independent axes. Components
+ * must not encode layout margins; the parent layout owns positioning.
+ *
+ * The primitive deliberately extends WordPress .button in CB-owned admin
+ * surfaces, so buttons retain familiar WP behaviour while dimensions and
+ * interaction are controlled by the shared Core Blueprint foundation.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.cb-core-button,
+.cb-core-wrap .button.cb-core-button,
+.cb-core-wrap button.cb-core-button,
+dialog.cb-core-modal--core .button.cb-core-button,
+dialog.cb-core-modal--core button.cb-core-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--cb-button-gap);
+	box-sizing: border-box;
+	min-height: var(--cb-button-height-default);
+	padding: var(--cb-button-padding-block-default) var(--cb-button-padding-inline-default);
+	border-radius: var(--cb-button-radius);
+	font-family: inherit;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	line-height: 1.2;
+	text-align: center;
+	text-decoration: none;
+	white-space: normal;
+	vertical-align: middle;
+	cursor: pointer;
+}
+
+.cb-core-button--compact,
+.cb-core-wrap .button.cb-core-button--compact,
+.cb-core-wrap button.cb-core-button--compact,
+dialog.cb-core-modal--core .button.cb-core-button--compact,
+dialog.cb-core-modal--core button.cb-core-button--compact {
+	min-height: var(--cb-button-height-compact);
+	padding: var(--cb-button-padding-block-compact) var(--cb-button-padding-inline-compact);
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-core-button--icon-only,
+.cb-core-wrap .button.cb-core-button--icon-only,
+.cb-core-wrap button.cb-core-button--icon-only,
+dialog.cb-core-modal--core .button.cb-core-button--icon-only,
+dialog.cb-core-modal--core button.cb-core-button--icon-only {
+	flex: 0 0 auto;
+	width: var(--cb-button-height-default);
+	min-width: var(--cb-button-height-default);
+	padding-inline: 0;
+}
+
+.cb-core-button--compact.cb-core-button--icon-only,
+.cb-core-wrap .button.cb-core-button--compact.cb-core-button--icon-only,
+.cb-core-wrap button.cb-core-button--compact.cb-core-button--icon-only,
+dialog.cb-core-modal--core .button.cb-core-button--compact.cb-core-button--icon-only,
+dialog.cb-core-modal--core button.cb-core-button--compact.cb-core-button--icon-only {
+	width: var(--cb-button-height-compact);
+	min-width: var(--cb-button-height-compact);
+	padding-inline: 0;
+}
+
+.cb-core-button--compact .cb-core-button__icon,
+.cb-core-button--compact > svg,
+.cb-core-button--compact > .dashicons {
+	flex-basis: var(--cb-button-icon-size-compact);
+	width: var(--cb-button-icon-size-compact);
+	height: var(--cb-button-icon-size-compact);
+	font-size: var(--cb-button-icon-size-compact);
+}
+
+.cb-core-button__icon,
+.cb-core-button > svg,
+.cb-core-button > .dashicons {
+	flex: 0 0 var(--cb-button-icon-size);
+	width: var(--cb-button-icon-size);
+	height: var(--cb-button-icon-size);
+	margin: 0;
+	font-size: var(--cb-button-icon-size);
+	line-height: 1;
+}
+
+.cb-core-button > svg,
+.cb-core-button__icon svg {
+	fill: none;
+	stroke: currentColor;
+}
+
+.cb-core-button__label {
+	min-width: 0;
+}
+
+.cb-core-button[aria-busy="true"] {
+	cursor: progress;
+	pointer-events: none;
+	opacity: 0.72;
+}
+
+.cb-core-button.is-busy .cb-core-spinner {
+	flex: 0 0 var(--cb-button-icon-size);
+}
+
+.cb-core-button--compact.is-busy .cb-core-spinner {
+	flex-basis: var(--cb-button-icon-size-compact);
+}
+
+.cb-core-button:disabled,
+.cb-core-button[disabled] {
+	cursor: not-allowed;
+}
+
+.cb-core-button[aria-disabled="true"] {
+	cursor: not-allowed;
+	pointer-events: none;
+	opacity: 0.55;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * .cb-core-button--danger - outlined destructive variant
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Default rule (no theme gate). */
+.cb-core-button--danger {
+	background: transparent;
+	border: 1px solid var(--cb-danger);
+	color: var(--cb-danger);
+	box-shadow: none;
+	transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.cb-core-button--danger:hover,
+.cb-core-button--danger:focus {
+	background: var(--cb-danger);
+	border-color: var(--cb-danger);
+	color: var(--cb-surface-1);
+	box-shadow: none;
+}
+
+.cb-core-button--danger:focus-visible {
+	outline: 2px solid var(--cb-danger);
+	outline-offset: 2px;
+}
+
+.cb-core-button--danger[disabled],
+.cb-core-button--danger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: transparent;
+	color: var(--cb-danger);
+}
+
+/* Higher-specificity overrides to beat WP-core's .button defaults. WP
+ * core ships rules like `.button { background: var(--cb-surface-2); ... }` with
+ * specificity 0,1,0 - the same as ours above. To win the cascade
+ * deterministically inside CB themes, repeat the danger rule with a
+ * theme-scoped selector (specificity 0,1,2) for both contexts. */
+.cb-core-wrap .cb-core-button--danger,
+dialog.cb-core-modal--core .cb-core-button--danger {
+	background: transparent;
+	border: 1px solid var(--cb-danger);
+	color: var(--cb-danger);
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-button--danger:hover,
+.cb-core-wrap .cb-core-button--danger:focus,
+dialog.cb-core-modal--core .cb-core-button--danger:hover,
+dialog.cb-core-modal--core .cb-core-button--danger:focus {
+	background: var(--cb-danger);
+	border-color: var(--cb-danger);
+	color: var(--cb-surface-1);
+}
+
+.cb-core-wrap .cb-core-button--danger:disabled,
+dialog.cb-core-modal--core .cb-core-button--danger:disabled {
+	background: transparent;
+	color: var(--cb-danger);
+	opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * WP .button.button-primary - scifi theme
+ *
+ * The primary action button - solid accent fill with the brand glow.
+ * Applied to any .button.button-primary inside CB pages or CB modals.
+ * Outside those scopes (WP admin chrome, third-party widgets) the
+ * native WP styling stays untouched.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.cb-core-wrap .button.button-primary,
+.cb-core-wrap button.button-primary,
+.cb-core-wrap .button.cb-core-button--primary,
+.cb-core-wrap button.cb-core-button--primary,
+dialog.cb-core-modal--core .button.button-primary,
+dialog.cb-core-modal--core button.button-primary,
+dialog.cb-core-modal--core .button.cb-core-button--primary,
+dialog.cb-core-modal--core button.cb-core-button--primary {
+	background: var(--cb-accent);
+	border-color: var(--cb-accent);
+	color: var(--cb-surface-0);
+	text-shadow: none;
+	box-shadow: 0 0 0 1px var(--cb-accent), 0 0 12px color-mix(in srgb, var(--cb-accent-strong) 25%, transparent);
+	transition: background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.cb-core-wrap .button.button-primary:hover,
+.cb-core-wrap button.button-primary:hover,
+.cb-core-wrap .button.cb-core-button--primary:hover,
+.cb-core-wrap button.cb-core-button--primary:hover,
+dialog.cb-core-modal--core .button.button-primary:hover,
+dialog.cb-core-modal--core button.button-primary:hover,
+dialog.cb-core-modal--core .button.cb-core-button--primary:hover,
+dialog.cb-core-modal--core button.cb-core-button--primary:hover {
+	background: var(--cb-accent-strong);
+	border-color: var(--cb-accent-strong);
+	box-shadow: 0 0 0 1px var(--cb-accent-strong), 0 0 18px color-mix(in srgb, var(--cb-accent-strong) 40%, transparent);
+}
+
+.cb-core-wrap .button.button-primary:focus,
+.cb-core-wrap button.button-primary:focus,
+.cb-core-wrap .button.cb-core-button--primary:focus,
+.cb-core-wrap button.cb-core-button--primary:focus,
+dialog.cb-core-modal--core .button.button-primary:focus,
+dialog.cb-core-modal--core button.button-primary:focus,
+dialog.cb-core-modal--core .button.cb-core-button--primary:focus,
+dialog.cb-core-modal--core button.cb-core-button--primary:focus {
+	box-shadow: 0 0 0 2px var(--cb-accent-strong), 0 0 18px color-mix(in srgb, var(--cb-accent-strong) 35%, transparent);
+	outline: none;
+}
+
+.cb-core-wrap .button.button-primary:disabled,
+.cb-core-wrap button.button-primary:disabled,
+.cb-core-wrap .button.cb-core-button--primary:disabled,
+.cb-core-wrap button.cb-core-button--primary:disabled,
+dialog.cb-core-modal--core .button.button-primary:disabled,
+dialog.cb-core-modal--core button.button-primary:disabled,
+dialog.cb-core-modal--core .button.cb-core-button--primary:disabled,
+dialog.cb-core-modal--core button.cb-core-button--primary:disabled {
+	background: var(--cb-surface-3);
+	border-color: var(--cb-surface-3);
+	color: var(--cb-text-muted);
+	box-shadow: none;
+	opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * WP secondary .button - scifi theme (ghost style)
+ *
+ * The neutral / cancel button - transparent with subtle border, hover
+ * picks up the accent border for affordance. Applied to any .button
+ * that is NOT button-primary inside CB pages or CB modals.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.cb-core-wrap .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger),
+.cb-core-wrap button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger),
+dialog.cb-core-modal--core .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger),
+dialog.cb-core-modal--core button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger) {
+	background: transparent;
+	border: 1px solid var(--cb-surface-3);
+	color: var(--cb-text-strong);
+	text-shadow: none;
+	box-shadow: none;
+	transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.cb-core-wrap .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):hover,
+.cb-core-wrap button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):hover,
+dialog.cb-core-modal--core .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):hover,
+dialog.cb-core-modal--core button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):hover {
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	border-color: var(--cb-accent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):focus,
+.cb-core-wrap button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):focus,
+dialog.cb-core-modal--core .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):focus,
+dialog.cb-core-modal--core button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):focus {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 2px var(--cb-accent);
+	outline: none;
+}
+
+.cb-core-wrap .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):disabled,
+.cb-core-wrap button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):disabled,
+dialog.cb-core-modal--core .button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):disabled,
+dialog.cb-core-modal--core button.button:not(.button-primary):not(.cb-core-button--primary):not(.cb-core-button--warning):not(.cb-core-button--remediation):not(.cb-core-button--danger):disabled {
+	background: transparent;
+	border-color: var(--cb-surface-3);
+	color: var(--cb-text-muted);
+	opacity: 0.55;
+}
+
+/* ─── --secondary variant ─────────────────────────────────────────────────
+ * Explicit neutral/supporting action for the formal Button API. The legacy
+ * generic .button fallback above remains during progressive migration. */
+.cb-core-wrap .button.cb-core-button--secondary,
+.cb-core-wrap button.cb-core-button--secondary,
+dialog.cb-core-modal--core .button.cb-core-button--secondary,
+dialog.cb-core-modal--core button.cb-core-button--secondary {
+	background: transparent;
+	border: 1px solid var(--cb-surface-3);
+	color: var(--cb-text-strong);
+	text-shadow: none;
+	box-shadow: none;
+	transition: background 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.cb-core-wrap .button.cb-core-button--secondary:hover,
+.cb-core-wrap button.cb-core-button--secondary:hover,
+dialog.cb-core-modal--core .button.cb-core-button--secondary:hover,
+dialog.cb-core-modal--core button.cb-core-button--secondary:hover {
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	border-color: var(--cb-accent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .button.cb-core-button--secondary:focus-visible,
+.cb-core-wrap button.cb-core-button--secondary:focus-visible,
+dialog.cb-core-modal--core .button.cb-core-button--secondary:focus-visible,
+dialog.cb-core-modal--core button.cb-core-button--secondary:focus-visible {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 2px var(--cb-accent);
+	outline: none;
+}
+
+.cb-core-wrap .button.cb-core-button--secondary:disabled,
+.cb-core-wrap button.cb-core-button--secondary:disabled,
+dialog.cb-core-modal--core .button.cb-core-button--secondary:disabled,
+dialog.cb-core-modal--core button.cb-core-button--secondary:disabled {
+	background: transparent;
+	border-color: var(--cb-surface-3);
+	color: var(--cb-text-muted);
+	box-shadow: none;
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* ─── --warning variant ────────────────────────────────────────────────────
+ *
+ * Filled amber button for consequential-but-not-destructive actions: the
+ * Failsafe emergency-bypass panic button is the canonical use. Distinct
+ * from --danger (outlined red, used for delete/clear) - warning signals
+ * "this has impact, stop and read" without implying permanent removal.
+ *
+ * Tone is filled rather than outlined so it carries visual weight in the
+ * page flow. The surrounding context (banner-style copy + password
+ * confirmation modal) supplies the gravity; the button itself just has
+ * to be unmistakably the consequential one.
+ *
+ * @since   1.0.0
+ */
+
+.cb-core-button--warning {
+	background: var(--cb-warning);
+	border: 1px solid var(--cb-warning);
+	color: var(--cb-surface-1);
+	box-shadow: none;
+	transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.cb-core-button--warning:hover,
+.cb-core-button--warning:focus {
+	background: color-mix( in srgb, var(--cb-warning) 85%, black );
+	border-color: color-mix( in srgb, var(--cb-warning) 85%, black );
+	color: var(--cb-surface-1);
+	box-shadow: none;
+}
+
+.cb-core-button--warning:focus-visible {
+	outline: 2px solid var(--cb-warning);
+	outline-offset: 2px;
+}
+
+.cb-core-button--warning[disabled],
+.cb-core-button--warning:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* High-specificity overrides for both .cb-core-wrap and modal contexts -
+ * same pattern as --danger above so WP-core .button defaults can't win. */
+.cb-core-wrap .cb-core-button--warning,
+dialog.cb-core-modal--core .cb-core-button--warning {
+	background: var(--cb-warning);
+	border: 1px solid var(--cb-warning);
+	color: var(--cb-surface-1);
+	box-shadow: none;
+}
+
+.cb-core-wrap .cb-core-button--warning:hover,
+.cb-core-wrap .cb-core-button--warning:focus,
+dialog.cb-core-modal--core .cb-core-button--warning:hover,
+dialog.cb-core-modal--core .cb-core-button--warning:focus {
+	background: color-mix( in srgb, var(--cb-warning) 85%, black );
+	border-color: color-mix( in srgb, var(--cb-warning) 85%, black );
+	color: var(--cb-surface-1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * .cb-core-button--remediation - reversible corrective action
+ *
+ * Used for actions that intentionally change active state in order to
+ * make it safer, while retaining an explicit recovery path. Quarantine
+ * is the canonical example. This is semantically distinct from
+ * --warning (consequential caution) and --danger (irreversible loss).
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.cb-core-button--remediation {
+	background: var(--cb-warning);
+	border: 1px solid var(--cb-warning);
+	color: var(--cb-surface-1);
+	font-weight: var(--cb-fw-semibold);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--cb-warning) 35%, transparent);
+	transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.cb-core-button--remediation:hover,
+.cb-core-button--remediation:focus {
+	background: color-mix(in srgb, var(--cb-warning) 88%, white);
+	border-color: color-mix(in srgb, var(--cb-warning) 88%, white);
+	color: var(--cb-surface-1);
+	box-shadow: 0 0 0 1px var(--cb-warning), 0 0 14px color-mix(in srgb, var(--cb-warning) 25%, transparent);
+}
+
+.cb-core-button--remediation:focus-visible {
+	outline: 2px solid var(--cb-warning);
+	outline-offset: 2px;
+}
+
+.cb-core-button--remediation[disabled],
+.cb-core-button--remediation:disabled {
+	background: color-mix(in srgb, var(--cb-warning) 35%, var(--cb-surface-2));
+	border-color: color-mix(in srgb, var(--cb-warning) 35%, var(--cb-border));
+	color: var(--cb-text-muted);
+	box-shadow: none;
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
+.cb-core-wrap .button.cb-core-button--remediation,
+.cb-core-wrap button.cb-core-button--remediation,
+dialog.cb-core-modal--core .button.cb-core-button--remediation,
+dialog.cb-core-modal--core button.cb-core-button--remediation {
+	background: var(--cb-warning);
+	border-color: var(--cb-warning);
+	color: var(--cb-surface-1);
+	font-weight: var(--cb-fw-semibold);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--cb-warning) 35%, transparent);
+}
+
+.cb-core-wrap .button.cb-core-button--remediation:hover,
+.cb-core-wrap .button.cb-core-button--remediation:focus,
+.cb-core-wrap button.cb-core-button--remediation:hover,
+.cb-core-wrap button.cb-core-button--remediation:focus,
+dialog.cb-core-modal--core .button.cb-core-button--remediation:hover,
+dialog.cb-core-modal--core .button.cb-core-button--remediation:focus,
+dialog.cb-core-modal--core button.cb-core-button--remediation:hover,
+dialog.cb-core-modal--core button.cb-core-button--remediation:focus {
+	background: color-mix(in srgb, var(--cb-warning) 88%, white);
+	border-color: color-mix(in srgb, var(--cb-warning) 88%, white);
+	color: var(--cb-surface-1);
+	box-shadow: 0 0 0 1px var(--cb-warning), 0 0 14px color-mix(in srgb, var(--cb-warning) 25%, transparent);
+}

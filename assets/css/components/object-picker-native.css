@@ -1,0 +1,122 @@
+/* Shared async Object Picker Foundation — WordPress-native presentation. */
+.cb-core-object-picker {
+	position: relative;
+	max-width: 720px;
+}
+
+.cb-core-object-picker__enhanced {
+	display: grid;
+	gap: 8px;
+}
+
+.cb-core-object-picker__selected {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-height: 36px;
+	box-sizing: border-box;
+	padding: 6px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+}
+
+.cb-core-object-picker__selected-empty {
+	align-self: center;
+	color: #646970;
+	font-size: 12px;
+}
+
+.cb-core-object-picker__chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	padding: 3px 7px;
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+}
+
+.cb-core-object-picker__chip-copy {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.cb-core-object-picker__chip-label {
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cb-core-object-picker__chip-meta,
+.cb-core-object-picker__result-meta {
+	color: #646970;
+	font-size: 12px;
+}
+
+.cb-core-object-picker__remove {
+	font-size: 18px;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.cb-core-object-picker__search {
+	width: 100%;
+	max-width: none;
+}
+
+.cb-core-object-picker__results {
+	position: absolute;
+	z-index: 100000;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	max-height: 320px;
+	overflow: auto;
+	box-sizing: border-box;
+	margin-top: 4px;
+	padding: 4px;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.cb-core-object-picker__result {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	width: 100%;
+	height: auto;
+	padding: 7px 9px;
+	background: transparent;
+	border: 0;
+	border-radius: 2px;
+	text-align: left;
+	white-space: normal;
+}
+
+.cb-core-object-picker__result:hover,
+.cb-core-object-picker__result:focus-visible {
+	background: #f0f0f1;
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.cb-core-object-picker__result-label {
+	font-weight: 600;
+}
+
+.cb-core-object-picker__empty {
+	padding: 10px;
+	color: #646970;
+	text-align: center;
+}
+
+.cb-core-object-picker__hint {
+	margin: 0;
+}

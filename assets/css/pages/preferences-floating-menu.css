@@ -1,0 +1,258 @@
+/**
+ * Preferences → Floating Menu.
+ *
+ * Registry-driven site-wide HUD menu editor. Layout owns spacing/order;
+ * shared Button/Form/Badge Foundations own their controls.
+ */
+
+.cb-hud-menu-preferences .cb-hud-menu-editor__section {
+	max-width: 980px;
+}
+
+.cb-hud-menu-editor__sections {
+	display: grid;
+	gap: var(--cb-space-4);
+	margin-top: var(--cb-space-4);
+}
+
+.cb-hud-menu-editor__section-card {
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+	overflow: clip;
+	transition: border-color 120ms ease, opacity 120ms ease;
+}
+
+.cb-hud-menu-editor__section-card.is-disabled {
+	opacity: 0.68;
+}
+
+.cb-hud-menu-editor__section-card.is-dragging,
+.cb-hud-menu-editor__item.is-dragging {
+	opacity: 0.45;
+}
+
+.cb-hud-menu-editor__section-header {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+	background: var(--cb-surface-2);
+}
+
+.cb-hud-menu-editor__section-heading {
+	display: flex;
+	align-items: baseline;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-hud-menu-editor__section-heading strong {
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-md);
+}
+
+.cb-hud-menu-editor__section-heading code {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-xs);
+	background: transparent;
+	padding: 0;
+}
+
+.cb-hud-menu-editor__section-actions,
+.cb-hud-menu-editor__item-actions,
+.cb-hud-menu-editor__footer-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+}
+
+.cb-hud-menu-editor__drag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--cb-text-muted);
+	cursor: grab;
+}
+
+.cb-hud-menu-editor__drag:hover,
+.cb-hud-menu-editor__drag:focus-visible {
+	color: var(--cb-text-strong);
+}
+
+.cb-hud-menu-editor__drag:active {
+	cursor: grabbing;
+}
+
+/*
+ * Keep Dashicons optically centered inside HUD editor controls. WordPress'
+ * Dashicons baseline rules are useful for inline text, but these icons live
+ * inside flex-based controls and should use the control box as their axis.
+ */
+.cb-hud-menu-editor__drag .dashicons,
+.cb-hud-menu-editor__section-actions .cb-core-button > .dashicons,
+.cb-hud-menu-editor__item-actions .cb-core-button > .dashicons,
+.cb-hud-menu-editor__custom-action .cb-core-button > .dashicons {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	line-height: 1;
+	vertical-align: middle;
+}
+
+.cb-hud-menu-editor__drag .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+.cb-hud-menu-editor__drag .dashicons::before,
+.cb-hud-menu-editor__section-actions .cb-core-button > .dashicons::before,
+.cb-hud-menu-editor__item-actions .cb-core-button > .dashicons::before,
+.cb-hud-menu-editor__custom-action .cb-core-button > .dashicons::before {
+	display: block;
+	width: 1em;
+	height: 1em;
+	line-height: 1em;
+	text-align: center;
+}
+
+.cb-hud-menu-editor__items {
+	display: grid;
+}
+
+.cb-hud-menu-editor__item {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--cb-space-3);
+	min-height: 52px;
+	padding: var(--cb-space-2) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+	background: var(--cb-surface-1);
+	transition: opacity 120ms ease, background 120ms ease;
+}
+
+.cb-hud-menu-editor__item:last-of-type {
+	border-bottom: 0;
+}
+
+.cb-hud-menu-editor__item.is-disabled {
+	opacity: 0.55;
+}
+
+.cb-hud-menu-editor__item-main {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-hud-menu-editor__item-label {
+	color: var(--cb-text-strong);
+	font-weight: var(--cb-fw-medium);
+}
+
+.cb-hud-menu-editor__item-url {
+	flex-basis: 100%;
+	min-width: 0;
+	overflow: hidden;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-xs);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-hud-menu-editor__visibility {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-medium);
+	white-space: nowrap;
+}
+
+.cb-hud-menu-editor__visibility input[type="checkbox"] {
+	margin: 0;
+}
+
+.cb-hud-menu-editor__empty {
+	margin: 0;
+	padding: var(--cb-space-4);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-hud-menu-editor__empty.is-hidden {
+	display: none;
+}
+
+.cb-hud-menu-editor__custom-form {
+	display: grid;
+	grid-template-columns: minmax(170px, 0.8fr) minmax(260px, 1.4fr) minmax(180px, 0.8fr) auto;
+	align-items: end;
+	gap: var(--cb-space-3);
+	margin-top: var(--cb-space-4);
+}
+
+.cb-hud-menu-editor__custom-form .cb-core-field {
+	margin: 0;
+}
+
+.cb-hud-menu-editor__custom-action {
+	display: flex;
+	align-items: flex-end;
+}
+
+.cb-hud-menu-editor__validation {
+	min-height: 1.4em;
+	margin: var(--cb-space-2) 0 0;
+	color: var(--cb-danger);
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-hud-menu-editor__footer-actions {
+	max-width: 980px;
+	margin-top: var(--cb-space-5);
+	padding-top: var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+}
+
+@media (max-width: 900px) {
+	.cb-hud-menu-editor__custom-form {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media (max-width: 782px) {
+	.cb-hud-menu-editor__section-header,
+	.cb-hud-menu-editor__item {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.cb-hud-menu-editor__section-actions,
+	.cb-hud-menu-editor__item-actions {
+		grid-column: 1 / -1;
+		justify-content: flex-end;
+		padding-left: 44px;
+	}
+
+	.cb-hud-menu-editor__custom-form {
+		grid-template-columns: 1fr;
+	}
+
+	.cb-hud-menu-editor__footer-actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+}

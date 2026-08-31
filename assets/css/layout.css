@@ -1,0 +1,171 @@
+/**
+ * layout.css - Core Blueprint Suite
+ *
+ * Layout primitives for CB admin pages:
+ *   - Page wrap (.cb-core-wrap)
+ *   - Page heading + version chip (.cb-core-title / .cb-core-version)
+ *   - Page intro paragraph (.cb-core-intro)
+ *   - Section headings (h2 inside .cb-core-wrap)
+ *
+ * Selectors are scoped to .cb-core-wrap rather than to a body theme-
+ * attribute because the wrap class itself is exclusive to CB admin
+ * screens - WP-admin chrome is never inside it. This keeps the
+ * cascade simple now that the codebase ships only CB themes.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Page wrap ────────────────────────────────────────────────────────── */
+
+.cb-core-wrap {
+	max-width: none;
+	margin: 0;
+	padding: var(--cb-space-3) 0 var(--cb-space-6);
+	color: var(--cb-text);
+}
+
+/* Narrow modifier - used on documentation-style pages (About, future
+ * help/onboarding pages) where line-length matters more than utilising
+ * the full admin canvas. */
+.cb-core-wrap--narrow {
+	max-width: 900px;
+}
+
+/* ─── Page heading (h1) + version chip ─────────────────────────────────── */
+
+.cb-core-wrap .cb-core-title {
+	display: flex;
+	align-items: baseline;
+	gap: var(--cb-space-3);
+	margin: 0 0 var(--cb-space-2);
+	font-size: var(--cb-fs-3xl);
+	font-weight: var(--cb-fw-medium);
+	line-height: var(--cb-lh-normal);
+	letter-spacing: -0.01em;
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-core-version {
+	display: inline-block;
+	padding: 3px var(--cb-space-2);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-medium);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-pill);
+}
+
+/* ─── Page intro paragraph ─────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-intro {
+	max-width: 72ch;
+	margin: 0 0 var(--cb-space-4);
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Section headings (opt-in via class) ──────────────────────────────
+ *
+ * Top-level Core Admin sections use WordPress-like geometry: normal
+ * casing, compact spacing, and no decorative divider by default.
+ * Core Blueprint identity comes from theme tokens, not from oversized
+ * or heavily transformed typography.
+ *
+ * The base reset on the wrap below is intentional: bare h2s remain
+ * compact so cards, modals, and inline component headings can provide
+ * their own scoped presentation without inheriting page-section styles.
+ */
+
+.cb-core-wrap h2 {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-strong);
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.cb-core-wrap h2.cb-core-section-title,
+.cb-core-wrap .cb-core-section-title {
+	margin: 0 0 var(--cb-space-3);
+	padding-bottom: 0;
+	letter-spacing: normal;
+	text-transform: none;
+	border-bottom: 0;
+}
+
+.cb-core-wrap .cb-core-section:first-of-type h2.cb-core-section-title,
+.cb-core-wrap .cb-core-section:first-of-type .cb-core-section-title {
+	margin-top: 0;
+}
+
+/* ─── Section vs panel - semantic guidance ─────────────────────────────── */
+/*
+ * cb-core-section:
+ *   Logical grouping with an h2 heading. No frame, no background. Use
+ *   for pages where content is a flow of distinct topics (e.g. dashboard
+ *   tile groups, log-page tabs, settings flows, data displays).
+ *
+ *   Defined here as a layout primitive because the rule of thumb for
+ *   spacing is uniform across pages.
+ *
+ * cb-core-panel:
+ *   Framed container with border and surface-1 background. With or
+ *   without an h2. Use for config cards that should read as a self-
+ *   contained unit (e.g. Failsafe modes, Login Shield protection card,
+ *   Notifications group, Reports overview tab cards).
+ *
+ *   Defined in components/panels.css with its own visual rules.
+ */
+
+.cb-core-wrap .cb-core-section {
+	margin: 0 0 var(--cb-space-5);
+}
+
+.cb-core-wrap .cb-core-section:last-child {
+	margin-bottom: 0;
+}
+
+/* ─── Stack layout primitive ─────────────────────────────────────────────
+ *
+ * Vertical composition primitive for sibling components/sections. Child
+ * components own their internal geometry; Stack owns only the space between
+ * them. This avoids page-specific margin chains and keeps spacing token-based.
+ *
+ * Markup:
+ *   <div class="cb-core-stack">...</div>
+ *   <div class="cb-core-stack cb-core-stack--compact">...</div>
+ *   <div class="cb-core-stack cb-core-stack--loose">...</div>
+ */
+
+.cb-core-wrap .cb-core-stack,
+.cb-core-form-scope .cb-core-stack {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-core-stack--compact,
+.cb-core-form-scope .cb-core-stack--compact {
+	gap: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-core-stack--loose,
+.cb-core-form-scope .cb-core-stack--loose {
+	gap: var(--cb-space-5);
+}
+
+/* When a section participates directly in a Stack, the Stack owns the
+ * inter-section spacing. Reset the section's legacy flow margin to avoid
+ * double spacing. */
+.cb-core-wrap .cb-core-stack > .cb-core-section,
+.cb-core-form-scope .cb-core-stack > .cb-core-section {
+	margin-bottom: 0;
+}

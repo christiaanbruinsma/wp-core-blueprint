@@ -1,0 +1,135 @@
+/**
+ * Core Blueprint Modal Foundation - WordPress-native presentation adapter.
+ *
+ * Standalone CB extension screens opt into this stylesheet through
+ * CB\Core\UI\Assets::enqueue_modals(). Keep this scoped to wp-admin and do
+ * not import Core Admin Theme tokens/dark-mode presentation here.
+ */
+
+body.wp-admin dialog.cb-core-modal--wp-native {
+	box-sizing: border-box;
+	width: min(90vw, 560px);
+	max-height: min(85vh, 720px);
+	padding: 0;
+	overflow: auto;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	color: #1d2327;
+	box-shadow: 0 3px 12px rgb(0 0 0 / 0.18);
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native.cb-core-modal--wide {
+	width: min(92vw, 760px);
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native::backdrop {
+	background: rgb(0 0 0 / 0.4);
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__form {
+	margin: 0;
+	padding: 20px;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__title {
+	margin: 0 0 12px;
+	padding: 0;
+	font-size: 1.3em;
+	font-weight: 600;
+	line-height: 1.4;
+	color: #1d2327;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native.cb-core-modal--danger .cb-core-modal__title {
+	color: #b32d2e;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__body {
+	margin: 0 0 16px;
+	line-height: 1.5;
+	color: #2c3338;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__body p {
+	margin: 0 0 12px;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__body p:last-child {
+	margin-bottom: 0;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__body code,
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__hint code {
+	padding: 2px 5px;
+	border-radius: 2px;
+	background: #f0f0f1;
+	color: #1d2327;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 13px;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__hint {
+	margin: 0 0 8px;
+	color: #50575e;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__input {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+	margin: 0 0 8px;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__hint + .cb-core-modal__input {
+	font-family: Consolas, Monaco, monospace;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__status {
+	min-height: 1.4em;
+	margin: 0;
+	color: #646970;
+	font-size: 12px;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__status.is-error {
+	color: #d63638;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin: 20px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions .cb-core-button--danger {
+	border-color: #b32d2e;
+	background: #fff;
+	color: #b32d2e;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions .cb-core-button--danger:hover,
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions .cb-core-button--danger:focus {
+	border-color: #8a2424;
+	background: #b32d2e;
+	color: #fff;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions .cb-core-button--remediation {
+	border-color: #996800;
+	color: #705000;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions [disabled] {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+	body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__form {
+		padding: 16px;
+	}
+}

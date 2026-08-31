@@ -1,0 +1,194 @@
+/**
+ * components/log-table.css - Core Blueprint Suite
+ *
+ * Generic log-table component for tabular log data (connection log,
+ * audit/system log events, maintenance-report admin table). Replaces
+ * legacy `<table class="wp-list-table">` markup with a CSS-Grid based
+ * structure that retains tabular ARIA semantics (role="table" /
+ * role="row" / role="cell" / role="columnheader").
+ *
+ * Markup contract:
+ *   <section class="cb-core-log cb-core-log--{variant}"
+ *            role="table"
+ *            aria-label="...">
+ *     <div class="cb-core-log__legend" role="rowgroup">
+ *       <div class="cb-core-log__row cb-core-log__row--head" role="row">
+ *         <span class="cb-core-log__cell"
+ *               data-col="time"
+ *               role="columnheader">Time</span>
+ *         ...
+ *       </div>
+ *     </div>
+ *     <div class="cb-core-log__body" role="rowgroup">
+ *       <div class="cb-core-log__row" role="row">
+ *         <div class="cb-core-log__cell" data-col="time" role="cell">
+ *           <time datetime="...">...</time>
+ *         </div>
+ *         ...
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * Each variant declares its own --cb-log-cols custom property to set
+ * grid-template-columns. Three variants ship: connection, events,
+ * maintenance.
+ *
+ * Responsive strategy (matches Hub fleet-table):
+ *   - >=1024px  tabular desktop with grid columns
+ *   - 640-1023  two-column card view (legend hidden, cells stacked
+ *               in pairs with data-label prefix)
+ *   - <640px    single-column stacked card view
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Container ────────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-log {
+	display: block;
+	margin-top: var(--cb-space-3);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	overflow: hidden;
+}
+
+/* ─── Row layout (CSS Grid, columns per variant) ───────────────────────── */
+
+.cb-core-wrap .cb-core-log__row {
+	display: grid;
+	grid-template-columns: var(--cb-log-cols, 1fr);
+	align-items: start;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-wrap .cb-core-log__row:last-child {
+	border-bottom: 0;
+}
+
+/* Legend row - column headers, denser styling */
+.cb-core-wrap .cb-core-log__row--head {
+	padding-top: var(--cb-space-2);
+	padding-bottom: var(--cb-space-2);
+	background: var(--cb-surface-2);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+/* Striped rows (alternates body rows for scan-ability) */
+.cb-core-wrap .cb-core-log__body .cb-core-log__row:nth-child(odd) {
+	background: var(--cb-surface-2);
+}
+
+/* Hover affordance on data rows */
+.cb-core-wrap .cb-core-log__body .cb-core-log__row:hover {
+	background: color-mix(in srgb, var(--cb-accent) 6%, transparent);
+}
+
+/* ─── Cell ─────────────────────────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-log__cell {
+	min-width: 0; /* Prevent grid blowout on long content */
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text);
+	overflow-wrap: break-word;
+}
+
+.cb-core-wrap .cb-core-log__cell[data-col="time"] {
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-xs);
+	white-space: nowrap;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-log__cell[data-col="duration"] {
+	font-family: Consolas, Monaco, monospace;
+	white-space: nowrap;
+	text-align: right;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-log__cell[data-col="ip"],
+.cb-core-wrap .cb-core-log__cell[data-col="source_ip"] {
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-xs);
+	white-space: nowrap;
+}
+
+/* ─── Variants - column widths ─────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-log--connection {
+	--cb-log-cols: 140px 260px 120px 160px 80px 130px 1fr;
+}
+
+.cb-core-wrap .cb-core-log--events {
+	--cb-log-cols: 140px 90px 220px 140px 140px 1fr;
+}
+
+.cb-core-wrap .cb-core-log--maintenance {
+	--cb-log-cols: 140px 1fr 160px 90px 90px;
+}
+
+/* ─── Empty state inside log ───────────────────────────────────────────── */
+
+.cb-core-wrap .cb-core-log .cb-core-empty {
+	margin: 0;
+	padding: var(--cb-space-6) var(--cb-space-4);
+	text-align: center;
+}
+
+/* ─── Responsive: 640-1023px → two-column card view ────────────────────── */
+
+@media (max-width: 1023px) {
+	.cb-core-wrap .cb-core-log__row--head {
+		display: none;
+	}
+
+	.cb-core-wrap .cb-core-log__row {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--cb-space-2) var(--cb-space-4);
+		padding: var(--cb-space-4);
+	}
+
+	.cb-core-wrap .cb-core-log__cell::before {
+		content: attr(data-label);
+		display: block;
+		margin-bottom: 2px;
+		font-size: var(--cb-fs-xs);
+		font-weight: var(--cb-fw-semibold);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--cb-text-muted);
+	}
+
+	.cb-core-wrap .cb-core-log__cell[data-col="time"],
+	.cb-core-wrap .cb-core-log__cell[data-col="action"],
+	.cb-core-wrap .cb-core-log__cell[data-col="event"],
+	.cb-core-wrap .cb-core-log__cell[data-col="description"] {
+		grid-column: 1 / -1;
+	}
+
+	.cb-core-wrap .cb-core-log__cell[data-col="duration"] {
+		text-align: left;
+	}
+}
+
+/* ─── Responsive: <640px → single-column stacked ──────────────────────── */
+
+@media (max-width: 639px) {
+	.cb-core-wrap .cb-core-log__row {
+		grid-template-columns: 1fr;
+		gap: var(--cb-space-2);
+	}
+
+	.cb-core-wrap .cb-core-log__cell {
+		grid-column: 1;
+	}
+}

@@ -1,0 +1,79 @@
+/**
+ * pages/preferences-permissions.css - Core Blueprint Suite
+ *
+ * WordPress-Pro presentation for Preferences → Permissions. Permission
+ * enforcement, lockout prevention and save boundaries live outside this file.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions .cb-core-notice {
+	max-width: 920px;
+	margin-bottom: var(--cb-space-5);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-self-state {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--cb-space-2) var(--cb-space-3);
+	margin: var(--cb-space-3) 0 var(--cb-space-4);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-self-state .description {
+	margin: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-operator-list {
+	margin-top: var(--cb-space-3);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-operator-list .cb-core-col-status {
+	width: 140px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-operator-list tbody tr.cb-core-row-operator {
+	background: var(--cb-tint-accent);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-settings-table {
+	max-width: 920px;
+	margin-top: var(--cb-space-2);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-settings-table th {
+	width: 190px;
+	padding-left: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-settings-table td {
+	padding-right: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-capabilities label {
+	display: block;
+	margin-bottom: var(--cb-space-1);
+	font-weight: var(--cb-fw-medium);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-capabilities .description {
+	max-width: 760px;
+	margin: 0 0 var(--cb-space-4) 24px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-capabilities .description:last-child {
+	margin-bottom: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions .cb-core-actions {
+	margin-top: var(--cb-space-3);
+}
+
+@media (max-width: 782px) {
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-settings-table th,
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-permissions-settings-table td {
+		width: auto;
+		padding-left: 0;
+	}
+}

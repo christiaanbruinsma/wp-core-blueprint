@@ -1,0 +1,186 @@
+/**
+ * pages/logs.css - Core Blueprint Suite
+ *
+ * Styling for the Logs admin pages (Audit, System, Connection,
+ * Maintenance Report). Covers:
+ *   - Native WordPress log tables for Audit/System/Maintenance
+ *   - Shared Toolbar / Filter Bar composition
+ *   - Shared Badge severity classification + technical data cells
+ *   - Responsive table overflow handling
+ *   - Plain/Technical mode presentation
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Legacy severity pills ───────────────────────────────────────────── */
+/* Retained only for legacy Mail consumers until the Mail WordPress-Pro audit.
+ * Core Logs and Preferences > Notifications use shared cb-core-badge-severity. */
+
+.cb-core-severity {
+	display: inline-block;
+	padding: 2px var(--cb-space-2);
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.3px;
+	text-transform: uppercase;
+	color: var(--cb-text-strong);
+}
+
+.cb-core-severity.info     { background: var(--cb-surface-2);  }
+.cb-core-severity.notice   { background: var(--cb-tint-accent); }
+.cb-core-severity.warning  { background: var(--cb-tint-warning); }
+.cb-core-severity.critical { background: var(--cb-tint-danger); }
+
+/* ─── Event-type + context cells ───────────────────────────────────────── */
+
+.cb-core-event-type {
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-accent-strong);
+}
+
+.cb-core-context-preview {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Responsive table overflow ────────────────────────────────────────── */
+
+.cb-core-wrap table.widefat td,
+.cb-core-wrap table.widefat th {
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+/* Monospace "key=value · key=value" strings in audit Context - wrap onto
+ * multiple lines instead of overflowing horizontally. */
+.cb-core-wrap table.widefat td code,
+.cb-core-wrap table.widefat td .cb-core-context {
+	white-space: normal;
+	word-break: break-all;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Log pages - WordPress Pro management-data layout
+ *
+ * Audit/System/Maintenance use real WordPress `widefat striped` tables.
+ * The shared Toolbar remains the canonical filter/action composition but
+ * is deliberately non-sticky: Logs behaves like a normal wp-admin data
+ * screen rather than a persistent app workspace.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Section spacing ──────────────────────────────────────────────────── */
+
+.cb-core-logs-page .cb-core-section {
+	margin-bottom: var(--cb-space-5);
+}
+
+.cb-core-logs-page .cb-core-section:last-child {
+	margin-bottom: 0;
+}
+
+.cb-core-logs-page .cb-core-log-chart {
+	margin-bottom: var(--cb-space-5);
+}
+
+.cb-core-logs-page .cb-core-log-filters-wrap {
+	margin-bottom: var(--cb-space-4);
+}
+
+/* ─── Native log tables ────────────────────────────────────────────────── */
+
+.cb-core-logs-page .cb-core-log-table-scroll {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.cb-core-logs-page .cb-core-log-table {
+	min-width: 920px;
+	margin: 0;
+}
+
+.cb-core-logs-page .cb-core-log-table th,
+.cb-core-logs-page .cb-core-log-table td {
+	vertical-align: top;
+}
+
+/* Audit has six information-dense columns. Keep the five identity columns at
+ * predictable readable widths and let Context consume the remaining space.
+ * On narrower viewports the existing scroll wrapper handles overflow instead
+ * of collapsing Event/User/IP into one-character columns. */
+.cb-core-logs-page .cb-core-log-table--audit {
+	min-width: 1100px;
+	table-layout: fixed;
+}
+
+.cb-core-logs-page .cb-core-log-table--audit .cb-core-log-col-time { width: 160px; }
+.cb-core-logs-page .cb-core-log-table--audit .cb-core-log-col-severity { width: 95px; }
+.cb-core-logs-page .cb-core-log-table--audit .cb-core-log-col-event { width: 280px; }
+.cb-core-logs-page .cb-core-log-table--audit .cb-core-log-col-user { width: 190px; }
+.cb-core-logs-page .cb-core-log-table--audit .cb-core-log-col-ip { width: 145px; }
+
+.cb-core-logs-page .cb-core-log-col-time { width: 150px; }
+.cb-core-logs-page .cb-core-log-col-severity { width: 96px; }
+.cb-core-logs-page .cb-core-log-col-event { width: 240px; }
+.cb-core-logs-page .cb-core-log-col-user { width: 150px; }
+.cb-core-logs-page .cb-core-log-col-ip { width: 145px; }
+.cb-core-logs-page .cb-core-log-col-category { width: 125px; }
+.cb-core-logs-page .cb-core-log-col-source { width: 110px; }
+
+.cb-core-logs-page .cb-core-log-time,
+.cb-core-logs-page .cb-core-log-ip {
+	font-family: Consolas, Monaco, monospace;
+	font-size: var(--cb-fs-xs);
+	white-space: nowrap;
+}
+
+/* ─── Retention read-only sections ─────────────────────────────────────── */
+
+.cb-core-logs-retention-section + .cb-core-logs-retention-section {
+	margin-top: var(--cb-space-6);
+}
+
+.cb-core-logs-retention-section > .widefat {
+	margin-top: var(--cb-space-3);
+}
+
+/* ─── Log description + meta strip ─────────────────────────────────────── */
+/* Appears between page title and filter bar on every log tab. The
+ * description paragraph uses the base .cb-core-intro styling (68ch
+ * max-width, muted colour, line-height); this only tightens the bottom
+ * margin so the meta strip sits directly underneath. */
+
+.cb-core-logs-page .cb-core-log-description {
+	max-width: 68ch;
+	margin-bottom: var(--cb-space-2);
+}
+
+/* ─── Plain-mode row styling ───────────────────────────────────────────── */
+/* When Plain mode is active, the event column shows a single readable
+ * sentence instead of the raw event_type slug + a technical label. */
+
+.cb-core-logs-page .cb-core-event-plain {
+	display: block;
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-strong);
+}
+
+/* Connection log: plain mode replaces `GET /status` code block with a
+ * readable sentence. Visually aligned with the category pill. */
+
+.cb-core-logs-page .cb-core-action-plain {
+	display: block;
+	margin-top: var(--cb-space-1);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+	color: var(--cb-text-muted);
+}

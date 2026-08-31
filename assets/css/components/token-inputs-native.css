@@ -1,0 +1,31 @@
+/**
+ * components/token-inputs-native.css - Core Blueprint Token Input / WP Native adapter
+ * Standalone extension screens use this without Core Admin Theme tokens.
+ * @package CB\Core
+ * @since   1.0.0
+ */
+body.wp-admin .cb-core-token-input--wp-native{display:grid;gap:8px;max-width:760px}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__editor{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:32px;box-sizing:border-box;padding:3px 7px;background:#fff;border:1px solid #8c8f94;border-radius:4px;color:#2c3338;transition:border-color 120ms ease,box-shadow 120ms ease,background-color 120ms ease}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__editor:focus-within{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1;outline:2px solid transparent}
+body.wp-admin .cb-core-token-input--wp-native.has-unknown-tokens .cb-core-token-input__editor{border-color:#d63638}
+body.wp-admin .cb-core-token-input--wp-native.has-unknown-tokens .cb-core-token-input__editor:focus-within{box-shadow:0 0 0 1px #d63638}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__text{box-sizing:content-box;min-width:2ch;max-width:100%;height:24px;margin:0;padding:0 1px;background:transparent;border:0;border-radius:0;box-shadow:none;outline:0;color:#2c3338;font:inherit;line-height:24px}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__text:focus{background:transparent;border:0;box-shadow:none;outline:0}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__token{display:inline-flex;align-items:center;gap:3px;min-height:24px;box-sizing:border-box;padding:1px 3px 1px 7px;background:#f6f7f7;border:1px solid #c3c4c7;border-radius:3px;color:#2c3338;font-size:13px;line-height:1.5;white-space:nowrap}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__token.is-unknown{background:#fcf0f1;border-color:#d63638;color:#b32d2e}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__remove{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin:0;padding:0;border:0;border-radius:2px;background:transparent;color:#646970;font:inherit;font-size:16px;font-weight:400;line-height:1;cursor:pointer}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__remove:hover{background:#dcdcde;color:#1d2327}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__remove:focus-visible{outline:2px solid #2271b1;outline-offset:1px}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__picker{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__picker-label{margin-right:2px;color:#646970;font-size:13px;line-height:1.4}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__insert{margin:0;white-space:nowrap}
+body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__status{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+body.wp-admin .cb-core-token-input--wp-native.is-all-selected .cb-core-token-input__editor{border-color:#2271b1;background:#f0f6fc}
+body.wp-admin .cb-core-token-input--wp-native.is-disabled .cb-core-token-input__editor{background:#f0f0f1;border-color:#dcdcde;color:#646970;box-shadow:none}
+body.wp-admin .cb-core-token-input--wp-native.is-readonly .cb-core-token-input__editor{background:#f6f7f7;border-color:#c3c4c7;color:#646970;box-shadow:none}
+body.wp-admin .cb-core-token-input--wp-native.is-disabled .cb-core-token-input__text,body.wp-admin .cb-core-token-input--wp-native.is-readonly .cb-core-token-input__text{color:#646970}
+body.wp-admin .cb-core-token-input--wp-native.is-disabled .cb-core-token-input__token,body.wp-admin .cb-core-token-input--wp-native.is-readonly .cb-core-token-input__token{background:#dcdcde;border-color:#c3c4c7;color:#646970}
+body.wp-admin .cb-core-token-input--wp-native.is-disabled .cb-core-token-input__remove,body.wp-admin .cb-core-token-input--wp-native.is-readonly .cb-core-token-input__remove{color:#8c8f94;cursor:not-allowed}
+body.wp-admin .cb-core-token-input--wp-native.is-disabled .cb-core-token-input__insert,body.wp-admin .cb-core-token-input--wp-native.is-readonly .cb-core-token-input__insert{cursor:not-allowed}
+body.wp-admin .cb-core-token-input__native{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+@media (prefers-reduced-motion:reduce){body.wp-admin .cb-core-token-input--wp-native .cb-core-token-input__editor{transition:none}}

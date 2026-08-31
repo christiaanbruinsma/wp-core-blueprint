@@ -1,0 +1,909 @@
+/**
+ * pages/console.css - CB Console runner.
+ *
+ * Three-panel layout:
+ *
+ *   ┌──────────┬─────────────────────────┐
+ *   │ Picker   │ Argument form           │
+ *   │ (search  │ (selected command's     │
+ *   │  + list) │  schema-driven inputs)  │
+ *   ├──────────┴─────────────────────────┤
+ *   │ Output stream                      │
+ *   └────────────────────────────────────┘
+ *
+ * On widths < 960px the picker collapses to a horizontal scrollable
+ * top bar and form/output stack vertically.
+ *
+ * All colours via --cb-* tokens - no hardcoded values. Light + dark
+ * themes inherit from the token system unchanged.
+ *
+ * @package CB\Core\Console
+ * @since   1.0.0
+ */
+
+/* ─── Container + grid ───────────────────────────────────────────── */
+
+.cb-core-wrap.cb-console {
+	max-width: none;
+}
+
+.cb-core-wrap .cb-console__app {
+	display: grid;
+	grid-template-columns: 17.5rem 1fr;
+	grid-template-rows: minmax(20rem, 1.2fr) minmax(15rem, 1fr);
+	grid-template-areas:
+		"picker form"
+		"output output";
+	gap: var(--cb-space-3);
+	margin-top: var(--cb-space-4);
+	/*
+	 * Fixed viewport-relative height. Without this, the grid grows with
+	 * its tallest child (the picker, which can hold 25+ commands at
+	 * ~60px each = 1500px+), turning the entire admin page into a long
+	 * scroll. With a fixed height, each panel scrolls internally -
+	 * standard three-panel app behaviour.
+	 *
+	 * 100vh - 14rem = full viewport minus admin bar (~32px) + WP page
+	 * padding (~80px) + page heading (~80px) + intro paragraph (~48px).
+	 * 14rem is the empirically-fitting subtraction; tweak if the heading
+	 * area changes substantially.
+	 */
+	height: calc(100vh - 14rem);
+	min-height: 32rem;
+}
+
+/* ─── Picker (left column) ──────────────────────────────────────── */
+
+.cb-core-wrap .cb-console__picker {
+	grid-area: picker;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-console__picker-search {
+	flex-shrink: 0;
+	padding: var(--cb-space-2);
+	border-bottom: 1px solid var(--cb-border);
+	background: var(--cb-surface-2);
+}
+
+.cb-core-wrap .cb-console__search-input {
+	width: 100%;
+	padding: 0.4rem var(--cb-space-2);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text);
+	font-family: inherit;
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-wrap .cb-console__search-input:focus {
+	outline: none;
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-wrap .cb-console__picker-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--cb-space-1) 0;
+}
+
+.cb-core-wrap .cb-console__picker-loading,
+.cb-core-wrap .cb-console__picker-empty {
+	padding: var(--cb-space-4);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	text-align: center;
+}
+
+/* Group header - "Read-only", "State-change", "Destructive". Acts as
+ * a visual hierarchy clue without competing with command names. */
+.cb-core-wrap .cb-console__group-heading {
+	margin: var(--cb-space-2) 0 var(--cb-space-1);
+	padding: 0 var(--cb-space-3);
+	font-size: var(--cb-fs-2xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-console__group-heading:first-child {
+	margin-top: var(--cb-space-1);
+}
+
+/* Command tile - clickable row in the picker. Active state is
+ * accent-tinted, disabled state (write-actions in 1.6.0-dev) is muted. */
+.cb-core-wrap .cb-console__cmd {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	width: 100%;
+	padding: 0.5rem var(--cb-space-3);
+	background: transparent;
+	border: 0;
+	border-left: 0.1875rem solid transparent;
+	color: var(--cb-text);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: var(--cb-fs-md);
+	text-align: left;
+	transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.cb-core-wrap .cb-console__cmd:hover,
+.cb-core-wrap .cb-console__cmd:focus-visible {
+	background: color-mix(in srgb, var(--cb-accent) 6%, transparent);
+	outline: none;
+}
+
+.cb-core-wrap .cb-console__cmd.is-active {
+	background: color-mix(in srgb, var(--cb-accent) 12%, transparent);
+	border-left-color: var(--cb-accent);
+}
+
+.cb-core-wrap .cb-console__cmd.is-disabled {
+	opacity: 0.58;
+}
+
+.cb-core-wrap .cb-console__cmd-name {
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	line-height: var(--cb-lh-tight);
+}
+
+.cb-core-wrap .cb-console__cmd-desc {
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ─── Argument form (right column) ──────────────────────────────── */
+
+.cb-core-wrap .cb-console__form {
+	grid-area: form;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-console__form-header {
+	flex-shrink: 0;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+	background: var(--cb-surface-2);
+}
+
+.cb-core-wrap .cb-console__form-title {
+	margin: 0;
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	line-height: var(--cb-lh-tight);
+}
+
+.cb-core-wrap .cb-console__form-desc {
+	margin: var(--cb-space-1) 0 0;
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-console__form-body {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-console__form-empty,
+.cb-core-wrap .cb-console__form-no-args {
+	padding: var(--cb-space-3);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	text-align: center;
+	background: var(--cb-surface-2);
+	border-radius: var(--cb-radius-sm);
+}
+
+/* Field - label above input, optional help text below. */
+.cb-core-wrap .cb-console__field {
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-console__field-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-console__field-required {
+	margin-left: 0.3rem;
+	font-weight: var(--cb-fw-regular);
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-warning);
+}
+
+.cb-core-wrap .cb-console__field-input,
+.cb-core-wrap .cb-console__field-select {
+	width: 100%;
+	padding: 0.4rem var(--cb-space-2);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text);
+	font-family: inherit;
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-wrap .cb-console__field-input:focus,
+.cb-core-wrap .cb-console__field-select:focus {
+	outline: none;
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-wrap .cb-console__field-input--int {
+	max-width: 8rem;
+}
+
+.cb-core-wrap .cb-console__field-input--date {
+	max-width: 14rem;
+}
+
+/* User-picker - text input + autocomplete dropdown */
+.cb-core-wrap .cb-console__user-picker {
+	position: relative;
+}
+
+.cb-core-wrap .cb-console__field-input--user {
+	width: 100%;
+}
+
+.cb-core-wrap .cb-console__user-picker-dropdown {
+	position: absolute;
+	top: calc(100% + 0.25rem);
+	left: 0;
+	right: 0;
+	z-index: 10;
+	max-height: 18rem;
+	overflow-y: auto;
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, #000 25%, transparent);
+}
+
+.cb-core-wrap .cb-console__user-picker-loading,
+.cb-core-wrap .cb-console__user-picker-empty,
+.cb-core-wrap .cb-console__user-picker-error {
+	padding: var(--cb-space-3) var(--cb-space-4);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	text-align: center;
+}
+
+.cb-core-wrap .cb-console__user-picker-error {
+	color: var(--cb-danger);
+}
+
+.cb-core-wrap .cb-console__user-picker-opt {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
+	gap: var(--cb-space-3);
+	width: 100%;
+	padding: 0.5rem var(--cb-space-3);
+	background: transparent;
+	border: 0;
+	border-bottom: 1px solid var(--cb-border);
+	color: var(--cb-text);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: var(--cb-fs-sm);
+	text-align: left;
+	transition: background 0.1s ease;
+}
+
+.cb-core-wrap .cb-console__user-picker-opt:last-child {
+	border-bottom: 0;
+}
+
+.cb-core-wrap .cb-console__user-picker-opt:hover,
+.cb-core-wrap .cb-console__user-picker-opt:focus-visible,
+.cb-core-wrap .cb-console__user-picker-opt.is-active {
+	background: color-mix(in srgb, var(--cb-accent) 10%, transparent);
+	outline: none;
+}
+
+.cb-core-wrap .cb-console__user-picker-opt-login {
+	font-family: var(--cb-ff-mono);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-console__user-picker-opt-name {
+	color: var(--cb-text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-console__user-picker-opt-email {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-xs);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-console__field-checkbox-row {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-wrap .cb-console__field-help {
+	margin-top: 0.3rem;
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-console__field-error {
+	margin-top: 0.3rem;
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-danger);
+}
+
+/* ─── Form footer (Run button + side-effects banner) ────────────── */
+
+.cb-core-wrap .cb-console__form-footer {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+	background: var(--cb-surface-2);
+}
+
+.cb-core-wrap .cb-console__form-side-effects {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-console__side-effect-badge {
+	display: inline-block;
+	padding: 0.125rem 0.5rem;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-pill);
+	background: var(--cb-surface-1);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-xs);
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-console__side-effect-badge--none {
+	color: var(--cb-success);
+	border-color: color-mix(in srgb, var(--cb-success) 40%, var(--cb-border));
+}
+
+.cb-core-wrap .cb-console__side-effect-badge--state {
+	color: var(--cb-warning);
+	border-color: color-mix(in srgb, var(--cb-warning) 50%, var(--cb-border));
+}
+
+.cb-core-wrap .cb-console__side-effect-badge--destructive {
+	color: var(--cb-danger);
+	border-color: color-mix(in srgb, var(--cb-danger) 50%, var(--cb-border));
+}
+
+.cb-core-wrap .cb-console__pending-note {
+	flex: 1;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-left: 0.25rem solid var(--cb-accent);
+	border-radius: var(--cb-radius-sm);
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	color: var(--cb-text);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+/* Warning-banner - shown above the Run button for state-change and
+ * destructive commands. Catches the operator's attention without
+ * blocking interaction; modal-confirm follows for destructive. */
+.cb-core-wrap .cb-console__warning-banner {
+	flex: 1;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-left-width: 0.25rem;
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-console__warning-banner--state {
+	border-left-color: var(--cb-warning);
+	background: color-mix(in srgb, var(--cb-warning) 10%, transparent);
+	color: var(--cb-text);
+}
+
+.cb-core-wrap .cb-console__warning-banner--destructive {
+	border-left-color: var(--cb-danger);
+	background: color-mix(in srgb, var(--cb-danger) 10%, transparent);
+	color: var(--cb-text);
+}
+
+/* Danger button - destructive command Run button. Stronger visual
+ * weight than primary so the operator notices the colour change as
+ * the form footer updates. */
+.cb-core-wrap .cb-console__run-btn.button-danger,
+.cb-core-wrap .cb-console__run-btn.button-danger:hover,
+.cb-core-wrap .cb-console__run-btn.button-danger:focus-visible {
+	background: var(--cb-danger);
+	border-color: var(--cb-danger);
+	color: var(--cb-on-danger);
+}
+
+.cb-core-wrap .cb-console__run-btn.button-danger:hover,
+.cb-core-wrap .cb-console__run-btn.button-danger:focus-visible {
+	filter: brightness(1.1);
+}
+
+.cb-core-wrap .cb-console__run-btn {
+	flex-shrink: 0;
+}
+
+.cb-core-wrap .cb-console__run-btn[disabled] {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+/* ─── Output (bottom row) ───────────────────────────────────────── */
+
+.cb-core-wrap .cb-console__output {
+	grid-area: output;
+	display: flex;
+	flex-direction: column;
+	min-height: 18rem;
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	overflow: hidden;
+}
+
+.cb-core-wrap .cb-console__output-header {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-2) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+	background: var(--cb-surface-2);
+}
+
+.cb-core-wrap .cb-console__output-title {
+	margin: 0;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.cb-core-wrap .cb-console__output-meta {
+	flex: 1;
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-text-muted);
+	font-family: var(--cb-ff-mono);
+}
+
+.cb-core-wrap .cb-console__output-clear {
+	flex-shrink: 0;
+}
+
+.cb-core-wrap .cb-console__output-body {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-core-wrap .cb-console__output-empty {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	font-style: italic;
+}
+
+/* Banner - top-of-output status indicator. */
+.cb-core-wrap .cb-console__banner {
+	margin-bottom: var(--cb-space-3);
+	padding: var(--cb-space-2) var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-left-width: 0.25rem;
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-console__banner--success {
+	border-left-color: var(--cb-success);
+	background: color-mix(in srgb, var(--cb-success) 8%, transparent);
+}
+
+.cb-core-wrap .cb-console__banner--warning {
+	border-left-color: var(--cb-warning);
+	background: color-mix(in srgb, var(--cb-warning) 8%, transparent);
+}
+
+.cb-core-wrap .cb-console__banner--error {
+	border-left-color: var(--cb-danger);
+	background: color-mix(in srgb, var(--cb-danger) 8%, transparent);
+}
+
+/* Running banner - shown while an async command polls for progress.
+ * Accent-tinted to match the in-progress feel without claiming success
+ * or warning prematurely. */
+.cb-core-wrap .cb-console__banner--running {
+	border-left-color: var(--cb-accent);
+	background: color-mix(in srgb, var(--cb-accent) 10%, transparent);
+}
+
+/* Async progress block - spinner + phase + elapsed counter. */
+.cb-core-wrap .cb-console__async-progress {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-3);
+	margin: var(--cb-space-3) 0;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+}
+
+.cb-core-wrap .cb-console__async-spinner {
+	flex-shrink: 0;
+	width: 1.25rem;
+	height: 1.25rem;
+	border: 0.15rem solid color-mix(in srgb, var(--cb-accent) 25%, transparent);
+	border-top-color: var(--cb-accent);
+	border-radius: 50%;
+	animation: cb-console-spin 0.8s linear infinite;
+}
+
+@keyframes cb-console-spin {
+	to { transform: rotate(360deg); }
+}
+
+.cb-core-wrap .cb-console__async-progress-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.cb-core-wrap .cb-console__async-phase {
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-wrap .cb-console__async-elapsed {
+	margin-top: 0.15rem;
+	font-size: var(--cb-fs-xs);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-console__async-stop {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-console__banner-title {
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-console__banner-msg {
+	margin-top: 0.2rem;
+	color: var(--cb-text);
+}
+
+/* The actual command output - monospace lines. */
+.cb-core-wrap .cb-console__lines {
+	margin: 0;
+	padding: 0;
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.cb-core-wrap .cb-console__cmd-echo {
+	display: block;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	margin-bottom: var(--cb-space-3);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap .cb-console__cmd-echo::before {
+	content: '$ ';
+	color: var(--cb-accent);
+	font-weight: var(--cb-fw-bold);
+}
+
+/* Foldable structured-data view */
+.cb-core-wrap .cb-console__data {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-wrap .cb-console__data-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.2rem 0.5rem;
+	background: transparent;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-muted);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: var(--cb-fs-xs);
+	transition: background 0.12s ease, color 0.12s ease;
+}
+
+.cb-core-wrap .cb-console__data-toggle:hover,
+.cb-core-wrap .cb-console__data-toggle:focus-visible {
+	color: var(--cb-text-strong);
+	background: var(--cb-surface-2);
+	outline: none;
+}
+
+.cb-core-wrap .cb-console__data-pre {
+	margin-top: var(--cb-space-2);
+	padding: var(--cb-space-3);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-xs);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-strong);
+	overflow-x: auto;
+	white-space: pre;
+	max-height: 24rem;
+}
+
+/* ─── Responsive - collapse to single column under 960px ─────────── */
+
+@media screen and (max-width: 960px) {
+	.cb-core-wrap .cb-console__app {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto auto auto;
+		grid-template-areas:
+			"picker"
+			"form"
+			"output";
+		/* On mobile/narrow viewports natural page-scroll feels right -
+		 * un-fix the height and let each panel size to its content. The
+		 * picker still caps at 18rem so it doesn't dominate. */
+		height: auto;
+		min-height: 0;
+	}
+
+	.cb-core-wrap .cb-console__picker {
+		max-height: 18rem;
+	}
+}
+
+/* ─── Modals (confirm + secret-token) ────────────────────────────── */
+
+/* Backdrop covers full viewport, blocks interaction with the page
+ * underneath. Body class .cb-console__no-scroll prevents background
+ * scroll while a modal is open. */
+.cb-console__modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 999998;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--cb-space-4);
+	background: color-mix(in srgb, #000 60%, transparent);
+	backdrop-filter: blur(2px);
+}
+
+body.cb-console__no-scroll {
+	overflow: hidden;
+}
+
+.cb-console__modal {
+	position: relative;
+	max-width: 36rem;
+	width: 100%;
+	max-height: calc(100vh - 4rem);
+	overflow-y: auto;
+	padding: var(--cb-space-5);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	box-shadow: 0 1.25rem 4rem color-mix(in srgb, #000 50%, transparent);
+	color: var(--cb-text);
+}
+
+.cb-console__modal--destructive {
+	border-top: 0.25rem solid var(--cb-danger);
+}
+
+.cb-console__modal--secret {
+	border-top: 0.25rem solid var(--cb-warning);
+}
+
+.cb-console__modal-title {
+	margin: 0 0 var(--cb-space-2);
+	font-size: var(--cb-fs-2xl);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	line-height: var(--cb-lh-tight);
+}
+
+.cb-console__modal--destructive .cb-console__modal-title {
+	color: var(--cb-danger);
+}
+
+.cb-console__modal-cmd {
+	margin: 0 0 var(--cb-space-3);
+	padding: var(--cb-space-2) var(--cb-space-3);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-strong);
+}
+
+.cb-console__modal-desc {
+	margin: 0 0 var(--cb-space-3);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-console__modal-warning {
+	margin: 0 0 var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border: 1px solid var(--cb-border);
+	border-left: 0.25rem solid var(--cb-warning);
+	border-radius: var(--cb-radius-sm);
+	background: color-mix(in srgb, var(--cb-warning) 10%, transparent);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-console__modal-actions-list {
+	margin: 0 0 var(--cb-space-3);
+	padding-left: var(--cb-space-5);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text);
+}
+
+.cb-console__modal-actions-list li {
+	margin-bottom: 0.3rem;
+}
+
+.cb-console__modal-irreversible {
+	margin: var(--cb-space-3) 0;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	background: color-mix(in srgb, var(--cb-danger) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--cb-danger) 35%, var(--cb-border));
+	border-radius: var(--cb-radius-sm);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+	text-align: center;
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-console__modal-info {
+	margin: var(--cb-space-3) 0 var(--cb-space-2);
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text);
+}
+
+.cb-console__modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--cb-space-2);
+	margin-top: var(--cb-space-4);
+	padding-top: var(--cb-space-3);
+	border-top: 1px solid var(--cb-border);
+}
+
+.cb-console__modal-confirm {
+	background: var(--cb-danger);
+	border-color: var(--cb-danger);
+	color: var(--cb-on-danger);
+}
+
+.cb-console__modal-confirm:hover,
+.cb-console__modal-confirm:focus-visible {
+	background: var(--cb-danger);
+	border-color: var(--cb-danger);
+	filter: brightness(1.1);
+	color: var(--cb-on-danger);
+}
+
+/* Secret-token URL box - readonly text input that auto-selects on
+ * focus so a manual copy is one keystroke. */
+.cb-console__secret-url {
+	width: 100%;
+	margin: 0 0 var(--cb-space-2);
+	padding: var(--cb-space-3);
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-strong);
+	font-family: var(--cb-ff-mono);
+	font-size: var(--cb-fs-sm);
+	overflow-x: auto;
+}
+
+.cb-console__secret-url:focus {
+	outline: none;
+	border-color: var(--cb-warning);
+	box-shadow: 0 0 0 1px var(--cb-warning);
+}
+
+.cb-console__secret-copy {
+	margin-bottom: var(--cb-space-3);
+}
+
+/* Sensitive-output note in the regular output panel - placeholder
+ * shown when the actual output went through a separate dialog. */
+.cb-core-wrap .cb-console__sensitive-note {
+	margin-top: var(--cb-space-3);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border: 1px dashed var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	font-style: italic;
+	text-align: center;
+}

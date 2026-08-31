@@ -1,0 +1,141 @@
+/**
+ * components/field.css - Core Blueprint Suite
+ *
+ * Unified form-field wrapper. Replaces three legacy page-specific
+ * patterns (cb-core-ls-field, cb-core-pref-row, cb-core-recipient-row)
+ * with one component plus variants.
+ *
+ * Variants:
+ *   - default     vertical stack (label above control above hint)
+ *   - --inline    horizontal flex row (input alongside button + status)
+ *   - --separated siblings get a top-border divider between them
+ *   - --enable    first-of-form toggle row, no divider above it
+ *
+ * Markup contract (vertical default):
+ *   <div class="cb-core-field">
+ *     <label class="cb-core-field__label">...</label>
+ *     <div class="cb-core-field__control">...</div>
+ *     <p class="description">...</p>  <!-- optional hint -->
+ *   </div>
+ *
+ * Markup contract (inline):
+ *   <div class="cb-core-field cb-core-field--inline">
+ *     <input ... />
+ *     <button class="button cb-core-button cb-core-button--primary">Save</button>
+ *     <span class="cb-core-form-status" role="status"></span>
+ *   </div>
+ *
+ * Page-specific child styling (e.g. complex toggle labels, radio cards,
+ * URL-builder rows) layers on top of this base via additional classes
+ * - the component supplies skeleton, not full styling.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Default: vertical stack ──────────────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-2);
+	max-width: 640px;
+	margin-bottom: var(--cb-space-4);
+}
+
+/* Preserve native hidden semantics when Field Foundation supplies display. */
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field[hidden] {
+	display: none;
+}
+
+/* ─── Inline variant: horizontal flex row ──────────────────────────────── */
+/* For input + save-button + status patterns (e.g. notifications recipient
+ * input, locale dropdown with apply-button). */
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field--inline {
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-3);
+	max-width: none;
+	margin-bottom: var(--cb-space-2);
+}
+
+/* ─── Separated variant: siblings divided by top-border ────────────────── */
+/* Used in complex config forms where each field is a distinct section
+ * (e.g. Login Shield's enable / slug / mode / response-code stack). */
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field--separated + .cb-core-field--separated {
+	margin-top: var(--cb-space-5);
+	padding-top: var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+}
+
+/* ─── Enable variant: first-row toggle, no divider ─────────────────────── */
+/* The enable-toggle at the top of a separated form should not get a
+ * divider above it (no preceding field) and sits flush at the top. */
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field--enable {
+	padding: 0;
+	margin-bottom: 0;
+}
+
+/* ─── Field children (BEM) ─────────────────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__label {
+	display: block;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-medium);
+	color: var(--cb-text-strong);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__label strong {
+	display: block;
+	margin-bottom: 2px;
+	font-size: var(--cb-fs-lg);
+	color: var(--cb-text-strong);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__label .cb-core-muted {
+	display: block;
+	margin-top: 2px;
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-regular);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-muted);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__control {
+	display: block;
+}
+
+/* Hint below the control - uses WP-native `<p class="description">`
+ * styling everywhere; this rule just tightens the top-margin so the
+ * hint sits flush with its field rather than the document baseline. */
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field > .description,
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__hint {
+	margin: var(--cb-space-1) 0 0;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__error {
+	margin: var(--cb-space-1) 0 0;
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-error);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field--error :is(input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="search"], input[type="password"], input[type="file"], select, textarea) {
+	border-color: var(--cb-error);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field--error :is(input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="search"], input[type="password"], input[type="file"], select, textarea):focus {
+	border-color: var(--cb-error);
+	box-shadow: 0 0 0 2px var(--cb-tint-error);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__meta {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+	margin: var(--cb-space-1) 0 0;
+	line-height: var(--cb-lh-relaxed);
+}

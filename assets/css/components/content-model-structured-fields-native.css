@@ -1,0 +1,61 @@
+.cb-cm-structured-field {
+	margin-top: 8px;
+}
+
+.cb-cm-structured-row {
+	box-sizing: border-box;
+	margin: 0 0 12px;
+	padding: 16px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.cb-cm-repeater-row.is-dragging {
+	opacity: .55;
+}
+
+.cb-cm-repeater-row.is-drop-target {
+	border-top-color: #2271b1;
+}
+
+.cb-cm-repeater-row-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+}
+
+.cb-cm-repeater-row-header [data-cb-cm-repeater-remove] {
+	margin-left: auto;
+}
+
+.cb-cm-repeater-handle {
+	cursor: grab;
+	text-decoration: none;
+}
+
+.cb-cm-structured-row-fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+	gap: 16px;
+}
+
+.cb-cm-structured-subfield > label {
+	display: block;
+	margin-bottom: 6px;
+}
+
+.cb-cm-structured-subfield > .description {
+	margin: 0 0 6px;
+}
+
+.cb-cm-structured-subfield .regular-text,
+.cb-cm-structured-subfield .widefat,
+.cb-cm-structured-subfield select {
+	max-width: 100%;
+}
+
+.cb-cm-repeater-field > [data-cb-cm-repeater-add] {
+	margin-top: 4px;
+}

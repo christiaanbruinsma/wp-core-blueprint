@@ -1,0 +1,95 @@
+/**
+ * pages/safeguards-modules.css - Core Blueprint Suite
+ *
+ * Core Shield page-specific diagnostic styles. Module rack, badges, notices,
+ * controls and state presentation live in the shared UI Foundation.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Header test ──────────────────────────────────────────────────────── */
+
+.cb-core-diagnostics {
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-header-test {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-header-test > h3 {
+	margin: 0 0 var(--cb-space-1);
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-header-test > .description {
+	max-width: 920px;
+	margin-top: 0;
+}
+
+.cb-core-header-test-results:empty {
+	display: none;
+}
+
+.cb-core-header-test-results {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-header-test-results[aria-busy="true"] {
+	color: var(--cb-text-muted);
+}
+
+.cb-core-header-test-summary {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-3);
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-grade-meta {
+	min-width: 0;
+}
+
+.cb-core-grade-summary {
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-grade-url {
+	margin-top: var(--cb-space-1);
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-header-test-table {
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-header-test-table th,
+.cb-core-header-test-table td {
+	vertical-align: top;
+}
+
+.cb-core-header-test-table code {
+	display: inline-block;
+	max-width: 520px;
+	font-size: var(--cb-fs-xs);
+	line-height: var(--cb-lh-normal);
+	word-break: break-all;
+	white-space: normal;
+}
+
+.cb-core-header-test-state {
+	text-align: center;
+}
+
+.cb-core-header-test-state .cb-core-icon--circle-check { color: var(--cb-success); }
+.cb-core-header-test-state .cb-core-icon--circle-x { color: var(--cb-error); }
+
+.cb-core-header-value {
+	max-width: 560px;
+}

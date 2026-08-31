@@ -1,0 +1,249 @@
+/**
+ * pages/preferences.css - Core Blueprint Suite
+ *
+ * WordPress-Pro refinements for the Preferences admin surface. Preferences
+ * keeps navigation cards on Overview because they improve orientation across
+ * a large tab set, but removes the older dashboard/SaaS treatment around
+ * simple current-state metadata and navigation.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* Preferences Overview intentionally uses the shared Overview Foundation
+ * without page-local status-card or navigation-card geometry overrides. */
+
+/* Shared Preferences section rhythm. Ordinary settings should flow like a
+ * WordPress settings screen rather than living in nested visible panels. */
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-section {
+	max-width: 920px;
+	margin: 0 0 var(--cb-space-6);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-section > h2 {
+	margin: 0 0 var(--cb-space-2);
+	font-size: var(--cb-fs-lg);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--cb-text-strong);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-section > .description {
+	max-width: 760px;
+	margin-top: 0;
+}
+
+
+/* Shared Preferences scope control. Used by Language and Appearance when a
+ * setting can be viewed/edited at personal or site-default scope. Geometry
+ * lives here so individual tabs do not recreate the same segmented control. */
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-scopebar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-3);
+	max-width: 920px;
+	margin: var(--cb-space-4) 0 var(--cb-space-5);
+	min-height: 34px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-toggle {
+	display: inline-flex;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option {
+	min-height: 32px;
+	padding: 4px 12px;
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: 0;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-medium);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option + .cb-core-scope-option {
+	margin-left: -1px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option:first-child {
+	border-radius: var(--cb-radius-sm) 0 0 var(--cb-radius-sm);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option:last-child {
+	border-radius: 0 var(--cb-radius-sm) var(--cb-radius-sm) 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option:hover {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-option.is-active {
+	position: relative;
+	z-index: 1;
+	background: var(--cb-surface-2);
+	border-color: var(--cb-accent);
+	color: var(--cb-text-strong);
+}
+
+
+
+/* Shared reset action used by preference pages that support user → site-default inheritance. */
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-reset {
+	margin: var(--cb-space-4) 0 var(--cb-space-6);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-reset-button {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-md);
+	padding: 0;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-reset-button:hover {
+	color: var(--cb-accent);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-scope-label {
+	font-size: var(--cb-fs-sm);
+	color: var(--cb-text-muted);
+	font-weight: var(--cb-fw-medium);
+}
+
+@media (max-width: 782px) {
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-preferences-scopebar {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}
+
+/* Preferences → About: reference/documentation surface. Keep the page
+ * editorial and WordPress-Pro: native management data, open content rhythm,
+ * shared badges/state badges, and the shared KV table for project metadata. */
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__intro {
+	max-width: 820px;
+	margin-bottom: var(--cb-space-6);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__identity {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	margin-bottom: var(--cb-space-2);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__product {
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-xl);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-tight);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__lead {
+	max-width: 820px;
+	margin: 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principles-section,
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__plugins,
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__project {
+	max-width: 920px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principles {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin-top: var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle {
+	min-width: 0;
+	padding: var(--cb-space-4) var(--cb-space-5) var(--cb-space-4) 0;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle + .cb-core-about__principle {
+	padding-left: var(--cb-space-5);
+	border-left: 1px solid var(--cb-border);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle h3 {
+	margin: 0 0 var(--cb-space-2);
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle p {
+	margin: 0;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__plugins {
+	margin-top: var(--cb-space-6);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__table-wrap {
+	overflow-x: auto;
+	margin-top: var(--cb-space-3);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table {
+	min-width: 780px;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table th:nth-child(1),
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table td:nth-child(1) {
+	width: 23%;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table th:nth-child(2),
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table td:nth-child(2) {
+	width: 13%;
+	white-space: nowrap;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table th:nth-child(3),
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table td:nth-child(3) {
+	width: 12%;
+	white-space: nowrap;
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about-table code {
+	font-size: var(--cb-fs-xs);
+}
+
+body.core-blueprint_page_core-blueprint-preferences .cb-core-about__project-table {
+	width: min(100%, 720px);
+	margin-top: var(--cb-space-3);
+}
+
+@media (max-width: 782px) {
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principles {
+		grid-template-columns: 1fr;
+	}
+
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle,
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle + .cb-core-about__principle {
+		padding: var(--cb-space-4) 0;
+		border-left: 0;
+	}
+
+	body.core-blueprint_page_core-blueprint-preferences .cb-core-about__principle + .cb-core-about__principle {
+		border-top: 1px solid var(--cb-border);
+	}
+}
+

@@ -1,0 +1,463 @@
+/* Content Models admin page polish.
+ *
+ * Scope: only Core Blueprint → Content Models. This file keeps layout and
+ * dark-mode tweaks local to the module so shared admin components remain
+ * unchanged.
+ */
+
+.cb-content-models-wrap .cb-content-models-toolbar {
+	margin: 0 0 var(--cb-space-4);
+}
+
+.cb-content-models-wrap .cb-content-models-section {
+	margin: 0 0 var(--cb-space-5);
+}
+
+.cb-content-models-wrap .cb-content-models-form-table {
+	margin-top: 0;
+}
+
+.cb-content-models-wrap .cb-content-models-divider {
+	height: 1px;
+	margin: var(--cb-space-5) 0;
+	background: var(--cb-border);
+}
+
+.cb-content-models-wrap .cb-content-models-section-header,
+.cb-content-models-wrap .cb-content-models-sort-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-3);
+	flex-wrap: nowrap;
+	white-space: nowrap;
+}
+
+
+.cb-content-models-wrap .cb-content-models-section-header {
+	margin: 0 0 var(--cb-space-3);
+}
+
+.cb-content-models-wrap .cb-content-models-section-header h2 {
+	margin: 0;
+}
+
+.cb-content-models-wrap .cb-content-models-sort-toolbar {
+	margin: 0 0 var(--cb-space-3);
+}
+
+.cb-content-models-wrap .cb-content-models-sort-toolbar .description {
+	margin: 0;
+}
+
+.cb-content-models-wrap .cb-content-models-fields-table__order,
+.cb-content-models-wrap .cb-content-models-drag-cell {
+	width: 56px;
+	text-align: center;
+}
+
+.cb-content-models-wrap .cb-content-models-drag-cell {
+	vertical-align: middle;
+}
+
+.cb-content-models-wrap .cb-content-models-drag-handle {
+	color: var(--cb-text-muted);
+	cursor: move;
+}
+
+
+
+/* Field workspace: expandable Quick Edit + dedicated Full Editor. */
+.cb-content-models-wrap .cb-content-models-section-header > div:first-child .description {
+	margin: var(--cb-space-1) 0 0;
+}
+
+.cb-content-models-wrap .cb-content-models-field-summary > td {
+	vertical-align: middle;
+}
+
+.cb-content-models-wrap .cb-content-models-field-summary.is-quick-open > td {
+	background: var(--cb-surface-2);
+}
+
+.cb-content-models-wrap .cb-content-models-field-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	padding: 0;
+	text-align: left;
+}
+
+.cb-content-models-wrap .cb-content-models-field-toggle .dashicons {
+	width: var(--cb-icon-size-default);
+	height: var(--cb-icon-size-default);
+	font-size: var(--cb-icon-size-default);
+	line-height: var(--cb-icon-size-default);
+	color: var(--cb-text-muted);
+}
+
+.cb-content-models-wrap .cb-content-models-drag-handle {
+	display: inline-block;
+	user-select: none;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-row > td {
+	padding: 0;
+	background: var(--cb-surface-0);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-panel {
+	padding: var(--cb-space-4) var(--cb-space-5) var(--cb-space-5);
+	border-top: 1px solid var(--cb-border);
+	border-bottom: 1px solid var(--cb-border);
+	text-align: left;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-header,
+.cb-content-models-wrap .cb-content-models-quick-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-3);
+	flex-wrap: nowrap;
+	white-space: nowrap;
+}
+
+
+.cb-content-models-wrap .cb-content-models-quick-header {
+	margin-bottom: var(--cb-space-4);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-header .description {
+	margin: var(--cb-space-1) 0 0;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-form {
+	max-width: 1100px;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(220px, 1fr));
+	gap: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-grid--advanced {
+	grid-template-columns: repeat(5, minmax(120px, 1fr));
+	margin-top: var(--cb-space-3);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-form label > span:first-child,
+.cb-content-models-wrap .cb-content-models-quick-field > label > span:first-child {
+	display: block;
+	margin: 0 0 var(--cb-space-2);
+	font-weight: var(--cb-fw-semibold);
+}
+
+
+.cb-content-models-wrap .cb-content-models-quick-form input[type="text"],
+.cb-content-models-wrap .cb-content-models-quick-form input[type="number"],
+.cb-content-models-wrap .cb-content-models-quick-form select,
+.cb-content-models-wrap .cb-content-models-quick-form textarea {
+	width: 100%;
+	max-width: none;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-wide {
+	display: block;
+	margin-top: var(--cb-space-3);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-flags {
+	margin-top: var(--cb-space-3);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-flags .cb-core-choice-group {
+	width: 100%;
+}
+
+.cb-content-models-wrap .cb-content-models-quick-footer {
+	justify-content: flex-start;
+	margin-top: var(--cb-space-4);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-status {
+	min-height: 20px;
+	color: var(--cb-text-muted);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-status.is-success {
+	color: var(--cb-success);
+}
+
+.cb-content-models-wrap .cb-content-models-quick-status.is-error {
+	color: var(--cb-danger);
+}
+
+.cb-content-models-wrap .cb-content-models-field-summary.is-dragging {
+	opacity: 0.55;
+}
+
+.cb-content-models-wrap .cb-content-models-field-summary.is-drop-before > td {
+	box-shadow: inset 0 2px 0 var(--cb-accent);
+}
+
+.cb-content-models-wrap .cb-content-models-field-summary.is-drop-after > td {
+	box-shadow: inset 0 -2px 0 var(--cb-accent);
+}
+
+@media (max-width: 960px) {
+	.cb-content-models-wrap .cb-content-models-quick-grid,
+	.cb-content-models-wrap .cb-content-models-quick-grid--advanced {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media (max-width: 600px) {
+	.cb-content-models-wrap .cb-content-models-quick-grid,
+	.cb-content-models-wrap .cb-content-models-quick-grid--advanced {
+		grid-template-columns: 1fr;
+	}
+
+	.cb-content-models-wrap .cb-content-models-quick-panel {
+		padding: var(--cb-space-3);
+	}
+}
+
+/* Action rows use the formal Button Foundation primitive for every semantic
+ * variant so Edit / Duplicate / Delete share one geometry and differ only by
+ * semantic treatment. */
+.cb-content-models-wrap .cb-content-models-actions {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--cb-space-2);
+	flex-wrap: nowrap;
+	width: max-content;
+	max-width: none;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
+.cb-content-models-wrap .cb-content-models-actions > .button,
+.cb-content-models-wrap .cb-content-models-actions > a,
+.cb-content-models-wrap .cb-content-models-actions > button {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 0;
+	white-space: nowrap;
+	word-break: normal;
+	overflow-wrap: normal;
+}
+
+.cb-content-models-wrap td .cb-content-models-actions {
+	vertical-align: middle;
+}
+
+
+/* Shared list-table action alignment. Keep every Content Models action group
+ * pinned to the right edge regardless of preceding column widths. */
+.cb-content-models-wrap .widefat th:last-child,
+.cb-content-models-wrap .widefat td:last-child {
+	text-align: right;
+}
+
+.cb-content-models-wrap .widefat td:last-child .cb-content-models-actions {
+	justify-content: flex-end;
+}
+
+.cb-content-models-wrap .cb-content-models-location-title {
+	display: block;
+	margin: 0 0 var(--cb-space-2);
+}
+
+.cb-content-models-wrap .cb-content-models-location-title--secondary {
+	margin-top: var(--cb-space-4);
+}
+
+.cb-content-models-wrap .cb-content-models-col-fields {
+	white-space: nowrap;
+	width: 1%;
+}
+
+.cb-content-models-wrap .cb-content-models-col-actions {
+	white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+	.cb-content-models-wrap .cb-content-models-actions {
+		flex-wrap: wrap;
+		width: auto;
+		white-space: normal;
+	}
+}
+
+/* Relation field configuration ------------------------------------------------ */
+.cb-content-models-relation-settings {
+	display: grid;
+	gap: var(--cb-space-3);
+	max-width: 960px;
+}
+
+.cb-content-models-relation-settings[hidden],
+.cb-content-models-relation-card[hidden],
+[data-cb-cm-relation-settings-row][hidden] {
+	display: none !important;
+}
+
+.cb-content-models-relation-card {
+	display: grid;
+	gap: var(--cb-space-2);
+}
+
+.cb-content-models-relation-card > .description {
+	margin: 0;
+}
+
+.cb-content-models-relation-settings--quick {
+	grid-column: 1 / -1;
+	padding: var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+/* Structured fields --------------------------------------------------------- */
+.cb-content-models-structured,
+.cb-content-models-subfields,
+.cb-content-models-conditions,
+.cb-content-models-condition-group {
+	display: grid;
+	gap: var(--cb-space-3);
+}
+
+[data-cb-cm-structured-settings-row][hidden],
+[data-cb-cm-repeater-limits][hidden],
+[data-cb-cm-subfield-choice-settings][hidden],
+[data-cb-cm-subfield-number-settings][hidden],
+[data-cb-cm-subfield-relation-settings][hidden],
+[data-cb-cm-subfield-relation-target][hidden] {
+	display: none !important;
+}
+
+.cb-content-models-repeater-limits {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+.cb-content-models-repeater-limits > .description {
+	flex-basis: 100%;
+	margin: 0;
+}
+
+.cb-content-models-subfield,
+.cb-content-models-condition-group {
+	padding: var(--cb-space-4);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+.cb-content-models-subfield.is-dragging {
+	opacity: .6;
+}
+
+.cb-content-models-subfield__header,
+.cb-content-models-condition-group__header {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-content-models-subfield__header strong,
+.cb-content-models-condition-group__header strong {
+	flex: 1 1 auto;
+}
+
+.cb-content-models-subfield__header [data-cb-cm-subfield-handle] {
+	cursor: grab;
+}
+
+.cb-content-models-subfield__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: var(--cb-space-3);
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-content-models-subfield__grid > label,
+.cb-content-models-subfield__wide {
+	display: grid;
+	gap: var(--cb-space-2);
+}
+
+.cb-content-models-subfield__check {
+	display: flex !important;
+	align-items: center;
+	align-self: end;
+	min-height: var(--cb-control-height);
+}
+
+.cb-content-models-subfield__wide {
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-content-models-subfield select,
+.cb-content-models-subfield input[type="text"],
+.cb-content-models-subfield input[type="number"],
+.cb-content-models-subfield textarea {
+	width: 100%;
+}
+
+/* Conditional Logic -------------------------------------------------------- */
+.cb-content-models-condition-rule {
+	display: grid;
+	grid-template-columns: minmax(180px, 1fr) minmax(150px, .7fr) minmax(160px, 1fr) auto;
+	gap: var(--cb-space-2);
+	align-items: center;
+	margin-bottom: var(--cb-space-2);
+}
+
+.cb-content-models-condition-rule input,
+.cb-content-models-condition-rule select {
+	width: 100%;
+}
+
+@media (max-width: 782px) {
+	.cb-content-models-condition-rule {
+		grid-template-columns: 1fr;
+	}
+}
+
+.cb-content-models-tools-stack {
+	margin-top: var(--cb-space-5);
+}
+
+.cb-content-models-transfer-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+	gap: var(--cb-space-4);
+}
+
+.cb-content-models-transfer-grid > .cb-core-section {
+	margin: 0;
+}
+
+.cb-content-models-transfer-grid form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--cb-space-3);
+}
+
+.cb-content-models-import-overwrite {
+	display: block;
+	margin: 0 0 var(--cb-space-3);
+}

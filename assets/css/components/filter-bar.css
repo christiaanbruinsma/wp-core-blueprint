@@ -1,0 +1,196 @@
+/**
+ * filter-bar.css - Core Blueprint Suite
+ *
+ * Shared Toolbar / Filter Bar composition for Core Admin Theme pages.
+ * `cb-core-toolbar*` is the canonical contract. The historical
+ * `cb-core-filter-bar*` selectors remain supported as backwards-compatible
+ * aliases for Logs, Reports and other existing consumers.
+ *
+ * Toolbar owns composition only: field grouping, labels, control alignment,
+ * actions and responsive wrapping. Inputs, selects, checkboxes and buttons
+ * keep their presentation in Form Controls / Button primitives.
+ *
+ * Canonical markup:
+ *
+ *   <form class="cb-core-toolbar cb-core-toolbar--compact">
+ *     <label class="cb-core-toolbar__field cb-core-toolbar__field--grow">
+ *       <span class="cb-core-toolbar__label">Search</span>
+ *       <input type="search">
+ *     </label>
+ *     <label class="cb-core-toolbar__field">
+ *       <span class="cb-core-toolbar__label">Status</span>
+ *       <select>…</select>
+ *     </label>
+ *     <label class="cb-core-toolbar__toggle">
+ *       <input type="checkbox"> Actionable only
+ *     </label>
+ *     <div class="cb-core-toolbar__actions cb-core-toolbar__actions--inline">
+ *       <div class="cb-core-toolbar__actions-row">…</div>
+ *     </div>
+ *   </form>
+ *
+ * Variants:
+ *   - default   labelled filter/list toolbar
+ *   - --compact dense workspace toolbar; labels may use screen-reader-text
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Container ───────────────────────────────────────────────────────── */
+
+.cb-core-toolbar,
+.cb-core-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--cb-space-3) var(--cb-space-4);
+	align-items: flex-end;
+	padding: var(--cb-space-3) var(--cb-space-4);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+}
+
+.cb-core-toolbar--compact {
+	gap: var(--cb-space-2) var(--cb-space-3);
+	align-items: center;
+	padding: var(--cb-space-3);
+	background: var(--cb-surface-0);
+	border-radius: var(--cb-radius-md);
+}
+
+/* ─── Field (label + control stack) ───────────────────────────────────── */
+
+.cb-core-toolbar__field,
+.cb-core-filter-bar__field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-1);
+	min-width: 0;
+}
+
+.cb-core-toolbar__field--grow {
+	flex: 1 1 260px;
+}
+
+.cb-core-toolbar__label,
+.cb-core-filter-bar__label {
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-tight);
+}
+
+/* ─── Uniform control height ──────────────────────────────────────────── */
+
+.cb-core-toolbar__field > input,
+.cb-core-toolbar__field > select,
+.cb-core-toolbar__field > .cb-core-mode-switcher,
+.cb-core-toolbar__actions-row > .button,
+.cb-core-toolbar__actions-row > button,
+.cb-core-toolbar__actions-row > input,
+.cb-core-toolbar__actions-row > select,
+.cb-core-filter-bar__field > input,
+.cb-core-filter-bar__field > select,
+.cb-core-filter-bar__field > .cb-core-mode-switcher,
+.cb-core-filter-bar__actions-row > .button,
+.cb-core-filter-bar__actions-row > button,
+.cb-core-filter-bar__actions-row > input,
+.cb-core-filter-bar__actions-row > select {
+	min-height: var(--cb-control-height);
+	box-sizing: border-box;
+}
+
+.cb-core-toolbar__field > .cb-core-mode-switcher,
+.cb-core-filter-bar__field > .cb-core-mode-switcher {
+	padding: 0.1875rem;
+	align-items: stretch;
+}
+
+.cb-core-toolbar__field > .cb-core-mode-switcher .cb-core-mode-switcher__btn,
+.cb-core-filter-bar__field > .cb-core-mode-switcher .cb-core-mode-switcher__btn {
+	padding: 0 var(--cb-space-3);
+}
+
+/* ─── Toggle controls ─────────────────────────────────────────────────── */
+
+.cb-core-toolbar__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-height: var(--cb-control-height);
+	white-space: nowrap;
+	color: var(--cb-text);
+	cursor: pointer;
+}
+
+.cb-core-toolbar__toggle > input[type="checkbox"],
+.cb-core-toolbar__toggle > input[type="radio"] {
+	margin: 0;
+}
+
+.cb-core-toolbar__toggle:has( > input:disabled ) {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+/* ─── Actions cluster ─────────────────────────────────────────────────── */
+
+.cb-core-toolbar__actions,
+.cb-core-filter-bar__actions {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cb-space-1);
+	margin-left: auto;
+}
+
+.cb-core-toolbar__actions--inline {
+	align-self: center;
+}
+
+.cb-core-toolbar__actions-row,
+.cb-core-filter-bar__actions-row {
+	display: inline-flex;
+	gap: var(--cb-space-2);
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 782px) {
+	.cb-core-toolbar,
+	.cb-core-filter-bar {
+		gap: var(--cb-space-3);
+	}
+}
+
+@media (max-width: 480px) {
+	.cb-core-toolbar,
+	.cb-core-filter-bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.cb-core-toolbar__field,
+	.cb-core-toolbar__actions,
+	.cb-core-filter-bar__field,
+	.cb-core-filter-bar__actions {
+		width: 100%;
+		margin-left: 0;
+	}
+
+	.cb-core-toolbar__field > input,
+	.cb-core-toolbar__field > select,
+	.cb-core-filter-bar__field > input,
+	.cb-core-filter-bar__field > select {
+		width: 100%;
+	}
+
+	.cb-core-toolbar__actions-row,
+	.cb-core-filter-bar__actions-row {
+		justify-content: flex-end;
+	}
+}

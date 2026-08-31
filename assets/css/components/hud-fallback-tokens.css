@@ -1,0 +1,106 @@
+/* ──────────────────────────────────────────────────────────────────────────
+ * components/hud-fallback-tokens.css — HUD-only token fallbacks
+ *
+ * Problem: tokens.css scopes every --cb-* token under
+ *   html[data-cb-theme="core_blueprint_dark"], html[data-cb-theme="..."]
+ * and Themes::emit_prepaint_hooks() only sets data-cb-theme on screens
+ * where on_cb_admin_screen() returns true. On the WP frontend and on
+ * third-party admin pages (Wordfence, LiteSpeed Cache, etc) the
+ * attribute is never applied, so all tokens resolve to nothing — the
+ * HUD renders transparent / unstyled.
+ *
+ * Fix: scope a complete copy of the dark-theme token values directly
+ * onto the HUD's root elements. CSS custom properties inherit, so a
+ * declaration on .cb-hud cascades into every descendant. The fallback is
+ * guarded by html:not([data-cb-theme]) so it disappears entirely when the
+ * normal theme token scope is present; this lets Core Blueprint light/dark
+ * themes remain authoritative on owned admin screens and after a HUD theme
+ * switch establishes the document theme attribute.
+ *
+ * Why dark values: the HUD is a dark UI by default. The themes/canvas
+ * routine that flips body[data-cb-theme] on light theme won't fire on
+ * non-CB screens, so a light fallback would never trigger anyway. Pick
+ * the values that match the HUD's design intent; light theme operators
+ * on CB Base admin pages get their light tokens via the proper scoped
+ * route.
+ *
+ * @since   1.0.0
+ * ────────────────────────────────────────────────────────────────────────── */
+
+html:not([data-cb-theme]) .cb-hud {
+	/* ─── Surfaces ─────────────────────────────────────────────────────── */
+	--cb-surface-0:     #07090d;
+	--cb-surface-1:     #0d1117;
+	--cb-surface-2:     #161b22;
+	--cb-surface-3:     #1f2630;
+
+	/* ─── Text ─────────────────────────────────────────────────────────── */
+	--cb-text-strong:   #f4f6fa;
+	--cb-text:          #c5cbd4;
+	--cb-text-muted:    #8a92a0;
+	--cb-text-faint:    #565e6c;
+
+	/* ─── Accent ───────────────────────────────────────────────────────── */
+	--cb-accent:        #00b4ff;
+	--cb-accent-strong: #00ffdd;
+	--cb-accent-soft:   #d6f1fc;
+
+	/* ─── Semantic states ─────────────────────────────────────────────── */
+	--cb-danger:        #ff5c7a;
+	--cb-error:         #c83342;
+	--cb-warning:       #ffb547;
+	--cb-success:       #35e0a1;
+
+	/* ─── Border ──────────────────────────────────────────────────────── */
+	--cb-border:        #1f2630;
+
+	/* ─── On-fill text colours ────────────────────────────────────────── */
+	--cb-on-accent:     #ffffff;
+	--cb-on-success:    #ffffff;
+	--cb-on-danger:     #ffffff;
+	--cb-on-error:      #ffffff;
+	--cb-on-warning:    #000000;
+
+	/* ─── Radius ──────────────────────────────────────────────────────── */
+	--cb-radius-sm:     4px;
+	--cb-radius-md:     6px;
+	--cb-radius-pill:   999px;
+
+	/* ─── Spacing ─────────────────────────────────────────────────────── */
+	--cb-space-1:       4px;
+	--cb-space-2:       8px;
+	--cb-space-3:       12px;
+	--cb-space-4:       16px;
+	--cb-space-5:       24px;
+	--cb-space-6:       32px;
+	--cb-space-7:       48px;
+
+	/* ─── Type scale ──────────────────────────────────────────────────── */
+	--cb-fs-2xs:        10px;
+	--cb-fs-xs:         11px;
+	--cb-fs-sm:         12px;
+	--cb-fs-md:         13px;
+	--cb-fs-lg:         14px;
+	--cb-fs-xl:         16px;
+
+	/* ─── Weight ──────────────────────────────────────────────────────── */
+	--cb-fw-regular:    400;
+	--cb-fw-medium:     500;
+	--cb-fw-semibold:   600;
+	--cb-fw-bold:       700;
+
+	/* ─── Line-height ─────────────────────────────────────────────────── */
+	--cb-lh-tight:      1.2;
+	--cb-lh-normal:     1.4;
+	--cb-lh-relaxed:    1.6;
+
+	/* ─── Font family ─────────────────────────────────────────────────── */
+	--cb-ff-sans:       system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+	/* ─── Scrollbar ───────────────────────────────────────────────────── */
+	--cb-scrollbar-width:        0.375rem;
+	--cb-scrollbar-radius:       0.1875rem;
+	--cb-scrollbar-thumb:        var(--cb-border);
+	--cb-scrollbar-thumb-hover:  var(--cb-text-muted);
+	--cb-scrollbar-track:        transparent;
+}

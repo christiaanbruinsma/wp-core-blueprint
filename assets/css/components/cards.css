@@ -1,0 +1,210 @@
+/**
+ * components/cards.css - Core Blueprint Suite
+ *
+ * Static content card. Different from .cb-core-tile (nav targets with
+ * hover-affordance or live-status display): cards group related
+ * information into a framed block.
+ *
+ * Variants:
+ *
+ *   .cb-core-card                       Default - md padding via __body
+ *   .cb-core-card--spacious             Larger padding for full-page cards
+ *
+ * Sub-elements:
+ *
+ *   __header           icon + title strip with bottom border
+ *   __icon             header icon (dashicon)
+ *   __title            header title text
+ *   __body             default padded body
+ *   __body--flush      body without padding (for tables)
+ *   __lead             prominent intro paragraph inside __body
+ *   __empty            centered empty-state (when there are no rows)
+ *   __footer           action row at the bottom (right-aligned by default)
+ *   __footer-stripe    typographic in-card footer (link row, no buttons)
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Frame ────────────────────────────────────────────────────────────── */
+
+.cb-core-card {
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	margin-bottom: var(--cb-space-4);
+	overflow: hidden;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────── */
+
+.cb-core-card__header {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-card__icon {
+	color: var(--cb-accent);
+	font-size: var(--cb-fs-xl);
+	width: var(--cb-fs-xl);
+	height: var(--cb-fs-xl);
+	line-height: 1;
+}
+
+.cb-core-card__title {
+	margin: 0;
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--cb-text-muted);
+}
+
+/* ─── Body ─────────────────────────────────────────────────────────────── */
+
+.cb-core-card__body {
+	padding: var(--cb-space-4);
+}
+
+.cb-core-card--spacious .cb-core-card__body {
+	padding: var(--cb-space-5);
+}
+
+/* When the body holds a table, drop body padding so the table edges
+ * align with the card frame. Tables get their own internal padding via
+ * cell paddings. */
+.cb-core-card__body--flush {
+	padding: 0;
+}
+
+/* ─── Lead paragraph (prominent intro inside the body) ─────────────────── */
+
+.cb-core-card__lead {
+	font-size: var(--cb-fs-lg);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text);
+	max-width: 70ch;
+	margin: 0 0 var(--cb-space-5);
+}
+
+/* ─── Empty-state body variant ─────────────────────────────────────────── */
+
+.cb-core-card__empty {
+	padding: var(--cb-space-5) var(--cb-space-4);
+	text-align: center;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-md);
+}
+
+.cb-core-card__empty strong {
+	display: block;
+	margin-bottom: var(--cb-space-1);
+	font-size: var(--cb-fs-lg);
+	color: var(--cb-text);
+}
+
+/* ─── Footer (action row, right-aligned) ───────────────────────────────── */
+
+.cb-core-card__footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--cb-space-2);
+	padding: var(--cb-space-3) var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+	background: var(--cb-surface-0);
+}
+
+/* ─── Footer-stripe (typographic in-card link row) ─────────────────────── */
+
+.cb-core-card__footer-stripe {
+	margin: 0 var(--cb-space-4) var(--cb-space-4);
+	padding-top: var(--cb-space-3);
+	border-top: 1px solid var(--cb-border);
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-card--spacious .cb-core-card__footer-stripe {
+	margin: 0 var(--cb-space-5) var(--cb-space-5);
+}
+
+.cb-core-card__footer-stripe a {
+	color: var(--cb-accent);
+	text-decoration: none;
+}
+
+.cb-core-card__footer-stripe a:hover {
+	color: var(--cb-accent-strong);
+	text-decoration: underline;
+}
+
+/* ─── Tables inside cards (About page plugins-list) ────────────────────────
+ *
+ * The About page renders the installed-plugins list as a `widefat` table
+ * inside a Card (variant=spacious). Same problem as tables-inside-panels
+ * (handled in panels.css): the WP-default border + striping fights the
+ * card surface and the table corners stay sharp while the card has
+ * rounded corners.
+ *
+ * Treatment is parallel to panels.css - theme-aware row separators,
+ * bare surface, edge-to-edge fill via negative card-padding margins.
+ * Plus: nowrap on the cb-core-about-table version column so version
+ * strings like "1.3.34-dev" stay on one line at narrow widths.
+ *
+ * @since   1.0.0
+ */
+
+.cb-core-card .cb-core-card__body > table.widefat,
+.cb-core-card .cb-core-card__body > table.cb-core-about-table {
+	margin: var(--cb-space-3) calc( -1 * var(--cb-space-5) ) calc( -1 * var(--cb-space-5) );
+	width: calc( 100% + 2 * var(--cb-space-5) );
+	background: transparent;
+	border: 0;
+	border-top: 1px solid var(--cb-border);
+	box-shadow: none;
+	border-collapse: collapse;
+}
+
+.cb-core-card .cb-core-card__body > table.widefat thead th,
+.cb-core-card .cb-core-card__body > table.cb-core-about-table thead th {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+	border-bottom: 1px solid var(--cb-border);
+	padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-core-card .cb-core-card__body > table.widefat tbody td,
+.cb-core-card .cb-core-card__body > table.cb-core-about-table tbody td {
+	background: transparent;
+	color: var(--cb-text);
+	border: 0;
+	border-top: 1px solid var(--cb-surface-2);
+	padding: var(--cb-space-3) var(--cb-space-4);
+}
+
+.cb-core-card .cb-core-card__body > table.widefat tbody tr:first-child td,
+.cb-core-card .cb-core-card__body > table.cb-core-about-table tbody tr:first-child td {
+	border-top: 0;
+}
+
+.cb-core-card .cb-core-card__body > table.widefat.striped tbody tr,
+.cb-core-card .cb-core-card__body > table.widefat.striped tbody tr:nth-child(odd) {
+	background: transparent;
+}
+
+/* About-table specific - version column doesn't wrap. Version strings
+ * are short ("1.3.34-dev"); wrapping them looks like a layout glitch. */
+.cb-core-card .cb-core-about-table tbody td:nth-child(2),
+.cb-core-card .cb-core-about-table thead th:nth-child(2) {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Card needs overflow:hidden when a table is absorbed so the corner clip
+ * works (parallel to panels.css behaviour). */
+.cb-core-card:has( > .cb-core-card__body > table.widefat ) {
+	overflow: hidden;
+}

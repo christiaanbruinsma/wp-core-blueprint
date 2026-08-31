@@ -1,0 +1,413 @@
+/**
+ * components/form-controls.css - Core Blueprint Suite
+ *
+ * Uniform styling for native form controls across CB Suite admin pages.
+ * Text/date/file inputs, textareas and selects share the same token-based surface,
+ * border and focus treatment; checkboxes and radios keep their dedicated
+ * compact control styling below. Native select popup options are explicitly
+ * themed as well because browsers do not reliably inherit the select's text
+ * colour into the opened dropdown.
+ *
+ * Scope is `:is(.cb-core-wrap, .cb-core-form-scope)` plus the explicit `.cb-core-form-scope` opt-in used
+ * by Core Blueprint overlays such as the shared modal. This keeps unrelated
+ * WordPress admin chrome untouched while letting Foundation-owned form
+ * surfaces share one control presentation.
+ *
+ * Native input elements are kept rather than swapped for a custom widget so
+ * keyboard accessibility, screen-reader semantics, and form submission all
+ * keep working with zero JS. We use `appearance: none` to strip the
+ * platform-default chrome, then redraw the box ourselves.
+ *
+ * The glow on `:checked` is intentionally subtle - small elements (16-18px)
+ * shouldn't have card-scale glow or they look like they're leaking. The
+ * card-scale glow lives in components/cards.css and is opt-in via classes.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Native WordPress settings-table presentation ───────────────────── */
+
+/* Core Admin deliberately keeps WordPress form-table geometry for ordinary
+ * settings. WordPress owns the layout; Core Blueprint owns presentation.
+ * Explicit foreground tokens prevent native wp-admin dark text from leaking
+ * into Core Blueprint dark mode while keeping the same markup and spacing. */
+.wp-admin .cb-core-wrap .form-table th,
+.wp-admin .cb-core-wrap .form-table th label {
+	color: var(--cb-text-strong);
+}
+
+.wp-admin .cb-core-wrap .form-table td {
+	color: var(--cb-text);
+}
+
+.wp-admin .cb-core-wrap .form-table p.description,
+.wp-admin .cb-core-wrap .form-table .description {
+	color: var(--cb-text-muted);
+}
+
+/* ─── Shared text inputs, textareas + selects ─────────────────────────── */
+
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="text"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="email"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="url"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="number"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="search"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="password"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="date"],
+:is(.cb-core-wrap, .cb-core-form-scope) select,
+:is(.cb-core-wrap, .cb-core-form-scope) textarea {
+	padding: var(--cb-space-2) var(--cb-space-3);
+	background: var(--cb-surface-0);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	box-shadow: none;
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text-strong);
+	transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="text"]::placeholder,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="email"]::placeholder,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="url"]::placeholder,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="search"]::placeholder,
+:is(.cb-core-wrap, .cb-core-form-scope) textarea::placeholder {
+	color: var(--cb-text-faint);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="text"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="email"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="url"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="number"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="search"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="password"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="date"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) textarea:hover {
+	border-color: var(--cb-accent);
+}
+
+/* WordPress admin's native select states can re-apply its own foreground
+ * colour on hover/focus. Keep the selected value on the active CB theme
+ * token as well as the border. The wp-admin qualifier intentionally gives
+ * this shared component contract enough specificity to win without using
+ * !important or page-specific overrides. */
+.wp-admin :is(.cb-core-wrap, .cb-core-form-scope) select:hover,
+.wp-admin :is(.cb-core-wrap, .cb-core-form-scope) select:focus,
+.wp-admin :is(.cb-core-wrap, .cb-core-form-scope) select:focus-visible,
+.wp-admin :is(.cb-core-wrap, .cb-core-form-scope) select:active {
+	color: var(--cb-text-strong);
+	border-color: var(--cb-accent);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="text"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="email"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="url"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="number"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="search"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="password"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="date"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) select:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) textarea:focus {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 2px var(--cb-tint-accent);
+	outline: none;
+}
+
+/* Native date controls keep the browser calendar affordance. color-scheme
+ * lets that native chrome follow the active Core Blueprint presentation. */
+html[data-cb-theme="core_blueprint_dark"] :is(.cb-core-wrap, .cb-core-form-scope) input[type="date"] {
+	color-scheme: dark;
+}
+
+html[data-cb-theme="core_blueprint_light"] :is(.cb-core-wrap, .cb-core-form-scope) input[type="date"] {
+	color-scheme: light;
+}
+
+/* Native select popup menus are partly browser/OS rendered. Explicit option
+ * colours prevent WordPress/browser defaults from producing dark text on a
+ * dark dropdown. color-scheme also lets native popup chrome follow the active
+ * Core Blueprint theme where the browser supports it. */
+:is(.cb-core-wrap, .cb-core-form-scope) select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	padding-right: var(--cb-space-6);
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%238a92a0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right var(--cb-space-3) center;
+}
+
+html[data-cb-theme="core_blueprint_dark"] :is(.cb-core-wrap, .cb-core-form-scope) select {
+	color-scheme: dark;
+}
+
+html[data-cb-theme="core_blueprint_light"] :is(.cb-core-wrap, .cb-core-form-scope) select {
+	color-scheme: light;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) select option,
+:is(.cb-core-wrap, .cb-core-form-scope) select optgroup {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text-strong);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) select option:disabled {
+	color: var(--cb-text-faint);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) select::-ms-expand {
+	display: none;
+}
+
+/* ─── Native file input ────────────────────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"] {
+	max-width: 100%;
+	padding: var(--cb-space-2);
+	box-sizing: border-box;
+	background: var(--cb-surface-0);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	box-shadow: none;
+	font-size: var(--cb-fs-md);
+	line-height: var(--cb-lh-relaxed);
+	color: var(--cb-text);
+	transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]:hover {
+	border-color: var(--cb-accent);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]:focus,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]:focus-visible {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 2px var(--cb-tint-accent);
+	outline: none;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]::file-selector-button {
+	margin-right: var(--cb-space-3);
+	padding: var(--cb-space-2) var(--cb-space-3);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	color: var(--cb-text-strong);
+	font: inherit;
+	font-weight: var(--cb-fw-semibold);
+	cursor: pointer;
+	transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]::file-selector-button:hover {
+	background: color-mix(in srgb, var(--cb-accent) 8%, transparent);
+	border-color: var(--cb-accent);
+	color: var(--cb-text-strong);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="file"]:disabled::file-selector-button {
+	cursor: not-allowed;
+}
+
+/* ─── Shared base - checkboxes + radios ────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"],
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"] {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 18px;
+	height: 18px;
+	margin: 0 var(--cb-space-2) 0 0;
+	padding: 0;
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	box-shadow: none;
+	cursor: pointer;
+	flex-shrink: 0;
+	vertical-align: middle;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease,
+		box-shadow 200ms ease;
+}
+
+/* Hover - accent border without filling. Signals "this is interactive". */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:hover,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"]:hover {
+	border-color: var(--cb-accent);
+}
+
+/* Focus ring - accent ring that fades in/out via the baseline box-shadow
+ * transition above (200ms ease). `outline` can't be animated reliably
+ * across browsers, but box-shadow can. Without the fade the ring renders
+ * instantly on mouse-click (browsers treat input focus as intentional
+ * even from a click) and disappears just as instantly on blur, which
+ * reads as a glitch. With the transition the same focus signal becomes
+ * a calm fade — same accessibility, no flash. */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:focus-visible,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"]:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--cb-accent);
+}
+
+/* Disabled - desaturated, non-interactive cursor. */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:disabled,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"]:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ─── Checkbox-specific ────────────────────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"] {
+	border-radius: var(--cb-radius-sm);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Checked state - accent fill, white check-mark via inline SVG mask. The
+ * check-mark uses an SVG background-image rather than a CSS-rendered glyph
+ * because vector strokes scale cleanly at any zoom. */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:checked {
+	background-color: var(--cb-accent);
+	border-color: var(--cb-accent);
+	background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" );
+	background-size: 14px 14px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+/* WP-admin core (wp-admin/css/forms.css) renders its own check-mark via
+ * `input[type=checkbox]:checked::before { content: url(...); }` with margins
+ * sized for a different box. On our 18px appearance-none box that pseudo-
+ * element lands off-center and reads as a misaligned shadow over our SVG
+ * check-mark. Suppress it so only our background-image check-mark remains.
+ * Same for the indeterminate state. */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:checked::before,
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:indeterminate::before {
+	content: none;
+}
+
+/* Indeterminate - used in some "select all" patterns. Accent border, accent
+ * dash in the middle (no glow because it's a transient state). */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="checkbox"]:indeterminate {
+	background-color: var(--cb-accent);
+	border-color: var(--cb-accent);
+	background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 8L12 8' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" );
+	background-size: 14px 14px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+/* ─── Radio-specific ───────────────────────────────────────────────────── */
+
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"] {
+	border-radius: 50%;
+}
+
+/* Checked - accent border (slightly thicker), accent center dot. The center
+ * dot is drawn with a radial-gradient so it scales with the box without
+ * needing a separate SVG. */
+:is(.cb-core-wrap, .cb-core-form-scope) input[type="radio"]:checked {
+	border-color: var(--cb-accent);
+	border-width: 1px;
+	background:
+		radial-gradient( circle at center, var(--cb-accent) 0 4px, transparent 5px ),
+		var(--cb-surface-2);
+}
+
+/* ─── Label adjacency - keep labels and inputs aligned vertically ──────── */
+
+/* When a checkbox/radio sits inside a label with text after it, vertical-
+ * align via flex on the label rather than baseline on the input - input
+ * baseline + text baseline don't always agree across fonts. */
+/* Plain inline labels use centered input/text alignment. Structured card
+ * components own their own internal alignment and must not inherit this
+ * convenience rule; card content is top-aligned suite-wide. */
+:is(.cb-core-wrap, .cb-core-form-scope) label:not(.cb-core-radio-card):not(.cb-core-check-row):not(.cb-core-choice-group__option):has( > input[type="checkbox"] ),
+:is(.cb-core-wrap, .cb-core-form-scope) label:not(.cb-core-radio-card):not(.cb-core-check-row):not(.cb-core-choice-group__option):has( > input[type="radio"] ) {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	cursor: pointer;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) label:has( > input[type="checkbox"]:disabled ),
+:is(.cb-core-wrap, .cb-core-form-scope) label:has( > input[type="radio"]:disabled ) {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+/* Inputs inside labels lose their right-margin (the label gap handles it). */
+:is(.cb-core-wrap, .cb-core-form-scope) label > input[type="checkbox"],
+:is(.cb-core-wrap, .cb-core-form-scope) label > input[type="radio"] {
+	margin-right: 0;
+}
+
+/* Structured checkbox row: checkbox + title/description content. Unlike plain
+ * inline labels this is top-aligned so multiline help text never pulls the
+ * control toward the vertical centre. */
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--cb-space-3);
+	padding: var(--cb-space-3) 0;
+	color: var(--cb-text);
+	cursor: pointer;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row > input[type="checkbox"] {
+	margin-top: 3px;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row__body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row__body strong {
+	color: var(--cb-text-strong);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row__body small {
+	color: var(--cb-text-muted);
+	line-height: var(--cb-lh-relaxed);
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-check-row--compact {
+	padding-top: 0;
+	font-size: var(--cb-fs-sm);
+}
+
+/* ─── Opt-out for components that style their own inputs ───────────────── */
+
+/* Some components draw their own visual treatment around the input
+ * (RadioGroup card variant, Privacy preset cards). They hide the native
+ * input via `position: absolute; clip:rect(0 0 0 0)`, which keeps it in
+ * the tab order but invisible. The base styling above still runs on
+ * those hidden inputs but doesn't render - they're 1×1px clipped - so
+ * no opt-out is technically required. The MasterSwitch component uses a
+ * <button> not an input, so it's also unaffected.
+ *
+ * If a future caller does need to opt out, the convention is to drop a
+ * `.cb-core-input-native` class on the input and add a no-op rule here.
+ * Left as a hook for future need rather than introduced unused.
+ */
+
+/* ─── Native hidden semantics ───────────────────────────────────────────── */
+
+/* Keep this state after every explicit control display rule. The browser's
+ * native `[hidden]` contract must win even when Foundation renders checkboxes
+ * as inline-flex or another control gains an explicit display value later. */
+:is(.cb-core-wrap, .cb-core-form-scope) :is(input, select, textarea)[hidden] {
+	display: none;
+}

@@ -1,0 +1,1094 @@
+/**
+ * components/hud.css - Core Blueprint HUD chrome.
+ *
+ * Floating launcher button + slide-in panel. Replaces the standalone
+ * core-blueprint-hud plugin's CSS - same visual behaviour but built on
+ * CB Base's --cb-* token system so brand palettes and theme variants
+ * apply automatically.
+ *
+ * Surface area:
+ *   .cb-hud                - root container, fixed position, pointer-events:none
+ *   .cb-hud__toggle        - round launcher button, dock-positioned
+ *   .cb-hud__panel         - slide-in panel attached to button
+ *   .cb-hud__header        - panel title bar
+ *   .cb-hud__prefs         - ghost-toggle + drag hint inside panel header
+ *   .cb-hud__body          - scrollable content region
+ *   .cb-hud__section       - sectioned items grouping
+ *   .cb-hud__link/stat/note - item-type variants
+ *
+ * Position via [data-position] on the toggle. Ghost via [data-ghost].
+ * Brand-driven palette overrides arrive on <html data-cb-brand="..">
+ * inline-style block emitted by HUD::emit_brand_palette() - those
+ * cascade into the --cb-* tokens this stylesheet consumes.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Container + base ────────────────────────────────────────────────── */
+
+.cb-hud,
+.cb-hud * {
+	box-sizing: border-box;
+}
+
+.cb-hud {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	pointer-events: none;
+	font-family: var(--cb-ff-sans);
+}
+
+/* ─── Launcher button ─────────────────────────────────────────────────── */
+
+.cb-hud__toggle {
+	position: fixed;
+	z-index: 1000000;
+	width: 2.875rem;
+	height: 2.875rem;
+	padding: 0;
+	border: 1px solid var(--cb-border);
+	border-radius: 62.4375rem;
+	background: var(--cb-surface-1);
+	color: var(--cb-accent);
+	cursor: grab;
+	pointer-events: auto;
+	box-shadow:
+		0 10px 28px color-mix(in srgb, var(--cb-accent) 28%, transparent),
+		0 2px 8px rgba(0, 0, 0, 0.28);
+	transition: opacity 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.cb-hud__toggle:active {
+	cursor: grabbing;
+	filter: brightness(0.82) saturate(0.95);
+	box-shadow:
+		inset 0 3px 10px rgba(0, 0, 0, 0.38),
+		0 6px 18px color-mix(in srgb, var(--cb-accent) 28%, transparent);
+}
+
+.cb-hud__toggle:hover,
+.cb-hud__toggle:focus-visible {
+	filter: brightness(1.16) saturate(1.12);
+	box-shadow:
+		0 14px 38px color-mix(in srgb, var(--cb-accent) 46%, transparent),
+		0 0 18px color-mix(in srgb, var(--cb-accent-soft) 24%, transparent),
+		0 2px 10px rgba(0, 0, 0, 0.3);
+	outline: none;
+}
+
+.cb-hud__toggle[data-ghost="true"] {
+	opacity: 0.18;
+}
+
+.cb-hud__toggle[data-ghost="true"]:hover,
+.cb-hud__toggle[data-ghost="true"]:focus-visible {
+	opacity: 1;
+}
+
+/* Click-feedback transforms - preserved from upstream HUD plugin so
+ * drag-to-dock interactions feel identical. Position-specific because
+ * top/bottom-center and middle-* use translate to position themselves;
+ * naively scaling them would lose the centering. */
+
+.cb-hud__toggle[data-position="top-left"]:active,
+.cb-hud__toggle[data-position="top-right"]:active,
+.cb-hud__toggle[data-position="bottom-left"]:active,
+.cb-hud__toggle[data-position="bottom-right"]:active {
+	transform: scale(0.94);
+}
+
+.cb-hud__toggle[data-position="top-center"]:active,
+.cb-hud__toggle[data-position="bottom-center"]:active {
+	transform: translateX(-50%) scale(0.94);
+}
+
+.cb-hud__toggle[data-position="middle-left"]:active,
+.cb-hud__toggle[data-position="middle-right"]:active {
+	transform: translateY(-50%) scale(0.94);
+}
+
+/* ─── Dock anchors ────────────────────────────────────────────────────── */
+
+:root {
+	--cb-hud-safe: 18px;
+	/*
+	 * Top-anchor offset accounts for the WordPress admin bar (32px on
+	 * desktop, 46px on mobile). Without this, top-* anchors place the
+	 * toggle 18px from the viewport top, half-overlapping the admin
+	 * bar. The :is() selector below picks up either body class
+	 * WordPress applies and bumps the offset by the admin-bar height.
+	 */
+	--cb-hud-top-safe: var(--cb-hud-safe);
+}
+
+body.admin-bar {
+	--cb-hud-top-safe: calc(var(--cb-hud-safe) + 32px);
+}
+
+@media screen and (max-width: 782px) {
+	body.admin-bar {
+		--cb-hud-top-safe: calc(var(--cb-hud-safe) + 46px);
+	}
+}
+
+.cb-hud__toggle[data-position="top-left"]      { top: var(--cb-hud-top-safe); left: var(--cb-hud-safe); }
+.cb-hud__toggle[data-position="top-center"]    { top: var(--cb-hud-top-safe); left: 50%; transform: translateX(-50%); }
+.cb-hud__toggle[data-position="top-right"]     { top: var(--cb-hud-top-safe); right: var(--cb-hud-safe); }
+.cb-hud__toggle[data-position="middle-left"]   { top: 50%; left: var(--cb-hud-safe); transform: translateY(-50%); }
+.cb-hud__toggle[data-position="middle-right"]  { top: 50%; right: var(--cb-hud-safe); transform: translateY(-50%); }
+.cb-hud__toggle[data-position="bottom-left"]   { bottom: var(--cb-hud-safe); left: var(--cb-hud-safe); }
+.cb-hud__toggle[data-position="bottom-center"] { bottom: var(--cb-hud-safe); left: 50%; transform: translateX(-50%); }
+.cb-hud__toggle[data-position="bottom-right"]  { bottom: var(--cb-hud-safe); right: var(--cb-hud-safe); }
+
+/* ─── Logo mark ───────────────────────────────────────────────────────── */
+
+.cb-hud__toggle-mark {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	color: inherit;
+}
+
+.cb-hud__toggle-mark svg {
+	width: 60%;
+	height: 60%;
+	color: var(--cb-accent);
+}
+
+/*
+ * Brand-specific override: when CoreBlueprint is the active brand,
+ * the brand glyph IS the launcher button - a self-contained gradient
+ * roundel with the C-mark. Drop the toggle's border + background so
+ * the logo doesn't sit inside a redundant ring, and let it fill the
+ * button at 100% so it carries the visual weight.
+ *
+ * Other white-label brands may ship simpler currentColor-
+ * driven glyphs that need the toggle's chrome around them for visual
+ * separation from page content - those keep the default styling.
+ */
+.cb-hud[data-brand="core-blueprint"] .cb-hud__toggle {
+	background: transparent;
+	border: 0;
+	box-shadow:
+		0 10px 28px rgba(0, 55, 255, 0.32),
+		0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.cb-hud[data-brand="core-blueprint"] .cb-hud__toggle:hover,
+.cb-hud[data-brand="core-blueprint"] .cb-hud__toggle:focus-visible {
+	box-shadow:
+		0 14px 38px rgba(0, 55, 255, 0.46),
+		0 0 22px rgba(0, 216, 255, 0.28),
+		0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cb-hud[data-brand="core-blueprint"] .cb-hud__toggle-mark svg {
+	width: 100%;
+	height: 100%;
+}
+
+/* ─── Slide-in panel ──────────────────────────────────────────────────── */
+
+.cb-hud__panel {
+	position: fixed;
+	width: 22.5rem;
+	/* Container-query support (1.7.0) — descendants can scope queries
+	   to the panel's actual width via `@container cb-hud-panel (...)`.
+	   Used by 2-column section layouts to collapse back to 1 column
+	   on narrow panels regardless of viewport size. */
+	container-type: inline-size;
+	container-name: cb-hud-panel;
+	/*
+	 * Fixed height (not max-height) so the panel doesn't grow upward
+	 * when sections expand. The body absorbs overflow via its own
+	 * scroll. 640px target on desktop; on shorter viewports the
+	 * min() clamps to viewport-minus-spacing to keep the panel from
+	 * exceeding the screen.
+	 *
+	 * Position offsets (top/bottom/left/right/margin-left) are NOT
+	 * declared here - they live in the data-anchor selectors below
+	 * so the panel's anchoring follows the toggle's dock position.
+	 */
+	height: min(40rem, calc(100vh - 7.5rem));
+	display: flex;
+	flex-direction: column;
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+	border: 1px solid var(--cb-border);
+	border-radius: 0.75rem;
+	box-shadow:
+		0 24px 60px rgba(0, 0, 0, 0.34),
+		0 0 0 1px var(--cb-border);
+	pointer-events: auto;
+	transform: translateY(8px);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1.1), visibility 0s linear 0.22s;
+}
+
+/*
+ * Panel anchoring - driven by data-anchor on the root, which mirrors
+ * the toggle's dock position. Single source of truth: the toggle
+ * decides where the panel hangs.
+ *
+ * Two axes resolved independently:
+ *   Horizontal - *-right / *-left / *-center
+ *   Vertical   - top-* / middle-* / bottom-*
+ *
+ * Top-anchored toggles → panel hangs BELOW the toggle (top: ...).
+ * Middle/bottom-anchored toggles → panel hangs ABOVE the toggle
+ * (bottom: ...). The 60px in the offset makes room for the toggle
+ * itself plus a small gap.
+ *
+ * Center-anchored toggles get a horizontally centered panel via
+ * left:50% + a negative margin equal to half the panel's width.
+ * Margin-trick used over translate so the open-state's
+ * transform: translateY animation isn't conflicting.
+ */
+
+/* Horizontal axis */
+.cb-hud[data-anchor$="-right"] .cb-hud__panel {
+	right: var(--cb-hud-safe);
+	left: auto;
+	margin-left: 0;
+}
+
+.cb-hud[data-anchor$="-left"] .cb-hud__panel {
+	left: var(--cb-hud-safe);
+	right: auto;
+	margin-left: 0;
+}
+
+.cb-hud[data-anchor$="-center"] .cb-hud__panel {
+	left: 50%;
+	right: auto;
+	margin-left: -11.25rem; /* half of width: 22.5rem */
+}
+
+/* Vertical axis */
+.cb-hud[data-anchor^="top-"] .cb-hud__panel {
+	/* +60px gap below the toggle which is itself offset by admin bar */
+	top: calc(var(--cb-hud-top-safe) + 3.75rem);
+	bottom: auto;
+}
+
+.cb-hud[data-anchor^="bottom-"] .cb-hud__panel {
+	bottom: calc(var(--cb-hud-safe) + 3.75rem);
+	top: auto;
+}
+
+/*
+ * Middle-* anchors need different treatment: the toggle sits at
+ * viewport vertical center, so a panel anchored to the bottom edge
+ * (like the bottom-* case) would overlap the toggle entirely. Instead
+ * the panel hangs at viewport center too, vertically aligned with the
+ * toggle, and shifts horizontally PAST the toggle (46px width + 10px
+ * gap) so the two don't visually overlap.
+ *
+ * Margin-trick (top: 50%; margin-top: -half-panel-height) chosen over
+ * transform: translateY(-50%) to avoid conflict with the open-state's
+ * existing transform animation.
+ */
+.cb-hud[data-anchor="middle-left"] .cb-hud__panel,
+.cb-hud[data-anchor="middle-right"] .cb-hud__panel {
+	top: 50%;
+	bottom: auto;
+	/*
+	 * Cap panel height tighter at middle anchors than the global
+	 * default. The vertical-centered placement (top: 50% + negative
+	 * margin) means the panel extends equally above and below the
+	 * viewport center; if it's taller than the viewport allows, it
+	 * spills off both edges. The 80px margin reservation (40 top +
+	 * 40 bottom) keeps it visually breathing on shorter screens.
+	 *
+	 * The actual height computed below is also used to derive the
+	 * negative margin-top via calc, so the panel stays vertically
+	 * centered regardless of which clamp wins.
+	 */
+	height: min(40rem, calc(100vh - 5rem));
+	margin-top: calc(min(40rem, calc(100vh - 5rem)) / -2);
+}
+
+.cb-hud[data-anchor="middle-left"] .cb-hud__panel {
+	left: calc(var(--cb-hud-safe) + 3.5rem); /* 46 toggle + 10 gap */
+	right: auto;
+	margin-left: 0;
+}
+
+.cb-hud[data-anchor="middle-right"] .cb-hud__panel {
+	right: calc(var(--cb-hud-safe) + 3.5rem);
+	left: auto;
+	margin-left: 0;
+}
+
+/*
+ * Hide the side-switch button when the toggle is at a center anchor.
+ * Center has no horizontal opposite to flip to, so the button has
+ * nothing meaningful to do - better to hide it than show a button
+ * that doesn't behave intuitively. Operators can still drag-to-dock
+ * to move the panel anywhere.
+ *
+ * Two-button strategy: both buttons (target-left, target-right) are
+ * always rendered in the footer. CSS shows only the appropriate
+ * set per current anchor:
+ *   - right anchor → only target-left shown (chevron points left)
+ *   - left anchor  → only target-right shown (chevron points right)
+ *   - center anchor → BOTH shown, one in each corner
+ *
+ * No JS chevron-rotation needed since each button has a fixed
+ * direction matching its target. Static SVG paths.
+ */
+/*
+ * Side-switch buttons - flat shared styling for every direction.
+ * Display defaults to `none`; the anchor-specific rules below upgrade
+ * matching buttons to `display: flex`. Positioning differs per kind:
+ * left/right are absolute in the footer corners; up/down flow inside
+ * the vside-group which itself is absolute-positioned at the footer
+ * center.
+ */
+.cb-hud__side-switch {
+	display: none; /* hidden by default; per-anchor rules below show */
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.5rem;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0.3125rem;
+	color: var(--cb-text-muted);
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+/*
+ * Horizontal step buttons (← / →) - absolute positioned in footer
+ * corners. Position-as-affordance: button sits at the side it leads to.
+ */
+
+/* target-left visible at right and center anchors */
+.cb-hud[data-anchor$="-right"] .cb-hud__side-switch--target-left,
+.cb-hud[data-anchor$="-center"] .cb-hud__side-switch--target-left {
+	display: flex;
+	left: 0.375rem;
+	right: auto;
+}
+
+/* target-right visible at left and center anchors */
+.cb-hud[data-anchor$="-left"] .cb-hud__side-switch--target-right,
+.cb-hud[data-anchor$="-center"] .cb-hud__side-switch--target-right {
+	display: flex;
+	right: 0.375rem;
+	left: auto;
+}
+
+/*
+ * Vertical step buttons (↑ / ↓) - sit in a flex group at the center
+ * of the footer. Group positions absolute; buttons inside flow inline.
+ *
+ *   - target-up visible at middle and bottom rows (anywhere except top)
+ *   - target-down visible at top and middle rows (anywhere except bottom)
+ */
+.cb-hud__vside-group {
+	position: absolute;
+	bottom: 0.25rem;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 0.125rem;
+	pointer-events: none; /* let absent children pass-through hits */
+}
+
+.cb-hud__vside-group .cb-hud__side-switch {
+	pointer-events: auto;
+}
+
+/* target-up visible at middle and bottom rows */
+.cb-hud[data-anchor^="middle-"] .cb-hud__side-switch--target-up,
+.cb-hud[data-anchor^="bottom-"] .cb-hud__side-switch--target-up {
+	display: flex;
+}
+
+/* target-down visible at top and middle rows */
+.cb-hud[data-anchor^="top-"] .cb-hud__side-switch--target-down,
+.cb-hud[data-anchor^="middle-"] .cb-hud__side-switch--target-down {
+	display: flex;
+}
+
+.cb-hud[data-state="open"] .cb-hud__panel {
+	opacity: 1;
+	transform: translateY(0);
+	visibility: visible;
+	transition-delay: 0s;
+}
+
+/* ─── Header user link (avatar + display name, clickable to profile) ──── */
+
+.cb-hud__user {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	text-decoration: none;
+	color: var(--cb-text);
+	font-size: 0.8125rem;
+	line-height: 1.25;
+	border-radius: 0.25rem;
+	padding: 0.125rem 0.3125rem;
+	margin: -0.125rem -0.3125rem 0;
+	transition: background 0.15s ease, color 0.15s ease;
+	min-width: 0;
+	max-width: 100%;
+	font-weight: 500;
+}
+
+.cb-hud__user:hover,
+.cb-hud__user:focus-visible {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+	outline: none;
+}
+
+.cb-hud__user-avatar {
+	width: 1.125rem;
+	height: 1.125rem;
+	border-radius: 50%;
+	flex-shrink: 0;
+	display: block;
+	border: 1px solid var(--cb-border);
+}
+
+.cb-hud__user-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
+}
+
+/* Version label — subtle line under the username. Small, muted,
+   non-bold so it reads as reference info rather than as the primary
+   identity. Picks up dynamic CB_CORE_VERSION so it stays accurate
+   across patch bumps. */
+.cb-hud__version {
+	font-size: 0.625rem;
+	letter-spacing: 0.04em;
+	color: var(--cb-text-muted);
+	line-height: 1.2;
+	font-weight: 400;
+	margin-top: 1px;
+	padding-left: 0.3125rem; /* aligns with .cb-hud__user padding-left */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+
+.cb-hud__header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.625rem 0.875rem;
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-hud__header-text {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.cb-hud__eyebrow {
+	font-size: 0.5625rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	margin-bottom: 1px;
+	line-height: 1;
+}
+
+/* Pluggable header-actions slot — sits between mode-pills and the
+   fixed Preferences/Close icons. Holds the theme-toggle by default;
+   partner plugins extend via cb_hud_header_actions filter. */
+.cb-hud__header-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.125rem;
+	flex: 0 0 auto;
+}
+
+/* Generic header-action button — covers theme-toggle, Preferences icon,
+   and any partner-registered button. Square hit area, neutral color,
+   token-based hover/focus. */
+.cb-hud__header-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.625rem;
+	height: 1.625rem;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	color: var(--cb-text-muted);
+	border-radius: 0.375rem;
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s;
+	text-decoration: none;
+	flex: 0 0 auto;
+}
+
+.cb-hud__header-action:hover,
+.cb-hud__header-action:focus-visible {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+	outline: none;
+}
+
+/* Active state — used by the ghost-mode toggle (and any future
+   stateful header action). Solid accent-soft tint + accent colour
+   so the on-state reads at a glance. */
+.cb-hud__header-action.is-active {
+	background: color-mix(in srgb, var(--cb-accent) 18%, transparent);
+	color: var(--cb-accent);
+}
+
+.cb-hud__header-action.is-active:hover,
+.cb-hud__header-action.is-active:focus-visible {
+	background: color-mix(in srgb, var(--cb-accent) 28%, transparent);
+	color: var(--cb-accent);
+}
+
+.cb-hud__header-action svg {
+	width: 1rem;
+	height: 1rem;
+	display: block;
+}
+
+.cb-hud__close {
+	background: transparent;
+	border: 0;
+	color: var(--cb-text-muted);
+	font-size: 1.25rem;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.375rem;
+	transition: background 0.15s, color 0.15s;
+	flex: 0 0 auto;
+}
+
+.cb-hud__close:hover,
+.cb-hud__close:focus-visible {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+	outline: none;
+}
+
+/* ─── Status strip (compact stat pills under header) ──────────────────── */
+
+.cb-hud__status-strip {
+	display: flex;
+	gap: 0.875rem;
+	padding: 0.5rem 0.875rem;
+	background: color-mix(in srgb, var(--cb-accent) 5%, transparent);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-hud__status-pill {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	padding: 0;
+	min-width: 0;
+}
+
+.cb-hud__status-label {
+	font-size: 0.5625rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	line-height: 1.1;
+	margin-bottom: 1px;
+}
+
+.cb-hud__status-value {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--cb-text);
+	line-height: 1.2;
+}
+
+
+/* ─── Body ────────────────────────────────────────────────────────────── */
+
+.cb-hud__body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0;
+
+	/*
+	 * The HUD floats outside .cb-core-wrap (it's a fixed-position
+	 * portal element on body), so the suite-wide scrollbar styling
+	 * from scrollbar.css doesn't reach it via the wrap selector.
+	 * Re-apply the tokens here directly. Width/colour kept in sync
+	 * with the rest of the suite via the --cb-scrollbar-* tokens.
+	 */
+	scrollbar-width: thin;
+	scrollbar-color: var(--cb-scrollbar-thumb) var(--cb-scrollbar-track);
+}
+
+.cb-hud__body::-webkit-scrollbar {
+	width: var(--cb-scrollbar-width);
+	height: var(--cb-scrollbar-width);
+}
+
+.cb-hud__body::-webkit-scrollbar-track {
+	background: var(--cb-scrollbar-track);
+}
+
+.cb-hud__body::-webkit-scrollbar-thumb {
+	background: var(--cb-scrollbar-thumb);
+	border-radius: var(--cb-scrollbar-radius);
+	transition: background 0.18s ease;
+}
+
+.cb-hud__body::-webkit-scrollbar-thumb:hover {
+	background: var(--cb-scrollbar-thumb-hover);
+}
+
+.cb-hud__body::-webkit-scrollbar-corner {
+	background: var(--cb-scrollbar-track);
+}
+
+/* ─── Footer (side-switch button) ─────────────────────────────────────── */
+
+/*
+ * Footer holds the side-switch button. Position-as-affordance: the
+ * button sits in the corner OPPOSITE to where the panel currently is,
+ * pointing toward where the panel will move. So the button itself
+ * indicates the destination - no tooltip needed to figure out
+ * direction. When the panel is on the right, button is in the lower-
+ * left corner with a left-pointing chevron. When the panel is on the
+ * left, button is in the lower-right with a right-pointing chevron.
+ */
+.cb-hud__footer {
+	position: relative;
+	height: 2rem;
+	border-top: 1px solid var(--cb-border);
+	flex-shrink: 0;
+}
+
+.cb-hud__side-switch--target-left,
+.cb-hud__side-switch--target-right {
+	position: absolute;
+	bottom: 0.25rem;
+}
+
+.cb-hud__side-switch:hover,
+.cb-hud__side-switch:focus-visible {
+	background: var(--cb-surface-2);
+	color: var(--cb-accent);
+	outline: none;
+}
+
+.cb-hud__side-switch svg {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+
+/* ─── Section ─────────────────────────────────────────────────────────── */
+
+.cb-hud__section {
+	padding: 0.75rem 0.875rem 0.5rem;
+}
+
+.cb-hud__section + .cb-hud__section {
+	border-top: 0;
+}
+
+.cb-hud__section-title {
+	margin: 0 0 0.375rem;
+	font-size: 0.625rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+	border-bottom: 0;
+	padding-bottom: 0;
+	line-height: 1.1;
+}
+
+/* Collapsible section header - clickable button with three clear states.
+ *
+ * The default-state header is intentionally subtle (muted caret, muted
+ * label) so non-collapsable section titles in the same panel don't
+ * compete visually. Hover lifts the background to make the click-
+ * affordance obvious; expanded state tints the background with the
+ * accent token so an open section reads differently from a closed one
+ * even after the caret rotation has happened.
+ *
+ * Negative horizontal margin pulls the hover/expanded background out
+ * to the section-edge, making the header feel like a full-width
+ * tappable surface rather than an indented label.
+ */
+.cb-hud__section-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 0.4rem 0.375rem;
+	margin: 0 -0.375rem 0.375rem;
+	background: transparent;
+	border: 0;
+	border-radius: 0.375rem;
+	cursor: pointer;
+	font-family: inherit;
+	text-align: left;
+	transition: background 0.15s ease;
+}
+
+.cb-hud__section-header:hover {
+	background: var(--cb-surface-2);
+}
+
+.cb-hud__section-header:hover .cb-hud__section-title,
+.cb-hud__section-header:hover .cb-hud__section-caret,
+.cb-hud__section-header:focus-visible .cb-hud__section-title,
+.cb-hud__section-header:focus-visible .cb-hud__section-caret {
+	color: var(--cb-text);
+}
+
+.cb-hud__section-header:focus-visible {
+	background: var(--cb-surface-2);
+	outline: 1px solid color-mix(in srgb, var(--cb-accent) 50%, transparent);
+	outline-offset: 1px;
+}
+
+/* Expanded state — quiet treatment in 1.7.0. The luder accent-tinted
+ * banner from earlier versions over-dominated the panel; the caret
+ * rotation + a subtler title-colour shift are enough signal. Hover
+ * still uses the surface-2 hint so the click affordance stays clear. */
+.cb-hud__section--collapsible:not(.is-collapsed) .cb-hud__section-caret {
+	color: var(--cb-accent);
+}
+
+.cb-hud__section-caret {
+	font-size: 0.625rem;
+	color: var(--cb-text-muted);
+	transition: transform 0.18s ease, color 0.15s ease;
+	display: inline-block;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.cb-hud__section--collapsible:not(.is-collapsed) .cb-hud__section-caret {
+	transform: rotate(90deg);
+}
+
+.cb-hud__section-title--clickable {
+	margin: 0;
+	cursor: pointer;
+	user-select: none;
+	transition: color 0.15s ease;
+}
+
+/*
+ * Collapsible-section animation - uses the modern grid-rows trick
+ * (Chrome 117+, Firefox 120+, Safari 17.4+, all 2024+) so the
+ * expand/collapse animates smoothly instead of snapping. The section
+ * itself becomes a 2-row grid (header + content); collapsed sets
+ * the content row to 0fr (zero fractional units), which animates
+ * cleanly to and from 1fr without needing to know the content's
+ * intrinsic height.
+ *
+ * Falls back to instant snap on older browsers - the grid declaration
+ * still works, just without smooth interpolation. Acceptable since
+ * Collapsible HUD sections animate
+ * once-per-click and isn't critical interaction.
+ */
+.cb-hud__section--collapsible {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.cb-hud__section--collapsible.is-collapsed {
+	grid-template-rows: auto 0fr;
+}
+
+.cb-hud__section--collapsible .cb-hud__section-content {
+	overflow: hidden;
+	min-height: 0; /* allow collapse below intrinsic content height */
+}
+
+.cb-hud__section-content {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.cb-hud__section-content--metrics {
+	gap: 0.25rem;
+}
+
+/* Two-column layout for nav-sections (Content, Site, Core Blueprint).
+   Sections that opt in via columns: 2 in their registration get a CSS
+   grid here; descendants inherit grid-flow column placement. The panel
+   declares container-type below so we can collapse to one column on
+   narrow panels via a container query — independent of viewport size,
+   so docked HUDs in narrow side panes also degrade gracefully. */
+.cb-hud__section-content--cols-2 {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 0.25rem;
+	row-gap: 1px;
+}
+
+/* In 2-col grid, suppress the flex-mode margin-top — gap handles
+   row spacing now, otherwise we'd double up. */
+.cb-hud__section-content--cols-2 .cb-hud__row + .cb-hud__row {
+	margin-top: 0;
+}
+
+/* Below ~17rem panel width (~272px) collapse 2-col sections back to
+   one column. Calibrated to the default 22.5rem (360px) panel: at
+   that width 2-col gives ~165px per column, comfortable for the
+   short labels in nav sections. Container query keeps the breakpoint
+   scoped to the actual panel rather than viewport — works correctly
+   when the HUD is rendered inside a narrow container (e.g. side
+   panels at <300px). */
+@container cb-hud-panel (max-width: 17rem) {
+	.cb-hud__section-content--cols-2 {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ─── Item row + link + quick action ──────────────────────────────────── */
+
+.cb-hud__row {
+	display: flex;
+	align-items: stretch;
+	gap: 0;
+}
+
+.cb-hud__row + .cb-hud__row {
+	margin-top: 1px;
+}
+
+/* Link layout flips to a single row of [icon] [label] [dot] when 1.7.0
+   icon/status fields are in play. Description span stays hidden by
+   default — surfaces via title attribute on the <a> for accessibility
+   and native browser tooltips. M4 will refine into a hover-reveal
+   subtler than display:none if telemetry shows operators want it. */
+.cb-hud__link {
+	display: flex;
+	flex: 1;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.375rem 0.5rem;
+	border-radius: 0.3125rem;
+	text-decoration: none;
+	color: var(--cb-text);
+	font-size: 0.75rem;
+	transition: background 0.12s ease, color 0.12s ease;
+	min-width: 0;
+}
+
+.cb-hud__link:hover,
+.cb-hud__link:focus-visible {
+	background: var(--cb-surface-2);
+	color: var(--cb-accent);
+	outline: none;
+}
+
+/* Item icon — dashicons font, neutral color, slightly muted so the
+   label is the primary read. Inherits color on hover. */
+.cb-hud__link-icon.dashicons {
+	width: 1rem;
+	height: 1rem;
+	font-size: 1rem;
+	line-height: 1;
+	flex: 0 0 auto;
+	color: var(--cb-text-muted);
+	transition: color 0.12s ease;
+}
+
+.cb-hud__link:hover .cb-hud__link-icon.dashicons,
+.cb-hud__link:focus-visible .cb-hud__link-icon.dashicons {
+	color: inherit;
+}
+
+.cb-hud__link-label {
+	font-weight: 500;
+	font-size: 0.75rem;
+	line-height: 1.3;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Status-dot — small colored circle right of the label, before any
+   quick-action button. Colors map to state vocabulary; tokens used
+   so dark/light themes resolve correctly. */
+.cb-hud__link-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	flex: 0 0 auto;
+	background: var(--cb-text-muted);
+	transition: background 0.12s ease;
+}
+
+.cb-hud__link-dot--ok {
+	background: var(--cb-success);
+}
+
+.cb-hud__link-dot--warn {
+	background: var(--cb-warning);
+}
+
+.cb-hud__link-dot--err {
+	background: var(--cb-danger);
+}
+
+.cb-hud__link-dot--off {
+	background: color-mix(in srgb, var(--cb-text-muted) 60%, transparent);
+}
+
+/* Description visually hidden by default — accessible via title attr
+   on the link for screen readers + native tooltips. M4 may revisit
+   for a hover-reveal subtler than display:none if needed. */
+.cb-hud__link-desc {
+	display: none;
+}
+
+.cb-hud__row-action {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	margin-left: 0.125rem;
+	border-radius: 0.3125rem;
+	background: transparent;
+	color: var(--cb-text-muted);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1;
+	text-decoration: none;
+	transition: background 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+	opacity: 0.5;
+}
+
+.cb-hud__row:hover .cb-hud__row-action {
+	opacity: 1;
+}
+
+.cb-hud__row-action:hover,
+.cb-hud__row-action:focus-visible {
+	background: color-mix(in srgb, var(--cb-accent) 14%, transparent);
+	color: var(--cb-accent);
+	opacity: 1;
+	outline: none;
+}
+
+/* ─── Quick Actions section visual treatment ──────────────────────────── */
+
+/* Items in the Quick Actions section read as actionable verbs rather
+   than nav targets — give them a subtler bg tint plus accent-coloured
+   icon to set them apart visually from the regular link rows. The
+   tint is loud enough to flag the intent but quiet enough to keep
+   the panel's overall balance. */
+[data-section="quick-actions"] .cb-hud__link {
+	background: color-mix(in srgb, var(--cb-accent) 6%, transparent);
+}
+
+[data-section="quick-actions"] .cb-hud__link:hover,
+[data-section="quick-actions"] .cb-hud__link:focus-visible {
+	background: color-mix(in srgb, var(--cb-accent) 14%, transparent);
+}
+
+[data-section="quick-actions"] .cb-hud__link-icon.dashicons {
+	color: var(--cb-accent);
+}
+
+[data-section="quick-actions"] .cb-hud__row + .cb-hud__row {
+	margin-top: 0.25rem;
+}
+
+[data-section="quick-actions"] .cb-hud__link-label {
+	font-weight: 600;
+}
+
+/* ─── Controlled metrics item primitive ──────────────────────────────── */
+
+.cb-hud__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 0.375rem 0.5rem;
+	background: var(--cb-surface-2);
+	border-radius: 0.3125rem;
+}
+
+.cb-hud__stat-label {
+	font-size: 0.5625rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-hud__stat-value {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--cb-text);
+}
+
+
+/* ─── Reduced motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-hud__toggle,
+	.cb-hud__panel,
+	.cb-hud__close,
+	.cb-hud__link {
+		transition: none;
+	}
+}
+
+
+/* ─── Theme transition (300ms cross-fade on colour properties) ────────── */
+
+/*
+ * Triggered by the JS layer setting class="cb-theme-transitioning" on
+ * <html> for ~300ms during a theme switch. Adds smooth cross-fade on
+ * the most-visible colour properties so the change feels intentional
+ * rather than a hard flip. Removed after the transition completes so
+ * subsequent UI interactions stay snappy.
+ */
+html.cb-theme-transitioning,
+html.cb-theme-transitioning *,
+html.cb-theme-transitioning *::before,
+html.cb-theme-transitioning *::after {
+	transition:
+		background-color 300ms ease,
+		color 300ms ease,
+		border-color 300ms ease,
+		fill 300ms ease,
+		stroke 300ms ease,
+		box-shadow 300ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html.cb-theme-transitioning,
+	html.cb-theme-transitioning *,
+	html.cb-theme-transitioning *::before,
+	html.cb-theme-transitioning *::after {
+		transition: none !important;
+	}
+}
