@@ -27,6 +27,14 @@
 	border-bottom: 0;
 }
 
+/* Pure table containers may opt into full-bleed table composition. The
+ * explicit modifier avoids changing mixed-content panels that intentionally
+ * keep normal inner padding around headings, copy, actions or other controls. */
+.cb-core-panel.cb-core-panel--table {
+	padding: 0;
+	overflow: hidden;
+}
+
 /* ─── Tables inside panels ─────────────────────────────────────────────────
  *
  * Panels can contain a single tabular block (Failsafe Layers, Permissions
@@ -42,7 +50,7 @@
  * with the panel border — visually neat for full-bleed content, but
  * crowded the table content against the panel's outer edge on every
  * page. Now tables breathe inside the panel like every other panel
- * child.
+ * child unless the explicit `cb-core-panel--table` modifier is used.
  *
  * Margin handling has two paths:
  *   - table is last child of panel → drop the bottom-margin so the
@@ -70,6 +78,12 @@
 	border-collapse: collapse;
 }
 
+.cb-core-panel.cb-core-panel--table > table.widefat {
+	margin: 0;
+	border-top: 0;
+	border-bottom: 0;
+}
+
 /* When the table is the last child, drop the bottom-margin + bottom-border
  * so it sits flush with the panel's inner bottom padding. */
 .cb-core-panel > table.widefat:last-child,
@@ -80,7 +94,10 @@
 	border-bottom: 0;
 }
 
+/* WordPress list-table checkbox columns use <td> in the header and <th>
+ * in body rows. They are part of the same widefat presentation contract. */
 .cb-core-panel > table.widefat thead th,
+.cb-core-panel > table.widefat thead td,
 .cb-core-panel > table.cb-core-failsafe-layers thead th,
 .cb-core-panel > table.cb-core-privacy-table thead th,
 .cb-core-panel > table.cb-core-operator-list thead th {
@@ -91,6 +108,7 @@
 }
 
 .cb-core-panel > table.widefat tbody td,
+.cb-core-panel > table.widefat tbody th,
 .cb-core-panel > table.cb-core-failsafe-layers tbody td,
 .cb-core-panel > table.cb-core-privacy-table tbody td,
 .cb-core-panel > table.cb-core-operator-list tbody td {
@@ -102,6 +120,7 @@
 }
 
 .cb-core-panel > table.widefat tbody tr:first-child td,
+.cb-core-panel > table.widefat tbody tr:first-child th,
 .cb-core-panel > table.cb-core-failsafe-layers tbody tr:first-child td,
 .cb-core-panel > table.cb-core-privacy-table tbody tr:first-child td,
 .cb-core-panel > table.cb-core-operator-list tbody tr:first-child td {

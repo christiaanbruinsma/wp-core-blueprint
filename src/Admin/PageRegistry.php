@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace CB\Core\Admin;
 
-use CB\Core\UI;
 use CB\Core\UI\Assets as UiAssets;
 
 defined( 'ABSPATH' ) || exit;
@@ -61,9 +60,22 @@ final class PageRegistry {
 
 	/** Public semantic Core Admin component requirements. */
 	private const COMPONENT_REQUIREMENTS = [
+		'badges',
+		'cards',
 		'description-toggle',
+		'disclosure',
+		'empty-state',
+		'fields',
 		'form-controls',
+		'kv-table',
+		'master-switch',
+		'metric-tiles',
+		'nav-tabs',
+		'notices',
 		'panels',
+		'radio-cards',
+		'state-badges',
+		'status',
 	];
 
 	/** @var array<string, Page> slug -> page instance */
@@ -171,11 +183,12 @@ final class PageRegistry {
 			return;
 		}
 
+		$context = ScreenContext::from_request( $hook );
 		foreach ( self::$requirements[ $slug ]['foundations'] as $foundation ) {
 			self::enqueue_foundation( $foundation );
 		}
 		foreach ( self::$requirements[ $slug ]['components'] as $component ) {
-			self::enqueue_component( $component );
+			self::enqueue_component( $component, $context );
 		}
 	}
 
@@ -342,41 +355,8 @@ final class PageRegistry {
 		}
 	}
 
-	private static function enqueue_component( string $component ): void {
-		if ( ! wp_style_is( 'cb-core-css-tokens', 'enqueued' ) ) {
-			wp_enqueue_style( 'cb-core-css-tokens', CB_CORE_URL . 'assets/css/tokens.css', [], CB_CORE_VERSION );
-		}
-
-		switch ( $component ) {
-			case 'panels':
-				wp_enqueue_style( 'cb-core-css-panels', CB_CORE_URL . 'assets/css/components/panels.css', [ 'cb-core-css-tokens' ], CB_CORE_VERSION );
-				break;
-			case 'form-controls':
-				wp_enqueue_style( 'cb-core-css-form-controls', CB_CORE_URL . 'assets/css/components/form-controls.css', [ 'cb-core-css-tokens' ], CB_CORE_VERSION );
-				break;
-			case 'description-toggle':
-				wp_enqueue_style( 'cb-core-css-disclosure', CB_CORE_URL . 'assets/css/components/disclosure.css', [ 'cb-core-css-tokens' ], CB_CORE_VERSION );
-				wp_enqueue_script_module( '@cb-core/dom', CB_CORE_URL . 'assets/js/core/dom.js', [], CB_CORE_VERSION );
-				add_filter( 'script_module_data_@cb-core/dom', static function ( array $existing ): array {
-					return array_merge( $existing, [
-						'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-						'i18n'    => [ 'copiedToClipboard' => __( 'Copied to clipboard', 'core-blueprint' ) ],
-					] );
-				} );
-				wp_enqueue_script_module( '@cb-core/description-toggle', CB_CORE_URL . 'assets/js/features/description-toggle.js', [ '@cb-core/dom' ], CB_CORE_VERSION );
-				add_filter( 'script_module_data_@cb-core/description-toggle', static function ( array $existing ): array {
-					return array_merge( $existing, [
-						'descMode' => [ 'current' => UI::current_mode() ],
-						'i18n'     => [
-							'labelTech'     => __( 'tech', 'core-blueprint' ),
-							'labelPlain'    => __( 'plain', 'core-blueprint' ),
-							'showTechnical' => __( 'Show technical description', 'core-blueprint' ),
-							'showPlain'     => __( 'Show plain description', 'core-blueprint' ),
-						],
-					] );
-				} );
-				break;
-		}
+	private static function enqueue_component( string $component, ScreenContext $context ): void {
+		AdminAssetCatalog::enqueue_component_requirement( $component, $context );
 	}
 
 	private static function diagnostic( string $message ): void {

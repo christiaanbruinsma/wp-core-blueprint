@@ -202,15 +202,16 @@ final class Admin {
 		// Preferences → CLI consumes the shared Clipboard Foundation. Keep the
 		// clipboard runtime scoped to this tab rather than loading it across all
 		// Core Admin screens.
-		$current_page       = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.
-		$current_tab        = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.
+		$screen_context     = ScreenContext::from_request( $hook );
+		$current_page       = $screen_context->page();
+		$current_tab        = $screen_context->tab();
 		$is_cli_preferences      = 'core-blueprint-preferences' === $current_page && 'cli' === $current_tab;
 		$is_hud_menu_preferences = 'core-blueprint-preferences' === $current_page && 'floating-menu' === $current_tab;
 		$is_mail_settings        = 'core-blueprint-mail' === $current_page && ( '' === $current_tab || 'settings' === $current_tab );
 		$is_mail_test       = 'core-blueprint-mail' === $current_page && 'test' === $current_tab;
 		$is_mail_log        = ( 'core-blueprint-mail' === $current_page && 'logs' === $current_tab )
 			|| ( self::LOGS_SLUG === $current_page && 'mail' === $current_tab );
-		$current_view       = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.
+		$current_view       = $screen_context->view();
 		$is_content_models_page = 'core-blueprint-content-models' === $current_page;
 		$is_media_formats_page = 'core-blueprint-media-formats' === $current_page;
 		$is_content_models_field_groups = $is_content_models_page && 'field-groups' === $current_tab && in_array( $current_view, [ 'edit', 'field' ], true );

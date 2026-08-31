@@ -3,7 +3,7 @@
  * Plugin Name: Core Blueprint
  * Plugin URI:  https://coreblueprint.io
  * Description: The Core Blueprint foundation plugin. Security baseline, audit logging, failsafe lockout prevention, admin theming, site-wide locale preference, and governed shared services for the Core Blueprint suite.
- * Version:     1.0.0-rc3.25
+ * Version:     1.0.0-rc3.31
  * Author:      Core Blueprint
  * Author URI:  https://coreblueprint.io
  * License:     GPL-2.0+
@@ -34,7 +34,7 @@ if ( defined( 'CB_CORE_FILE' ) || defined( 'CB_CORE_VERSION' ) ) {
 
 // ─── Plugin constants ─────────────────────────────────────────────────────────
 
-define( 'CB_CORE_VERSION',     '1.0.0-rc3.25' );
+define( 'CB_CORE_VERSION',     '1.0.0-rc3.31' );
 define( 'CB_CORE_API_VERSION', '1.0' );
 define( 'CB_CORE_MIN_PHP',         '8.4' );
 define( 'CB_CORE_RECOMMENDED_PHP', '8.5' );
@@ -171,6 +171,15 @@ require_once CB_CORE_DIR . 'includes/cb-about-page.php';
 
 register_activation_hook(   __FILE__, [ \CB\Core\Core::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ \CB\Core\Core::class, 'deactivate' ] );
+
+// BASE-10E.1: install the screen-asset resolver before Core::instance() lets
+// Admin::init() register the historical super-loader callback. Both callbacks
+// intentionally keep priority 10; registration order lets the resolver remove
+// the historical callback and invoke it once through the private E1 catalog
+// provider, preserving rc3.25 output while changing orchestration only.
+if ( \CB\Core\RequestContext::is_admin_screen() ) {
+	\CB\Core\Admin\AdminAssetResolver::init();
+}
 
 \CB\Core\Core::instance();
 
