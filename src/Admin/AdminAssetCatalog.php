@@ -120,6 +120,7 @@ final class AdminAssetCatalog {
 			'form-controls'      => [ 'shell.form-controls' ],
 			'kv-table'           => [ 'component.kv-tables' ],
 			'master-switch'      => [ 'component.master-switch' ],
+			'metric-tiles'       => [ 'component.tile-grid' ],
 			'nav-tabs'           => [ 'component.nav-tabs' ],
 			'notices'            => [ 'foundation.icons', 'component.notices' ],
 			'panels'             => [ 'component.panels' ],
