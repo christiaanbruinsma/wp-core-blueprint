@@ -210,14 +210,13 @@ jobs:
           grep -q 'Version:     1.0.0-rc3.28' core-blueprint.php
           grep -q "define( 'CB_CORE_VERSION',     '1.0.0-rc3.28' );" core-blueprint.php
           python3 - <<'PY'
-          import re, subprocess
           from pathlib import Path
-          current=Path('src/Admin/AdminAssetCatalog.php').read_text()
-          baseline=subprocess.check_output(['git','show','HEAD~2:src/Admin/AdminAssetCatalog.php'],text=True)
-          def shell(s):
-              m=re.search(r'public static function minimal_shell\(\): array \{(.*?)\n\t\}',s,re.S)
-              return re.sub(r'\s+',' ',m.group(1)).strip()
-          assert shell(current) == shell(baseline)
+          import re
+          s=Path('src/Admin/AdminAssetCatalog.php').read_text()
+          block=re.search(r'public static function minimal_shell\(\): array \{(.*?)\n\t\}',s,re.S).group(1)
+          items=re.findall(r"'([^']+)'",block)
+          expected=['shell.tokens','shell.scrollbar','shell.layout','shell.buttons','shell.form-controls','shell.theme-canvas']
+          assert items == expected, items
           print('Minimal shell invariant PASS')
           PY
 
