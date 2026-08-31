@@ -42,7 +42,17 @@ Shared framed content surface.
 </section>
 ```
 
-A direct child `table.widefat` is a supported panel composition and inherits Base panel-table presentation. Panel appearance is Base-owned; extension CSS may place the panel in a grid or layout.
+A direct child `table.widefat` is a supported panel composition and inherits Base panel-table presentation. Normal panels keep their standard inner padding around headings, copy, controls and mixed content.
+
+A panel whose only visual content is a management table may opt into the explicit full-bleed table composition:
+
+```html
+<section class="cb-core-panel cb-core-panel--table">
+    <table class="widefat striped">…</table>
+</section>
+```
+
+`cb-core-panel--table` removes the panel's inner padding and lets the direct-child `widefat` table use the panel border/radius as its outer frame. Use this modifier only for pure table containers. Do not apply it to panels that also contain headings, explanatory copy, actions or other controls that require normal panel spacing. Panel and table presentation remain Base-owned; extension CSS may position the panel in a grid or layout.
 
 ## `cards`
 
