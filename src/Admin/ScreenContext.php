@@ -27,23 +27,16 @@ final class ScreenContext {
 	/** Build one normalized, read-only snapshot for the current admin screen. */
 	public static function from_request( string $hook ): self {
 		$registered_slug = self::registered_slug_for_hook( $hook );
-		$page            = self::request_key( 'page' );
+		$page             = '' !== $registered_slug ? $registered_slug : self::request_key( 'page' );
 
-		// WordPress does not need a page query arg for the top-level landing
-		// callback. Give it the same canonical slug downstream manifests expect.
 		if ( '' === $page && 'toplevel_page_' . CB_CORE_PARENT_MENU === $hook ) {
 			$page = CB_CORE_PARENT_MENU;
-		} elseif ( '' === $page && '' !== $registered_slug ) {
-			$page = $registered_slug;
 		}
 
-		return new self(
-			$hook,
-			$registered_slug,
-			$page,
-			self::request_key( 'tab' ),
-			self::request_key( 'view' )
-		);
+		$tab  = self::normalize_tab( $page, self::request_key( 'tab' ) );
+		$view = self::normalize_view( $page, $tab, self::request_key( 'view' ) );
+
+		return new self( $hook, $registered_slug, $page, $tab, $view );
 	}
 
 	public function hook(): string {
@@ -66,19 +59,79 @@ final class ScreenContext {
 		return $this->view;
 	}
 
-	/**
-	 * Read and normalize a routing key once.
-	 *
-	 * Values are request context only: no nonce is required because this method
-	 * never authorizes or mutates anything. Unknown values remain sanitized
-	 * strings; registries decide which canonical values they recognize.
-	 */
+	/** Read and sanitize a routing key once. */
 	private static function request_key( string $key ): string {
 		if ( ! isset( $_GET[ $key ] ) || ! is_scalar( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.
 			return '';
 		}
 
 		return sanitize_key( wp_unslash( (string) $_GET[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.
+	}
+
+	/**
+	 * Normalize Base-owned tab routes to the same defaults/allowlists used by
+	 * their renderers. Open extension tab registries (Logs/Reports) preserve an
+	 * unknown sanitized slug so the private asset registry can choose its safe
+	 * compatibility fallback without teaching ScreenContext extension policy.
+	 */
+	private static function normalize_tab( string $page, string $tab ): string {
+		$closed = [
+			'core-blueprint-preferences' => [
+				'default' => 'overview',
+				'allowed' => [ 'overview', 'privacy', 'notifications', 'language', 'appearance', 'floating-menu', 'reports', 'permissions', 'notes', 'cli', 'about' ],
+			],
+			'core-blueprint-safeguards' => [
+				'default' => 'overview',
+				'allowed' => [ 'overview', 'access-mode', 'login-shield', 'core-shield', 'core-scanner', 'failsafe' ],
+			],
+			'core-blueprint-mail' => [
+				'default' => 'settings',
+				'allowed' => [ 'settings', 'test', 'logs' ],
+			],
+			'core-blueprint-snippets' => [
+				'default' => 'snippets',
+				'allowed' => [ 'snippets', 'settings', 'import-export' ],
+			],
+			'core-blueprint-content-models' => [
+				'default' => 'post-types',
+				'allowed' => [ 'post-types', 'taxonomies', 'option-pages', 'field-groups', 'tools' ],
+			],
+		];
+
+		if ( isset( $closed[ $page ] ) ) {
+			$rule = $closed[ $page ];
+			return in_array( $tab, $rule['allowed'], true ) ? $tab : $rule['default'];
+		}
+
+		if ( 'core-blueprint-logs' === $page || 'core-blueprint-reports' === $page ) {
+			return '' === $tab ? 'overview' : $tab;
+		}
+
+		return $tab;
+	}
+
+	/** Normalize view routes where Base has a closed, renderer-owned view set. */
+	private static function normalize_view( string $page, string $tab, string $view ): string {
+		if ( 'core-blueprint-snippets' === $page ) {
+			if ( 'snippets' !== $tab ) {
+				return '';
+			}
+			return 'edit' === $view ? 'edit' : 'list';
+		}
+
+		if ( 'core-blueprint-content-models' === $page ) {
+			if ( 'tools' === $tab ) {
+				return '';
+			}
+
+			$allowed = 'field-groups' === $tab
+				? [ 'list', 'edit', 'duplicate', 'delete', 'field', 'duplicate-field', 'delete-field' ]
+				: [ 'list', 'edit', 'duplicate', 'delete' ];
+
+			return in_array( $view, $allowed, true ) ? $view : 'list';
+		}
+
+		return $view;
 	}
 
 	/** Resolve registry ownership without copying page definitions into context. */
