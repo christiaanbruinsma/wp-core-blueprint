@@ -80,7 +80,10 @@
 	border-bottom: 0;
 }
 
+/* WordPress list-table checkbox columns use <td> in the header and <th>
+ * in body rows. They are part of the same widefat presentation contract. */
 .cb-core-panel > table.widefat thead th,
+.cb-core-panel > table.widefat thead td,
 .cb-core-panel > table.cb-core-failsafe-layers thead th,
 .cb-core-panel > table.cb-core-privacy-table thead th,
 .cb-core-panel > table.cb-core-operator-list thead th {
@@ -91,6 +94,7 @@
 }
 
 .cb-core-panel > table.widefat tbody td,
+.cb-core-panel > table.widefat tbody th,
 .cb-core-panel > table.cb-core-failsafe-layers tbody td,
 .cb-core-panel > table.cb-core-privacy-table tbody td,
 .cb-core-panel > table.cb-core-operator-list tbody td {
@@ -102,6 +106,7 @@
 }
 
 .cb-core-panel > table.widefat tbody tr:first-child td,
+.cb-core-panel > table.widefat tbody tr:first-child th,
 .cb-core-panel > table.cb-core-failsafe-layers tbody tr:first-child td,
 .cb-core-panel > table.cb-core-privacy-table tbody tr:first-child td,
 .cb-core-panel > table.cb-core-operator-list tbody tr:first-child td {
