@@ -101,6 +101,33 @@ final class AdminAssetCatalog {
 		];
 	}
 
+	/**
+	 * Resolve one public Core Admin Design Foundation component requirement.
+	 *
+	 * Semantic component IDs are public through PageRegistry; the private asset
+	 * IDs, WordPress handles, filenames and bundle boundaries mapped here are not.
+	 *
+	 * @internal PageRegistry is the public caller.
+	 */
+	public static function enqueue_component_requirement( string $component, ScreenContext $context ): void {
+		$map = [
+			'badges'             => [ 'component.badges' ],
+			'cards'              => [ 'component.cards' ],
+			'description-toggle' => [ 'component.disclosure', 'module.description-toggle' ],
+			'empty-state'        => [ 'component.empty-state' ],
+			'form-controls'      => [ 'shell.form-controls' ],
+			'kv-table'           => [ 'component.kv-tables' ],
+			'nav-tabs'           => [ 'component.nav-tabs' ],
+			'panels'             => [ 'component.panels' ],
+			'state-badges'       => [ 'component.state-badges' ],
+			'status'             => [ 'component.status-indicators' ],
+		];
+
+		foreach ( $map[ $component ] ?? [] as $asset_id ) {
+			self::enqueue( $asset_id, $context );
+		}
+	}
+
 	/** Whether an asset ID resolves to a known private definition. */
 	public static function has( string $asset_id ): bool {
 		return null !== self::definition( $asset_id );

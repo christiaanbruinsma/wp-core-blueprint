@@ -1,3 +1,13 @@
+## 1.0.0-rc3.28 — 2026-08-31
+
+### BASE-10E.2.1 — Core Admin Design Foundation contract repair
+
+- Keep rc3.27 screen-scoped asset architecture and minimal Core Admin shell unchanged.
+- Expand PageRegistry with a small semantic Design Foundation component set: nav-tabs, panels, cards, badges, state-badges, status, empty-state, kv-table, form-controls and description-toggle.
+- Route public component semantics through the private AdminAssetCatalog so extensions never depend on Base CSS handles, filenames or bundle boundaries.
+- Add normative markup/behavior contracts and make Base the canonical visual owner of shared Core Admin primitives; first-party extensions may compose but not locally redraw those primitives.
+- Deliberately do not promote table-cols, policy-table, log-table or other page/feature styles to public Foundation contracts.
+
 ## 1.0.0-rc3.25 — 2026-08-31
 
 ### Media Replace — native attachment authorization + D3 AJAX UI correction

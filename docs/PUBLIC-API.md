@@ -132,7 +132,7 @@ PageRegistry::register(
     new Vendor\Admin\SettingsPage(),
     [
         'foundations' => [ 'modal', 'toast' ],
-        'components'  => [ 'panels', 'form-controls' ],
+        'components'  => [ 'nav-tabs', 'panels', 'form-controls' ],
     ]
 );
 ```
@@ -141,9 +141,11 @@ Page slugs use strict lower-case kebab-case and must be globally unique. Base-ow
 
 A registered Core Admin page receives the semantic minimal Core Admin shell: Core Blueprint design tokens, baseline layout/typography and focus/accessibility behavior, standard Core Admin form/button geometry, and light/dark integration. This is a functional guarantee; CSS/JavaScript handles, filenames, bundle boundaries and enqueue order are implementation details.
 
-Additional shared UI is declared through semantic requirement identifiers. `foundations` currently supports `toast`, `modal`, `token-input`, `clipboard`, `time-picker`, `choice-group`, `icon-picker`, `capability-picker`, `object-picker`, `select-picker` and `icons`. `components` currently supports `description-toggle`, `panels` and `form-controls`. Unknown requirement identifiers or groups reject the page registration safely; identifiers are never interpreted as arbitrary asset handles. Additive requirement identifiers may be introduced during Base 1.x.
+Additional shared UI is declared through semantic requirement identifiers. `foundations` currently supports `toast`, `modal`, `token-input`, `clipboard`, `time-picker`, `choice-group`, `icon-picker`, `capability-picker`, `object-picker`, `select-picker` and `icons`. `components` currently supports `nav-tabs`, `panels`, `cards`, `badges`, `state-badges`, `status`, `empty-state`, `kv-table`, `form-controls` and `description-toggle`. Every component ID represents a documented Core Admin Design Foundation markup/behavior contract, not a stylesheet name; see `CORE-ADMIN-DESIGN-FOUNDATION.md`. Unknown requirement identifiers or groups reject the page registration safely, and raw asset handles are never interpreted as requirements. Additive requirement identifiers may be introduced during Base 1.x.
 
 `PageRegistry::hook_suffix( $slug )` is the supported way for an extension to scope its own CSS/JavaScript to its registered page after WordPress menu registration. Extensions remain free to enqueue their own assets. The current internal hook-suffix pattern fallback for unregistered sibling pages is transitional implementation behavior and **not** a public v1 guarantee; pages that want the Core Admin shell must register through `PageRegistry`.
+
+Base owns the canonical appearance of every declared Design Foundation primitive. First-party extension CSS may position or compose those primitives but must not locally redefine their generic colours, typography, spacing, borders, radii, surfaces, shadows or interaction states. Feature-specific extension components remain extension-owned and should consume `--cb-*` tokens where practical.
 
 ## UI Foundation
 

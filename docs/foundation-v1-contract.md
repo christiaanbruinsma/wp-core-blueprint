@@ -36,6 +36,14 @@ The frozen component layer includes Button, Badge, StateBadge, Status, Notice, B
 
 Page CSS may own composition (grid, section rhythm, task-specific preview sizing) but must not visually clone one of these components.
 
+### Public Core Admin Design Foundation semantics
+
+Registered Core Admin extension pages consume shared visual primitives through `PageRegistry` component IDs, not asset handles. The public v1 semantic set is `nav-tabs`, `panels`, `cards`, `badges`, `state-badges`, `status`, `empty-state`, `kv-table`, `form-controls` and `description-toggle`. Their minimal markup/behavior contracts are normative in `CORE-ADMIN-DESIGN-FOUNDATION.md`; Base remains free to change internal CSS filenames, handles, bundle boundaries and implementation details.
+
+Base owns canonical appearance for these primitives. First-party extension styles may position or compose them, but may not duplicate their generic surfaces, colour, typography, borders, radii, spacing, shadows, focus, hover or state styling. A deliberately different product-specific component or variant remains extension-owned and should use Base tokens where practical.
+
+Design ownership does not imply universal loading. The minimal Core Admin shell remains narrow; a page receives an optional primitive only when it declares that semantic requirement (or when a Base-owned screen manifest selects it).
+
 ## Compatibility
 
 - Historical Toolbar aliases (`cb-core-filter-bar*`) remain supported for backwards compatibility, but Base itself uses `cb-core-toolbar*`.
