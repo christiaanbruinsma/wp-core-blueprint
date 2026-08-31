@@ -63,11 +63,16 @@ final class PageRegistry {
 		'badges',
 		'cards',
 		'description-toggle',
+		'disclosure',
 		'empty-state',
+		'fields',
 		'form-controls',
 		'kv-table',
+		'master-switch',
 		'nav-tabs',
+		'notices',
 		'panels',
+		'radio-cards',
 		'state-badges',
 		'status',
 	];
@@ -351,7 +356,7 @@ final class PageRegistry {
 
 	private static function enqueue_component( string $component, ScreenContext $context ): void {
 		AdminAssetCatalog::enqueue_component_requirement( $component, $context );
-}
+	}
 
 	private static function diagnostic( string $message ): void {
 		if ( function_exists( '_doing_it_wrong' ) ) {
