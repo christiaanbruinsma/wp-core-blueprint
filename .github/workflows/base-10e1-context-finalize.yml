@@ -1,0 +1,72 @@
+name: BASE-10E.1 context finalize
+
+on:
+  push:
+    branches:
+      - base-10e1-rc3.26
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: base-10e1-rc3.26
+
+      - name: Route legacy loader through ScreenContext
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/Admin/Admin.php')
+          s = p.read_text()
+          old = "\t\t$current_page       = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context.\n\t\t$current_tab        = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context."
+          new = "\t\t$screen_context     = ScreenContext::from_request( $hook );\n\t\t$current_page       = $screen_context->page();\n\t\t$current_tab        = $screen_context->tab();"
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif '$screen_context     = ScreenContext::from_request( $hook );' not in s:
+              raise SystemExit('Expected page/tab routing block not found')
+          old_view = "\t\t$current_view       = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing context."
+          new_view = "\t\t$current_view       = $screen_context->view();"
+          if old_view in s:
+              s = s.replace(old_view, new_view, 1)
+          elif '$current_view       = $screen_context->view();' not in s:
+              raise SystemExit('Expected view routing line not found')
+          p.write_text(s)
+          PY
+
+      - name: Commit source-only normalization patch
+        run: |
+          if git diff --quiet -- src/Admin/Admin.php; then
+            echo 'Admin.php already normalized.'
+          else
+            git config user.name 'Core Blueprint CI'
+            git config user.email 'actions@users.noreply.github.com'
+            git add src/Admin/Admin.php
+            git commit -m 'BASE-10E.1 route admin context through ScreenContext'
+            git push origin HEAD:base-10e1-rc3.26
+          fi
+
+      - name: Validate all PHP syntax
+        run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Validate JavaScript syntax
+        run: find assets/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Build canonical plugin ZIP
+        run: |
+          mkdir -p "$RUNNER_TEMP/release/core-blueprint"
+          rsync -a --exclude='.git' --exclude='.github' ./ "$RUNNER_TEMP/release/core-blueprint/"
+          cd "$RUNNER_TEMP/release"
+          zip -qr "$GITHUB_WORKSPACE/core-blueprint-1.0.0-rc3.26.zip" core-blueprint
+          test "$(unzip -Z1 "$GITHUB_WORKSPACE/core-blueprint-1.0.0-rc3.26.zip" | sed 's#/.*##' | sort -u)" = 'core-blueprint'
+          unzip -p "$GITHUB_WORKSPACE/core-blueprint-1.0.0-rc3.26.zip" core-blueprint/core-blueprint.php | grep -q 'Version:     1.0.0-rc3.26'
+          unzip -p "$GITHUB_WORKSPACE/core-blueprint-1.0.0-rc3.26.zip" core-blueprint/src/Admin/Admin.php | grep -q '\$screen_context     = ScreenContext::from_request( \$hook );'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-blueprint-1.0.0-rc3.26-final
+          path: core-blueprint-1.0.0-rc3.26.zip
+          retention-days: 7
