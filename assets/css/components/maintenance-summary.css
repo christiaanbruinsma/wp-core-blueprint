@@ -1,0 +1,85 @@
+/**
+ * components/maintenance-summary.css - Core Blueprint Suite
+ *
+ * Shared presentation for maintenance summaries rendered in both Reports and
+ * Logs: KPI composition, category/source markers and filtered-result summary.
+ * Product-specific page rhythm remains in the owning page stylesheet.
+ *
+ * @package CB\Core
+ * @since   1.0.0-rc3.32
+ */
+
+.cb-core-wrap .cb-core-mr-description {
+	display: inline-block;
+	line-height: var(--cb-lh-normal);
+}
+
+.cb-core-wrap .cb-core-mr-category,
+.cb-core-wrap .cb-core-mr-source {
+	display: inline-block;
+	padding: 2px var(--cb-space-2);
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: var(--cb-radius-sm);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-mr-category--plugin,
+.cb-core-wrap .cb-core-mr-category--theme { color: var(--cb-accent); }
+.cb-core-wrap .cb-core-mr-category--core,
+.cb-core-wrap .cb-core-mr-category--update { color: var(--cb-warning); }
+.cb-core-wrap .cb-core-mr-category--user { color: var(--cb-text-strong); }
+.cb-core-wrap .cb-core-mr-category--backup { color: var(--cb-success); }
+.cb-core-wrap .cb-core-mr-category--status { color: var(--cb-accent); }
+.cb-core-wrap .cb-core-mr-category--other { color: var(--cb-text-muted); }
+.cb-core-wrap .cb-core-mr-source--local { color: var(--cb-success); }
+.cb-core-wrap .cb-core-mr-source--remote { color: var(--cb-warning); }
+
+.cb-core-wrap .cb-core-mr-kpi-section h2 {
+	margin: 0 0 var(--cb-space-3);
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-mr-kpi-tiles {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: var(--cb-space-3);
+}
+
+@media (max-width: 1400px) {
+	.cb-core-wrap .cb-core-mr-kpi-tiles {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 782px) {
+	.cb-core-wrap .cb-core-mr-kpi-tiles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.cb-core-wrap .cb-core-mr-kpi-trend {
+	font-weight: var(--cb-fw-semibold);
+}
+
+.cb-core-wrap .cb-core-mr-kpi-trend--up { color: var(--cb-success); }
+.cb-core-wrap .cb-core-mr-kpi-trend--down { color: var(--cb-warning); }
+
+.cb-core-wrap .cb-core-mr-result-count {
+	margin: var(--cb-space-4) 0 var(--cb-space-2);
+	font-size: var(--cb-fs-md);
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-mr-result-count strong {
+	font-weight: var(--cb-fw-semibold);
+	color: var(--cb-text-strong);
+}
