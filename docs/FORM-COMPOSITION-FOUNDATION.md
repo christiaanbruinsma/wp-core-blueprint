@@ -26,7 +26,7 @@ Consumers must not depend on the internal stylesheet handles or filenames used b
 ## Stack contract
 
 ```html
-<div class="cb-core-stack">
+<div class="cb-core-stack cb-core-stack--form">
     <div class="cb-core-field">...</div>
     <fieldset class="cb-core-field">...</fieldset>
     <table class="widefat">...</table>
@@ -35,11 +35,12 @@ Consumers must not depend on the internal stylesheet handles or filenames used b
 
 Variants:
 
-- `cb-core-stack` — normal field/component rhythm.
+- `cb-core-stack` — normal component rhythm.
 - `cb-core-stack--compact` — tighter related-control rhythm.
+- `cb-core-stack--form` — top-level form/field rhythm. Use this when adjacent direct children are logical fields, fieldsets, summary tables or other peer sections in one form surface.
 - `cb-core-stack--loose` — larger workflow/section rhythm.
 
-Stack owns only spacing between its direct children. Child components keep ownership of their own internal geometry.
+Stack owns only spacing between its direct children. Child components keep ownership of their own internal geometry. Do not compensate for a missing form rhythm by adding local margins to field labels, descriptions or neighboring tables.
 
 ## Field contract
 
@@ -53,12 +54,16 @@ Use `CB\Core\UI\Field::render()` when one normal wrapper + label/control/hint sh
 </div>
 ```
 
-Fieldset example:
+Field owns the compact internal rhythm between label, control and help/error/meta text. In the WP-native adapter, these child relationships use the field gap as the spacing authority; consumers should not add extra top margins to `.description` merely to separate one field from the next.
+
+### Simple choices
+
+Use `cb-core-field__choices` for a small inline/wrapping set of native radio or checkbox labels that belong to one field. WordPress continues to own the controls themselves; Form Composition owns only the spacing between peer choices.
 
 ```html
 <fieldset class="cb-core-field">
     <legend class="cb-core-field__label">Visibility</legend>
-    <div class="cb-core-field__control">
+    <div class="cb-core-field__choices">
         <label><input type="radio" name="visibility" value="private"> Private</label>
         <label><input type="radio" name="visibility" value="public"> Public</label>
     </div>
@@ -66,7 +71,9 @@ Fieldset example:
 </fieldset>
 ```
 
-Supported structural classes remain `cb-core-field`, `cb-core-field--inline`, `cb-core-field--separated`, `cb-core-field--enable`, `cb-core-field__label`, `cb-core-field__control`, `cb-core-field__hint`, `cb-core-field__error` and `cb-core-field__meta`.
+`cb-core-field__choices` is intentionally not a substitute for Choice Group. Use the dedicated Choice Group Foundation when the options need cards, a managed grid, longer descriptions or richer selection presentation.
+
+Supported structural classes include `cb-core-field`, `cb-core-field--inline`, `cb-core-field--separated`, `cb-core-field--enable`, `cb-core-field__label`, `cb-core-field__control`, `cb-core-field__choices`, `cb-core-field__hint`, `cb-core-field__error` and `cb-core-field__meta`.
 
 ## Ownership rules
 
@@ -74,6 +81,7 @@ On standalone WordPress admin screens:
 
 - WordPress owns native input/select/textarea/radio/checkbox/button presentation.
 - Form Composition owns only grouping, spacing and field-level structural states.
+- `cb-core-stack--form` owns the spacing between peer fields/sections; `cb-core-field` owns the spacing inside one field; `cb-core-field__choices` owns spacing between simple peer choices.
 - Do not load Core Admin tokens/theme merely to obtain spacing.
 - Do not add local `field + field { margin-top: ... }` chains when Stack expresses the composition.
 - Feature-specific grids, previews and task-specific sizing may remain extension-owned.
