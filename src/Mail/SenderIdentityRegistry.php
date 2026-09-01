@@ -26,8 +26,9 @@ final class SenderIdentityRegistry {
 	 * @param array{id?:string,label?:string,description?:string,default_email?:string,default_name?:string} $definition
 	 */
 	public static function register( array $definition ): bool {
-		$id = sanitize_key( (string) ( $definition['id'] ?? '' ) );
-		if ( ! self::valid_id( $id ) || isset( self::$definitions[ $id ] ) ) {
+		$raw_id = trim( (string) ( $definition['id'] ?? '' ) );
+		$id     = sanitize_key( $raw_id );
+		if ( $raw_id !== $id || ! self::valid_id( $id ) || isset( self::$definitions[ $id ] ) ) {
 			return false;
 		}
 
