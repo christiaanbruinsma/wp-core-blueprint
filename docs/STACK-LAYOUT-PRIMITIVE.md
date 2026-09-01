@@ -1,6 +1,8 @@
 # Stack Layout Primitive
 
-`cb-core-stack` is the shared Core Blueprint vertical composition primitive. It exists to keep spacing **between** sibling components token-based and consistent without teaching those components about their neighbors.
+`cb-core-stack` is the shared Core Blueprint vertical composition primitive. It exists to keep spacing **between** sibling components consistent without teaching those components about their neighbors.
+
+Core Admin uses the token-based Stack presentation from the minimal shell. Standalone WordPress admin screens may reuse the same markup through the narrow WordPress-native Form Composition adapter documented in `FORM-COMPOSITION-FOUNDATION.md`; that adapter keeps WordPress ownership of controls, colours and chrome.
 
 ## Contract
 
@@ -15,9 +17,12 @@ Variants:
 
 - `cb-core-stack` — default component spacing.
 - `cb-core-stack--compact` — tighter related-control spacing.
+- `cb-core-stack--form` — deliberate top-level rhythm between peer fields, fieldsets and summary sections in a form surface.
 - `cb-core-stack--loose` — larger section/workflow spacing.
 
-A direct `.cb-core-section` child has its normal flow margin reset because Stack owns the inter-section gap.
+`cb-core-stack--form` is a semantic composition variant, not a license to restyle controls. On standalone WordPress admin screens it is supplied by the WP-native Form Composition adapter and keeps WordPress-native visual presentation intact.
+
+A direct `.cb-core-section` child has its normal flow margin reset in Core Admin because Stack owns the inter-section gap.
 
 ## Ownership rule
 
@@ -25,6 +30,7 @@ A direct `.cb-core-section` child has its normal flow margin reset because Stack
 - Stack owns only sibling spacing.
 - Do not add `Component + Component { margin-top: ... }` rules to solve composition problems.
 - Do not create module-specific spacing clones when Stack expresses the layout.
+- Standalone consumers must not load the Core Admin theme merely to obtain Stack spacing.
 
 ## File inputs
 
