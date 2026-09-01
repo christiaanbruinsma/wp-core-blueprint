@@ -9,7 +9,7 @@ Form Composition gives Core Blueprint screens one semantic Field + Stack markup 
 
 ## Enqueue boundary
 
-Standalone wp-admin consumers enqueue the narrow adapter through:
+Consumers enqueue the narrow adapter through:
 
 ```php
 use CB\Core\UI\FormComposition;
@@ -17,7 +17,9 @@ use CB\Core\UI\FormComposition;
 FormComposition::enqueue();
 ```
 
-The default presentation is `wp-native`. `FormComposition::PRESENTATION_CORE` may be requested explicitly only in a controlled Core presentation context. Normal pages registered under the Core Blueprint menu should instead use PageRegistry's `fields` semantic requirement; Stack is already part of the minimal Core Admin shell.
+With no explicit presentation, Base resolves from the actual admin screen: Core Blueprint menu screens receive the Core presentation and standalone WordPress admin screens receive the `wp-native` adapter. This resolution is based on screen identity, never on whether Core token CSS happens to be loaded. Consumers may explicitly request `FormComposition::PRESENTATION_CORE` or `FormComposition::PRESENTATION_WP_NATIVE` only when they genuinely own that presentation context.
+
+Normal pages registered under the Core Blueprint menu should still prefer PageRegistry's `fields` semantic requirement; Stack is already part of the minimal Core Admin shell.
 
 Consumers must not depend on the internal stylesheet handles or filenames used by this helper.
 
