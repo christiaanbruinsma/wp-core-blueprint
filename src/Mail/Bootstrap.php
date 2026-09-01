@@ -39,6 +39,7 @@ final class Bootstrap {
 		add_action( 'cb_core_logs_register_tabs', [ LogsTab::class, 'register' ] );
 
 		add_action( 'init', [ __CLASS__, 'register_i18n_filters' ], 1 );
+		add_action( 'init', [ __CLASS__, 'register_sender_identities' ], 5 );
 		// Raw system-event metadata is translation-free and remains available early.
 		add_filter( 'cb_core_system_log_event_types', [ __CLASS__, 'register_system_events' ] );
 
@@ -53,6 +54,13 @@ final class Bootstrap {
 	/** Register translation-bearing metadata filters after the textdomain is loaded. */
 	public static function register_i18n_filters(): void {
 		\CB\Core\Governance\EventRegistry::register_core_many( self::register_event_labels( [] ) );
+	}
+
+	/**
+	 * Public registration lifecycle for extension-owned sender identity slots.
+	 */
+	public static function register_sender_identities(): void {
+		do_action( 'cb_core_register_mail_sender_identities' );
 	}
 
 	public static function register_event_labels( array $labels ): array {

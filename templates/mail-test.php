@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 ?>
 <div class="wrap cb-core-wrap cb-core-mail-wrap">
 	<h1 class="cb-core-title"><?php esc_html_e( 'Test Email', 'core-blueprint' ); ?></h1>
-	<p class="cb-core-intro"><?php esc_html_e( 'Send a real message through the currently selected Core Blueprint Mail provider and record the result in the Mail Log.', 'core-blueprint' ); ?></p>
+	<p class="cb-core-intro"><?php esc_html_e( 'Send a real message through the currently selected Core Blueprint Mail provider and record the result in the Mail Log. Registered extension senders can be tested through the same transport.', 'core-blueprint' ); ?></p>
 
 	<?php if ( '' !== $result_toast_message ) : ?>
 		<div class="cb-core-mail-test-toast-payload" data-cb-core-mail-test-success="<?php echo esc_attr( $result_toast_message ); ?>" hidden></div>
@@ -45,6 +45,18 @@ defined( 'ABSPATH' ) || exit;
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="cb-core-mail-test-form">
 			<input type="hidden" name="action" value="cb_core_mail_test" />
 			<?php wp_nonce_field( 'cb_core_mail_test' ); ?>
+
+			<div class="cb-core-field">
+				<label class="cb-core-field__label" for="cb-mail-test-sender"><?php esc_html_e( 'Sender', 'core-blueprint' ); ?></label>
+				<select id="cb-mail-test-sender" name="sender_identity">
+					<option value=""><?php printf( esc_html__( 'Default — %s', 'core-blueprint' ), esc_html( (string) $settings['from_email'] ) ); ?></option>
+					<?php foreach ( $sender_identities as $identity_id => $identity ) : ?>
+						<option value="<?php echo esc_attr( $identity_id ); ?>"><?php echo esc_html( sprintf( '%s — %s', $identity['label'], $identity['email'] ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description"><?php esc_html_e( 'Choose the default site sender or a registered Core Blueprint extension identity.', 'core-blueprint' ); ?></p>
+			</div>
+
 			<div class="cb-core-field cb-core-mail-test-recipient">
 				<label class="cb-core-field__label" for="cb-mail-test-email"><?php esc_html_e( 'Recipient', 'core-blueprint' ); ?></label>
 				<div class="cb-core-field__control cb-core-mail-test-action-row">

@@ -225,17 +225,17 @@ final class ScreenAssetRegistry {
 		switch ( $tab ) {
 			case 'access-mode':
 				return array_merge( $items, [
-					'page.safeguards-site-mode', 'component.panels', 'component.radio-card', 'component.form-status',
-					'foundation.object-picker', 'foundation.time-picker', 'foundation.toast', 'module.site-mode',
+					'page.safeguards-site-mode', 'component.panels', 'component.form-status',
+					'foundation.object-picker', 'foundation.time-picker', 'foundation.choice-group', 'foundation.toast', 'module.site-mode',
 				] );
 			case 'login-shield':
 				return array_merge( $items, [
-					'page.safeguards-login-shield', 'component.panels', 'component.form-status',
+					'page.safeguards-login-shield', 'component.panels', 'component.radio-card', 'component.form-status',
 					'foundation.modal', 'module.login-shield',
 				] );
 			case 'core-shield':
 				return array_merge( $items, [
-					'page.safeguards-modules', 'page.safeguards-core-shield', 'component.rack-modules',
+					'page.safeguards-modules', 'page.safeguards-core-shield', 'component.rack-modules', 'component.radio-card',
 					'component.interactive-surfaces', 'component.disclosure', 'component.form-status',
 					'foundation.modal', 'foundation.toast', 'module.core-shield', 'module.description-toggle',
 				] );

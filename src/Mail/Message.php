@@ -16,21 +16,27 @@ final class Message {
 	public static function from_atts( array $atts ): array {
 		$settings = Settings::all();
 		$headers  = self::parse_headers( $atts['headers'] ?? '' );
+		$identity = SenderIdentityRegistry::current();
 
 		$from_email = (string) ( $headers['from']['email'] ?? '' );
 		$from_name  = (string) ( $headers['from']['name'] ?? '' );
 
-		if ( ! empty( $settings['force_from_email'] ) || ! is_email( $from_email ) ) {
-			$from_email = sanitize_email( (string) $settings['from_email'] );
-		}
-		if ( ! empty( $settings['force_from_name'] ) || '' === $from_name ) {
-			$from_name = sanitize_text_field( (string) $settings['from_name'] );
+		if ( null !== $identity ) {
+			$from_email = $identity['email'];
+			$from_name  = $identity['name'];
+		} else {
+			if ( ! empty( $settings['force_from_email'] ) || ! is_email( $from_email ) ) {
+				$from_email = sanitize_email( (string) $settings['from_email'] );
+			}
+			if ( ! empty( $settings['force_from_name'] ) || '' === $from_name ) {
+				$from_name = sanitize_text_field( (string) $settings['from_name'] );
+			}
 		}
 
 		// pre_wp_mail runs before WordPress applies these sender filters. Apply
 		// them explicitly so Brevo preserves the same extension contract as the
-		// normal wp_mail() path. Runtime's force filters, when enabled, simply
-		// participate in this same chain.
+		// normal wp_mail() path. Runtime's force filters, when enabled, preserve
+		// an active registered sender identity and otherwise enforce defaults.
 		$from_email = sanitize_email( (string) apply_filters( 'wp_mail_from', $from_email ) );
 		$from_name  = sanitize_text_field( (string) apply_filters( 'wp_mail_from_name', $from_name ) );
 

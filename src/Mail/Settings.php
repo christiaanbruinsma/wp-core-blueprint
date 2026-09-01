@@ -27,6 +27,7 @@ final class Settings {
 			'from_name'          => sanitize_text_field( (string) get_bloginfo( 'name' ) ),
 			'force_from_email'   => true,
 			'force_from_name'    => true,
+			'sender_identities'  => [],
 			'brevo_api_key'      => '',
 			'smtp_host'          => '',
 			'smtp_port'          => 587,
@@ -38,7 +39,6 @@ final class Settings {
 			'retention_days'     => 14,
 		];
 	}
-
 
 	public static function enabled(): bool {
 		$enabled = get_option( self::ENABLED_OPTION, null );
@@ -65,6 +65,33 @@ final class Settings {
 		$config_changed = update_option( self::OPTION, $settings, false );
 		$state_changed  = update_option( self::ENABLED_OPTION, ! empty( $settings['enabled'] ) ? '1' : '0', true );
 		return $config_changed || $state_changed;
+	}
+
+	/**
+	 * Return sanitized persisted overrides for registered sender identities.
+	 *
+	 * Unknown IDs remain stored so temporarily disabling an extension does not
+	 * destroy its mail identity configuration. Only registered identities are
+	 * exposed or used by SenderIdentityRegistry.
+	 *
+	 * @return array<string,array{email:string,name:string}>
+	 */
+	public static function sender_identity_overrides(): array {
+		$settings = self::all();
+		$stored   = is_array( $settings['sender_identities'] ?? null ) ? $settings['sender_identities'] : [];
+		$out      = [];
+
+		foreach ( $stored as $id => $identity ) {
+			$id = sanitize_key( (string) $id );
+			if ( '' === $id || ! is_array( $identity ) ) {
+				continue;
+			}
+			$out[ $id ] = [
+				'email' => sanitize_email( (string) ( $identity['email'] ?? '' ) ),
+				'name'  => sanitize_text_field( (string) ( $identity['name'] ?? '' ) ),
+			];
+		}
+		return $out;
 	}
 
 	/**

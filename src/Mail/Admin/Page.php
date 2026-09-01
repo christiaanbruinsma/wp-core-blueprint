@@ -14,6 +14,7 @@ use CB\Core\Admin\TabNav;
 use CB\Core\Mail\ConflictDetector;
 use CB\Core\Mail\Runtime;
 use CB\Core\Mail\Secrets;
+use CB\Core\Mail\SenderIdentityRegistry;
 use CB\Core\Mail\Settings;
 use CB\Core\Mail\State;
 use CB\Core\UI\Notice;
@@ -47,17 +48,19 @@ final class Page extends PageBase {
 			return;
 		}
 
-		$settings          = Settings::all();
-		$enabled           = State::is_enabled();
-		$conflicts         = ConflictDetector::active();
-		$runtime_active    = Runtime::is_active();
-		$has_brevo_secret  = '' !== Secrets::decrypt( (string) $settings['brevo_api_key'] );
-		$has_smtp_password = '' !== Secrets::decrypt( (string) $settings['smtp_password'] );
-		$provider_label        = Settings::provider_label();
-		$retention_options     = Settings::RETENTION_DAYS;
-		$activation_error      = Settings::activation_error( $settings );
-		$module_status_html    = Status::render( $enabled ? 'active' : 'idle', $enabled ? __( 'Enabled', 'core-blueprint' ) : __( 'Disabled', 'core-blueprint' ) );
-		$runtime_status_html   = Status::render( $runtime_active ? 'active' : 'idle', $runtime_active ? __( 'Active', 'core-blueprint' ) : __( 'Inactive', 'core-blueprint' ) );
+		$settings                  = Settings::all();
+		$sender_identities         = SenderIdentityRegistry::snapshot();
+		$sender_identity_overrides = Settings::sender_identity_overrides();
+		$enabled                   = State::is_enabled();
+		$conflicts                 = ConflictDetector::active();
+		$runtime_active            = Runtime::is_active();
+		$has_brevo_secret          = '' !== Secrets::decrypt( (string) $settings['brevo_api_key'] );
+		$has_smtp_password         = '' !== Secrets::decrypt( (string) $settings['smtp_password'] );
+		$provider_label            = Settings::provider_label();
+		$retention_options         = Settings::RETENTION_DAYS;
+		$activation_error          = Settings::activation_error( $settings );
+		$module_status_html        = Status::render( $enabled ? 'active' : 'idle', $enabled ? __( 'Enabled', 'core-blueprint' ) : __( 'Disabled', 'core-blueprint' ) );
+		$runtime_status_html       = Status::render( $runtime_active ? 'active' : 'idle', $runtime_active ? __( 'Active', 'core-blueprint' ) : __( 'Inactive', 'core-blueprint' ) );
 		$settings_runtime_status_html = Status::render(
 			$runtime_active ? 'active' : ( $enabled && ( ! empty( $conflicts ) || '' !== $activation_error ) ? 'warning' : 'idle' ),
 			$runtime_active
@@ -80,7 +83,7 @@ final class Page extends PageBase {
 				] );
 			}
 		}
-		$conflict_notice    = '';
+		$conflict_notice = '';
 		if ( ! empty( $conflicts ) ) {
 			$conflict_notice = Notice::render( [
 				'variant' => Notice::WARNING,
