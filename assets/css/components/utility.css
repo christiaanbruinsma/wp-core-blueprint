@@ -148,3 +148,124 @@
 	margin: var(--cb-space-2) 0 0 var(--cb-space-5);
 }
 
+/* ─── Base-owned native management tables ──────────────────────────────── */
+/*
+ * WordPress `widefat` remains the semantic/table-layout primitive for these
+ * Base-owned management views. The selectors below are intentionally opt-in:
+ * only known Core Admin tables receive the Core Blueprint canvas. This avoids
+ * globally re-skinning arbitrary WordPress/extension tables while ensuring
+ * dark/light presentation is complete rather than half native, half themed.
+ */
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+) {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	box-shadow: none;
+	color: var(--cb-text);
+}
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+) :is(thead, tfoot) :is(th, td) {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+) tbody > tr {
+	background: var(--cb-surface-1);
+}
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+).striped > tbody > tr:nth-child(odd) {
+	background: var(--cb-surface-2) !important;
+}
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+).striped > tbody > tr:nth-child(even) {
+	background: var(--cb-surface-1) !important;
+}
+
+.cb-core-wrap :is(
+	.cb-core-report-types,
+	.cb-core-recent-reports,
+	.cb-core-mail-log-table,
+	.cb-snippets-table,
+	.cb-media-formats-compatibility,
+	.cb-core-operator-list,
+	.cb-core-policy-table,
+	.cb-core-privacy-table,
+	.cb-core-failsafe-layers,
+	.cb-core-failsafe-self-test,
+	.cb-core-privileged-access__table,
+	.cb-core-integrity-history-table
+) tbody :is(th, td) {
+	border-bottom-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* Semantic row states must win over zebra striping. */
+.cb-core-wrap .cb-core-operator-list tbody tr.cb-core-row-operator {
+	background: var(--cb-tint-accent) !important;
+}
