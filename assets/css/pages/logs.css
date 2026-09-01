@@ -96,6 +96,58 @@
 }
 
 /* ─── Native log tables ────────────────────────────────────────────────── */
+/*
+ * WordPress' native list-table stylesheet owns a white table canvas. Core
+ * Admin intentionally keeps the semantic `widefat striped` markup, but Logs
+ * must map that native presentation onto the active Base theme. Keep these
+ * overrides strictly inside Logs/Retention instead of globally re-skinning
+ * arbitrary wp-admin tables.
+ */
+
+.cb-core-logs-page table.widefat,
+.cb-core-logs-retention-section table.widefat {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+	box-shadow: none;
+}
+
+.cb-core-logs-page table.widefat thead th,
+.cb-core-logs-page table.widefat tfoot th,
+.cb-core-logs-retention-section table.widefat thead th,
+.cb-core-logs-retention-section table.widefat tfoot th {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-logs-page table.widefat tbody td,
+.cb-core-logs-page table.widefat tbody th,
+.cb-core-logs-retention-section table.widefat tbody td,
+.cb-core-logs-retention-section table.widefat tbody th {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.cb-core-logs-page table.widefat.striped > tbody > :nth-child(odd) > td,
+.cb-core-logs-page table.widefat.striped > tbody > :nth-child(odd) > th,
+.cb-core-logs-retention-section table.widefat.striped > tbody > :nth-child(odd) > td,
+.cb-core-logs-retention-section table.widefat.striped > tbody > :nth-child(odd) > th {
+	background: var(--cb-surface-2);
+}
+
+.cb-core-logs-page table.widefat a,
+.cb-core-logs-retention-section table.widefat a {
+	color: var(--cb-accent);
+}
+
+.cb-core-logs-page table.widefat a:hover,
+.cb-core-logs-page table.widefat a:focus-visible,
+.cb-core-logs-retention-section table.widefat a:hover,
+.cb-core-logs-retention-section table.widefat a:focus-visible {
+	color: var(--cb-accent-strong);
+}
 
 .cb-core-logs-page .cb-core-log-table-scroll {
 	max-width: 100%;
