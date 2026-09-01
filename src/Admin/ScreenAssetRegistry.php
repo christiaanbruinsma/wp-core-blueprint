@@ -303,6 +303,10 @@ final class ScreenAssetRegistry {
 
 		if ( 'post-types' === $tab && in_array( $view, [ 'edit', 'duplicate' ], true ) ) {
 			$items[] = 'foundation.icon-picker';
+			$items[] = 'foundation.choice-group';
+		}
+		if ( 'taxonomies' === $tab && in_array( $view, [ 'edit', 'duplicate' ], true ) ) {
+			$items[] = 'foundation.choice-group';
 		}
 		if ( 'option-pages' === $tab && in_array( $view, [ 'edit', 'duplicate' ], true ) ) {
 			$items[] = 'foundation.icon-picker';
