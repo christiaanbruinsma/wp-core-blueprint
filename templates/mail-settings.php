@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 ?>
 <div class="wrap cb-core-wrap cb-core-mail-wrap">
 	<h1 class="cb-core-title"><?php esc_html_e( 'Mail', 'core-blueprint' ); ?></h1>
-	<p class="cb-core-intro"><?php esc_html_e( 'Configure reliable outbound email without a separate SMTP plugin. Module activation is managed from the Core Blueprint Dashboard; delivery starts only when configuration is valid and no conflicting mail transport is active.', 'core-blueprint' ); ?></p>
+	<p class="cb-core-intro"><?php esc_html_e( 'Configure reliable outbound email without a separate SMTP plugin. One transport can serve the default site sender and registered Core Blueprint sender identities such as Support, Billing or Coach.', 'core-blueprint' ); ?></p>
 
 	<?php if ( is_array( $result ) && ! empty( $result['message'] ) ) : ?>
 		<div class="notice <?php echo 'error' === ( $result['type'] ?? '' ) ? 'notice-error' : 'notice-success'; ?> inline"><p><?php echo esc_html( (string) $result['message'] ); ?></p></div>
@@ -57,7 +57,8 @@ defined( 'ABSPATH' ) || exit;
 		</section>
 
 		<section class="cb-core-mail-section">
-			<h2><?php esc_html_e( 'Sender identity', 'core-blueprint' ); ?></h2>
+			<h2><?php esc_html_e( 'Default sender', 'core-blueprint' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'The default sender is used for ordinary WordPress and system mail. Registered Core Blueprint extensions can use their own approved identity through the same delivery provider.', 'core-blueprint' ); ?></p>
 			<div class="cb-core-mail-grid">
 				<div class="cb-core-field">
 					<label class="cb-core-field__label" for="cb-mail-from-email"><?php esc_html_e( 'From Email', 'core-blueprint' ); ?></label>
@@ -67,12 +68,42 @@ defined( 'ABSPATH' ) || exit;
 				<div class="cb-core-field">
 					<label class="cb-core-field__label" for="cb-mail-from-name"><?php esc_html_e( 'From Name', 'core-blueprint' ); ?></label>
 					<input id="cb-mail-from-name" type="text" name="from_name" value="<?php echo esc_attr( (string) $settings['from_name'] ); ?>" />
-					<p class="description"><?php esc_html_e( 'The sender name recipients see in their inbox.', 'core-blueprint' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The sender name recipients see for default site mail.', 'core-blueprint' ); ?></p>
 				</div>
 			</div>
-			<label class="cb-core-check-row"><input type="checkbox" name="force_from_email" value="1" <?php checked( ! empty( $settings['force_from_email'] ) ); ?> /><span class="cb-core-check-row__body"><strong><?php esc_html_e( 'Force From Email', 'core-blueprint' ); ?></strong><small><?php esc_html_e( 'Prevents themes and plugins from replacing the configured sender address.', 'core-blueprint' ); ?></small></span></label>
-			<label class="cb-core-check-row"><input type="checkbox" name="force_from_name" value="1" <?php checked( ! empty( $settings['force_from_name'] ) ); ?> /><span class="cb-core-check-row__body"><strong><?php esc_html_e( 'Force From Name', 'core-blueprint' ); ?></strong><small><?php esc_html_e( 'Prevents themes and plugins from replacing the configured sender name.', 'core-blueprint' ); ?></small></span></label>
+			<label class="cb-core-check-row"><input type="checkbox" name="force_from_email" value="1" <?php checked( ! empty( $settings['force_from_email'] ) ); ?> /><span class="cb-core-check-row__body"><strong><?php esc_html_e( 'Force default From Email', 'core-blueprint' ); ?></strong><small><?php esc_html_e( 'Prevents ordinary themes and plugins from replacing the default sender. Registered Core Blueprint sender identities remain allowed.', 'core-blueprint' ); ?></small></span></label>
+			<label class="cb-core-check-row"><input type="checkbox" name="force_from_name" value="1" <?php checked( ! empty( $settings['force_from_name'] ) ); ?> /><span class="cb-core-check-row__body"><strong><?php esc_html_e( 'Force default From Name', 'core-blueprint' ); ?></strong><small><?php esc_html_e( 'Prevents ordinary themes and plugins from replacing the default sender name. Registered Core Blueprint sender identities remain allowed.', 'core-blueprint' ); ?></small></span></label>
 		</section>
+
+		<?php if ( ! empty( $sender_identities ) ) : ?>
+			<section class="cb-core-mail-section">
+				<h2><?php esc_html_e( 'Registered sender identities', 'core-blueprint' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Active Core Blueprint extensions register the sender roles they need. Configure a dedicated address here; leave a field blank to inherit the default sender above. Every address must be authorized by the selected delivery provider.', 'core-blueprint' ); ?></p>
+				<?php foreach ( $sender_identities as $identity_id => $identity ) : ?>
+					<?php
+					$override = is_array( $sender_identity_overrides[ $identity_id ] ?? null ) ? $sender_identity_overrides[ $identity_id ] : [];
+					$email_id = 'cb-mail-sender-email-' . $identity_id;
+					$name_id  = 'cb-mail-sender-name-' . $identity_id;
+					?>
+					<div class="cb-core-field">
+						<strong><?php echo esc_html( $identity['label'] ); ?></strong>
+						<?php if ( '' !== $identity['description'] ) : ?>
+							<p class="description"><?php echo esc_html( $identity['description'] ); ?></p>
+						<?php endif; ?>
+					</div>
+					<div class="cb-core-mail-grid">
+						<div class="cb-core-field">
+							<label class="cb-core-field__label" for="<?php echo esc_attr( $email_id ); ?>"><?php esc_html_e( 'From Email', 'core-blueprint' ); ?></label>
+							<input id="<?php echo esc_attr( $email_id ); ?>" type="email" name="sender_identity_email[<?php echo esc_attr( $identity_id ); ?>]" value="<?php echo esc_attr( (string) ( $override['email'] ?? '' ) ); ?>" placeholder="<?php echo esc_attr( $identity['email'] ); ?>" autocomplete="off" />
+						</div>
+						<div class="cb-core-field">
+							<label class="cb-core-field__label" for="<?php echo esc_attr( $name_id ); ?>"><?php esc_html_e( 'From Name', 'core-blueprint' ); ?></label>
+							<input id="<?php echo esc_attr( $name_id ); ?>" type="text" name="sender_identity_name[<?php echo esc_attr( $identity_id ); ?>]" value="<?php echo esc_attr( (string) ( $override['name'] ?? '' ) ); ?>" placeholder="<?php echo esc_attr( $identity['name'] ); ?>" />
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</section>
+		<?php endif; ?>
 
 		<section class="cb-core-mail-section">
 			<h2><?php esc_html_e( 'Brevo', 'core-blueprint' ); ?></h2>
