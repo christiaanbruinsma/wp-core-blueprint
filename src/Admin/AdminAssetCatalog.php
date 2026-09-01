@@ -264,7 +264,7 @@ final class AdminAssetCatalog {
 		if ( str_starts_with( $asset_id, 'component.' ) ) {
 			$name = substr( $asset_id, strlen( 'component.' ) );
 			$allowed = [
-				'tile-grid', 'kv-tables', 'badges', 'rack-modules', 'inert-text', 'meta-bar', 'panels', 'utility',
+				'activity-chart', 'maintenance-summary', 'tile-grid', 'kv-tables', 'badges', 'rack-modules', 'inert-text', 'meta-bar', 'panels', 'utility',
 				'policy-table', 'overview-framework', 'form-status', 'disclosure', 'hud', 'cards', 'modals', 'toasts',
 				'interactive-surfaces', 'state-badges', 'status-indicators', 'spinner', 'empty-state', 'nav-tabs',
 				'table-cols', 'actions', 'log-table', 'field', 'radio-card', 'master-switch', 'choice-group',

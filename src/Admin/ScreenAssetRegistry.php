@@ -141,11 +141,19 @@ final class ScreenAssetRegistry {
 					'page.logs', 'page.security', 'component.nav-tabs', 'component.meta',
 					'component.badges', 'component.table-cols', 'module.logs-toggle', 'module.log-exports',
 				];
+				if ( 'overview' === $tab ) {
+					$items[] = 'component.overview-framework';
+				}
+				if ( in_array( $tab, [ 'audit', 'system', 'maintenance' ], true ) ) {
+					$items[] = 'component.filter-bar';
+					$items[] = 'component.activity-chart';
+				}
+				if ( 'maintenance' === $tab ) {
+					$items[] = 'component.tile-grid';
+					$items[] = 'component.maintenance-summary';
+				}
 				if ( 'retention' === $tab ) {
 					$items[] = 'component.policy-table';
-				} elseif ( 'mail' !== $tab ) {
-					$items[] = 'component.filter-bar';
-					$items[] = 'component.log-table';
 				}
 				if ( 'mail' === $tab ) {
 					$items = array_merge( $items, [ 'page.mail', 'foundation.modal', 'module.mail-log' ] );
@@ -155,8 +163,8 @@ final class ScreenAssetRegistry {
 			case 'core-blueprint-reports':
 				return [
 					'page.reports', 'page.security', 'component.nav-tabs', 'component.meta', 'component.filter-bar',
-					'component.log-table', 'component.tile-grid', 'component.badges', 'component.table-cols',
-					'foundation.modal', 'foundation.toast', 'module.reports',
+					'component.log-table', 'component.activity-chart', 'component.maintenance-summary', 'component.tile-grid',
+					'component.badges', 'component.table-cols', 'foundation.modal', 'foundation.toast', 'module.reports',
 				];
 
 			case 'core-blueprint-notes':
