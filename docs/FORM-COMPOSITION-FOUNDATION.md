@@ -71,6 +71,8 @@ Use `cb-core-field__choices` for a small inline/wrapping set of native radio or 
 </fieldset>
 ```
 
+Browser fieldset/legend layout is special and does not reliably expose the legend as a normal flex item. Base therefore owns an explicit `legend → control/choices` spacing rule in both Core and WP-native presentations so semantic fieldsets keep the same label-to-control rhythm as ordinary Fields. Consumers must not add local legend margins to compensate.
+
 `cb-core-field__choices` is intentionally not a substitute for Choice Group. Use the dedicated Choice Group Foundation when the options need cards, a managed grid, longer descriptions or richer selection presentation.
 
 Supported structural classes include `cb-core-field`, `cb-core-field--inline`, `cb-core-field--separated`, `cb-core-field--enable`, `cb-core-field__label`, `cb-core-field__control`, `cb-core-field__choices`, `cb-core-field__hint`, `cb-core-field__error` and `cb-core-field__meta`.
