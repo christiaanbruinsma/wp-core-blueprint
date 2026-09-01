@@ -266,6 +266,6 @@
 }
 
 /* Semantic row states must win over zebra striping. */
-.cb-core-wrap .cb-core-operator-list tbody tr.cb-core-row-operator {
+.cb-core-wrap table.widefat.cb-core-operator-list.striped > tbody > tr.cb-core-row-operator {
 	background: var(--cb-tint-accent) !important;
 }
