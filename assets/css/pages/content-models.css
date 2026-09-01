@@ -33,7 +33,6 @@
 	white-space: nowrap;
 }
 
-
 .cb-content-models-wrap .cb-content-models-section-header {
 	margin: 0 0 var(--cb-space-3);
 }
@@ -65,7 +64,41 @@
 	cursor: move;
 }
 
+/* Content Models owns these WordPress-native list tables, so keep their
+ * presentation inside the Core Admin token system without creating a generic
+ * arbitrary-table contract. */
+.cb-content-models-wrap table.widefat {
+	border-color: var(--cb-border);
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
+}
 
+.cb-content-models-wrap table.widefat thead th,
+.cb-content-models-wrap table.widefat tfoot th {
+	border-color: var(--cb-border);
+	background: var(--cb-surface-1);
+	color: var(--cb-text-strong);
+}
+
+.cb-content-models-wrap table.widefat tbody td,
+.cb-content-models-wrap table.widefat tbody th {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.cb-content-models-wrap table.widefat.striped > tbody > :nth-child(odd) {
+	background: var(--cb-surface-1);
+}
+
+.cb-content-models-wrap table.widefat.striped > tbody > :nth-child(even) {
+	background: var(--cb-surface-0);
+}
+
+.cb-content-models-wrap table.widefat .description,
+.cb-content-models-wrap table.widefat .row-actions,
+.cb-content-models-wrap table.widefat .row-actions span {
+	color: var(--cb-text-muted);
+}
 
 /* Field workspace: expandable Quick Edit + dedicated Full Editor. */
 .cb-content-models-wrap .cb-content-models-section-header > div:first-child .description {
@@ -123,7 +156,6 @@
 	white-space: nowrap;
 }
 
-
 .cb-content-models-wrap .cb-content-models-quick-header {
 	margin-bottom: var(--cb-space-4);
 }
@@ -153,7 +185,6 @@
 	margin: 0 0 var(--cb-space-2);
 	font-weight: var(--cb-fw-semibold);
 }
-
 
 .cb-content-models-wrap .cb-content-models-quick-form input[type="text"],
 .cb-content-models-wrap .cb-content-models-quick-form input[type="number"],
@@ -253,7 +284,6 @@
 .cb-content-models-wrap td .cb-content-models-actions {
 	vertical-align: middle;
 }
-
 
 /* Shared list-table action alignment. Keep every Content Models action group
  * pinned to the right edge regardless of preceding column widths. */
