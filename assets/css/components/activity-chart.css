@@ -1,0 +1,80 @@
+/**
+ * components/activity-chart.css - Core Blueprint Suite
+ *
+ * Shared activity timeline chart used by Logs and Reports. Chart.php owns the
+ * SVG markup; this component owns only the visual presentation so Base-owned
+ * screens can request the chart without importing another page stylesheet.
+ *
+ * @package CB\Core
+ * @since   1.0.0-rc3.32
+ */
+
+.cb-core-wrap .cb-core-mr-chart-wrap {
+	margin-top: var(--cb-space-5);
+	padding: var(--cb-space-5) var(--cb-space-5) var(--cb-space-3);
+	background: var(--cb-surface-1);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+}
+
+.cb-core-wrap .cb-core-mr-chart-title {
+	margin: 0 0 var(--cb-space-3);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-wrap .cb-core-mr-chart {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.cb-core-wrap .cb-core-mr-chart-grid {
+	stroke: var(--cb-border);
+	stroke-width: 1;
+	stroke-dasharray: 2, 4;
+}
+
+.cb-core-wrap .cb-core-mr-chart-axis {
+	font-size: var(--cb-fs-xs);
+	fill: var(--cb-text-muted);
+	font-family: inherit;
+}
+
+.cb-core-wrap .cb-core-mr-chart-line {
+	stroke: var(--cb-accent);
+	stroke-width: 1.25;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	filter: drop-shadow(0 0 2px color-mix(in srgb, var(--cb-accent) 22%, transparent));
+}
+
+.cb-core-wrap .cb-core-mr-chart-dot {
+	fill: var(--cb-surface-0);
+	stroke: var(--cb-accent);
+	stroke-width: 1;
+}
+
+.cb-core-wrap .cb-core-mr-chart-dot--active {
+	fill: var(--cb-accent);
+	filter: drop-shadow(0 0 2px color-mix(in srgb, var(--cb-accent) 40%, transparent));
+}
+
+/* Chart.php writes a unique gradient URL into the SVG path itself. Do not
+ * override `fill` here or multiple charts on one page would target a stale id. */
+.cb-core-wrap .cb-core-mr-chart-area {
+	opacity: 0.18;
+}
+
+.cb-core-wrap .cb-core-mr-chart-stop-top {
+	stop-color: var(--cb-accent);
+	stop-opacity: 0.22;
+}
+
+.cb-core-wrap .cb-core-mr-chart-stop-bot {
+	stop-color: var(--cb-accent);
+	stop-opacity: 0;
+}
