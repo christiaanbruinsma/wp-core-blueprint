@@ -109,6 +109,25 @@
 	display: block;
 }
 
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__choices {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--cb-space-2) var(--cb-space-4);
+	min-width: 0;
+}
+
+:is(.cb-core-wrap, .cb-core-form-scope) .cb-core-field__choices > label {
+	margin: 0;
+}
+
+/* Browser fieldset/legend layout does not reliably expose the legend as a
+ * normal flex item, so the Field gap alone cannot guarantee label-to-control
+ * rhythm. Keep semantic fieldsets aligned with normal label/control Fields. */
+:is(.cb-core-wrap, .cb-core-form-scope) fieldset.cb-core-field > legend.cb-core-field__label + :is(.cb-core-field__control, .cb-core-field__choices) {
+	margin-top: var(--cb-space-2);
+}
+
 /* Hint below the control - uses WP-native `<p class="description">`
  * styling everywhere; this rule just tightens the top-margin so the
  * hint sits flush with its field rather than the document baseline. */
