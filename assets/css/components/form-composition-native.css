@@ -85,6 +85,13 @@
 	margin: 0;
 }
 
+/* Browser fieldset/legend layout does not reliably expose the legend as a
+ * normal flex item, so `gap` alone cannot guarantee the label-to-control
+ * rhythm. Keep semantic fieldsets visually aligned with normal Fields. */
+fieldset.cb-core-field > legend.cb-core-field__label + :is(.cb-core-field__control, .cb-core-field__choices) {
+	margin-top: 8px;
+}
+
 .cb-core-field > .description,
 .cb-core-field__hint,
 .cb-core-field__error,
