@@ -44,13 +44,13 @@ final class Runtime {
 		self::$active = true;
 		DeliveryLogger::boot();
 
-		$settings = Settings::all();
-		if ( ! empty( $settings['force_from_email'] ) ) {
-			add_filter( 'wp_mail_from', [ __CLASS__, 'force_from_email' ], PHP_INT_MAX );
-		}
-		if ( ! empty( $settings['force_from_name'] ) ) {
-			add_filter( 'wp_mail_from_name', [ __CLASS__, 'force_from_name' ], PHP_INT_MAX );
-		}
+		// These two filters are always present while Core Blueprint Mail owns the
+		// runtime. Outside a scoped Sender::send() call they only enforce the
+		// configured default when the corresponding force setting is enabled.
+		// During a scoped call the registered Base-owned identity is authoritative,
+		// even when an earlier theme/plugin filter tries to replace the sender.
+		add_filter( 'wp_mail_from', [ __CLASS__, 'force_from_email' ], PHP_INT_MAX );
+		add_filter( 'wp_mail_from_name', [ __CLASS__, 'force_from_name' ], PHP_INT_MAX );
 
 		$transport::boot();
 	}
@@ -65,7 +65,12 @@ final class Runtime {
 			return $identity['email'];
 		}
 
-		$configured = sanitize_email( (string) Settings::all()['from_email'] );
+		$settings = Settings::all();
+		if ( empty( $settings['force_from_email'] ) ) {
+			return $email;
+		}
+
+		$configured = sanitize_email( (string) $settings['from_email'] );
 		return is_email( $configured ) ? $configured : $email;
 	}
 
@@ -75,7 +80,12 @@ final class Runtime {
 			return $identity['name'];
 		}
 
-		$configured = sanitize_text_field( (string) Settings::all()['from_name'] );
+		$settings = Settings::all();
+		if ( empty( $settings['force_from_name'] ) ) {
+			return $name;
+		}
+
+		$configured = sanitize_text_field( (string) $settings['from_name'] );
 		return '' !== $configured ? $configured : $name;
 	}
 }
