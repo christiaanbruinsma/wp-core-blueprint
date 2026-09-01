@@ -17,7 +17,10 @@ Variants:
 
 - `cb-core-stack` — default component spacing.
 - `cb-core-stack--compact` — tighter related-control spacing.
+- `cb-core-stack--form` — deliberate top-level rhythm between peer fields, fieldsets and summary sections in a form surface.
 - `cb-core-stack--loose` — larger section/workflow spacing.
+
+`cb-core-stack--form` is a semantic composition variant, not a license to restyle controls. On standalone WordPress admin screens it is supplied by the WP-native Form Composition adapter and keeps WordPress-native visual presentation intact.
 
 A direct `.cb-core-section` child has its normal flow margin reset in Core Admin because Stack owns the inter-section gap.
 
