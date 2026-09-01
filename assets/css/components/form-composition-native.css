@@ -1,0 +1,83 @@
+/* Form Composition Foundation — WordPress-native presentation adapter.
+ *
+ * Structural only: WordPress keeps ownership of native control styling,
+ * typography, colours and admin chrome. This adapter owns field grouping and
+ * vertical rhythm so standalone Core Blueprint screens do not invent local
+ * margin chains.
+ */
+
+.cb-core-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.cb-core-stack--compact {
+	gap: 8px;
+}
+
+.cb-core-stack--loose {
+	gap: 24px;
+}
+
+.cb-core-field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 640px;
+	margin: 0;
+}
+
+.cb-core-field[hidden] {
+	display: none;
+}
+
+.cb-core-field--inline {
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+	max-width: none;
+}
+
+.cb-core-field--separated + .cb-core-field--separated {
+	margin-top: 24px;
+	padding-top: 24px;
+	border-top: 1px solid #dcdcde;
+}
+
+.cb-core-field--enable {
+	padding: 0;
+}
+
+.cb-core-field__label {
+	display: block;
+	font-weight: 600;
+}
+
+.cb-core-field__label strong {
+	display: block;
+	margin-bottom: 2px;
+}
+
+.cb-core-field__label .cb-core-muted {
+	display: block;
+	margin-top: 2px;
+	font-weight: 400;
+	color: #646970;
+}
+
+.cb-core-field > .description,
+.cb-core-field__hint,
+.cb-core-field__error,
+.cb-core-field__meta {
+	margin: 4px 0 0;
+}
+
+.cb-core-field__error {
+	color: #d63638;
+}
+
+.cb-core-field__meta {
+	color: #646970;
+}
