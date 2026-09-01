@@ -24,16 +24,22 @@ final class FormComposition {
 	/**
 	 * Enqueue shared Field + Stack composition styling.
 	 *
-	 * Standalone wp-admin consumers should normally keep the default
-	 * `wp-native` presentation. Core Admin pages should prefer PageRegistry's
-	 * semantic `fields` requirement; Stack is already part of the minimal shell.
-	 * The explicit `core` option exists for controlled Base-owned composition
-	 * contexts and does not change the caller's screen identity.
+	 * With no explicit presentation, Base resolves the adapter from the actual
+	 * admin screen: pages below the Core Blueprint parent menu use Core Admin;
+	 * standalone WordPress admin pages use the WP-native adapter. Consumers may
+	 * still force either supported presentation explicitly.
 	 *
-	 * @param string $presentation `wp-native` (default) or `core`.
+	 * Core Admin pages should normally prefer PageRegistry's semantic `fields`
+	 * requirement; Stack is already part of the minimal shell.
+	 *
+	 * @param string|null $presentation `wp-native`, `core`, or null for auto.
 	 */
-	public static function enqueue( string $presentation = self::PRESENTATION_WP_NATIVE ): void {
-		if ( ! in_array( $presentation, [ self::PRESENTATION_WP_NATIVE, self::PRESENTATION_CORE ], true ) ) {
+	public static function enqueue( ?string $presentation = null ): void {
+		if ( null === $presentation ) {
+			$presentation = self::is_core_admin_screen()
+				? self::PRESENTATION_CORE
+				: self::PRESENTATION_WP_NATIVE;
+		} elseif ( ! in_array( $presentation, [ self::PRESENTATION_WP_NATIVE, self::PRESENTATION_CORE ], true ) ) {
 			$presentation = self::PRESENTATION_WP_NATIVE;
 		}
 
@@ -71,5 +77,21 @@ final class FormComposition {
 				CB_CORE_VERSION
 			);
 		}
+	}
+
+	/** Whether the current wp-admin screen belongs to Core Admin. */
+	private static function is_core_admin_screen(): bool {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || empty( $screen->id ) ) {
+			return false;
+		}
+
+		$screen_id = (string) $screen->id;
+		return 'toplevel_page_' . CB_CORE_PARENT_MENU === $screen_id
+			|| 0 === strpos( $screen_id, CB_CORE_PARENT_MENU . '_page_' );
 	}
 }
