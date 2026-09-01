@@ -14,6 +14,8 @@ use CB\Core\Mail\ConflictDetector;
 use CB\Core\Mail\Log\Repository;
 use CB\Core\Mail\Runtime;
 use CB\Core\Mail\Secrets;
+use CB\Core\Mail\Sender;
+use CB\Core\Mail\SenderIdentityRegistry;
 use CB\Core\Mail\Settings;
 use CB\Core\Mail\State;
 use CB\Core\Mail\TestContext;
@@ -44,6 +46,36 @@ final class Actions {
 		$next['from_name']        = isset( $_POST['from_name'] ) ? sanitize_text_field( wp_unslash( $_POST['from_name'] ) ) : '';
 		$next['force_from_email'] = isset( $_POST['force_from_email'] );
 		$next['force_from_name']  = isset( $_POST['force_from_name'] );
+
+		$identity_emails = isset( $_POST['sender_identity_email'] ) && is_array( $_POST['sender_identity_email'] )
+			? wp_unslash( $_POST['sender_identity_email'] )
+			: [];
+		$identity_names = isset( $_POST['sender_identity_name'] ) && is_array( $_POST['sender_identity_name'] )
+			? wp_unslash( $_POST['sender_identity_name'] )
+			: [];
+		$identity_overrides = Settings::sender_identity_overrides();
+
+		foreach ( SenderIdentityRegistry::snapshot() as $id => $identity ) {
+			$raw_email = isset( $identity_emails[ $id ] ) ? trim( (string) $identity_emails[ $id ] ) : '';
+			$email     = sanitize_email( $raw_email );
+			if ( '' !== $raw_email && ! is_email( $email ) ) {
+				self::set_result(
+					'error',
+					sprintf(
+						/* translators: %s: registered sender identity label */
+						__( 'Enter a valid email address for the %s sender identity, or leave it blank to use the default sender.', 'core-blueprint' ),
+						$identity['label']
+					)
+				);
+				self::redirect( 'settings' );
+			}
+
+			$identity_overrides[ $id ] = [
+				'email' => $email,
+				'name'  => isset( $identity_names[ $id ] ) ? sanitize_text_field( (string) $identity_names[ $id ] ) : '',
+			];
+		}
+		$next['sender_identities'] = $identity_overrides;
 
 		$retention = isset( $_POST['retention_days'] ) ? (int) $_POST['retention_days'] : 14;
 		$next['retention_days'] = in_array( $retention, Settings::RETENTION_DAYS, true ) ? $retention : 14;
@@ -108,20 +140,31 @@ final class Actions {
 			self::redirect( 'test' );
 		}
 
+		$identity_id = isset( $_POST['sender_identity'] ) ? sanitize_key( wp_unslash( $_POST['sender_identity'] ) ) : '';
+		$identity_id = SenderIdentityRegistry::is_registered( $identity_id ) ? $identity_id : '';
+
 		TestContext::begin();
 		try {
-			$sent = wp_mail(
-				$email,
-				__( 'Core Blueprint test email', 'core-blueprint' ),
-				__( 'This test email confirms that Core Blueprint Mail can deliver messages from this WordPress site.', 'core-blueprint' )
-			);
+			$sent = '' !== $identity_id
+				? Sender::send(
+					$identity_id,
+					$email,
+					__( 'Core Blueprint test email', 'core-blueprint' ),
+					__( 'This test email confirms that Core Blueprint Mail can deliver messages from this WordPress site.', 'core-blueprint' )
+				)
+				: wp_mail(
+					$email,
+					__( 'Core Blueprint test email', 'core-blueprint' ),
+					__( 'This test email confirms that Core Blueprint Mail can deliver messages from this WordPress site.', 'core-blueprint' )
+				);
 		} finally {
 			TestContext::end();
 		}
 
 		AuditLog::log( 'mail_test_sent', $sent ? 'notice' : 'warning', [
-			'provider' => Settings::provider(),
-			'result'   => $sent ? 'success' : 'failed',
+			'provider'        => Settings::provider(),
+			'sender_identity' => '' !== $identity_id ? $identity_id : 'default',
+			'result'          => $sent ? 'success' : 'failed',
 		] );
 
 		self::set_result(
