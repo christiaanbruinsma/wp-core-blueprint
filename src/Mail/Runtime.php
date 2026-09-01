@@ -60,11 +60,21 @@ final class Runtime {
 	}
 
 	public static function force_from_email( string $email ): string {
+		$identity = SenderIdentityRegistry::current();
+		if ( null !== $identity && is_email( $identity['email'] ) ) {
+			return $identity['email'];
+		}
+
 		$configured = sanitize_email( (string) Settings::all()['from_email'] );
 		return is_email( $configured ) ? $configured : $email;
 	}
 
 	public static function force_from_name( string $name ): string {
+		$identity = SenderIdentityRegistry::current();
+		if ( null !== $identity && '' !== $identity['name'] ) {
+			return $identity['name'];
+		}
+
 		$configured = sanitize_text_field( (string) Settings::all()['from_name'] );
 		return '' !== $configured ? $configured : $name;
 	}
