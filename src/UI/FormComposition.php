@@ -6,8 +6,8 @@ declare(strict_types=1);
  * Core Admin already receives Stack through the minimal shell and may opt into
  * Field through PageRegistry. Standalone WordPress admin screens can use this
  * helper to reuse the same semantic markup while keeping WordPress-native
- * controls, colours and chrome. Base normalizes only reusable field structure
- * and control geometry inside explicit Foundation-owned scopes.
+ * controls, colours, focus behaviour and admin chrome entirely owned by
+ * WordPress. Base owns only reusable form structure and spacing.
  *
  * @package Core_Blueprint
  * @since   1.0.0-rc3.36
@@ -27,12 +27,14 @@ final class FormComposition {
 	 *
 	 * With no explicit presentation, Base resolves the adapter from the actual
 	 * admin screen: pages below the Core Blueprint parent menu use Core Admin;
-	 * standalone WordPress admin pages use the WP-native adapter. Consumers may
-	 * still force either supported presentation explicitly.
+	 * standalone WordPress admin pages use the WP-native structural adapter.
+	 * Consumers may still force either supported presentation explicitly.
 	 *
-	 * The WP-native adapter also provides scoped control geometry through
-	 * `.cb-core-form-scope` and the semantic `.cb-core-field` contract. It does
-	 * not globally restyle WordPress admin controls or import Core Admin tokens.
+	 * The WP-native adapter never restyles native WordPress form controls. It
+	 * provides only field grouping, spacing and structural states. Consumers are
+	 * responsible for using canonical WordPress admin markup, explicit HTML input
+	 * types and WordPress classes such as `regular-text`, `small-text`, `widefat`
+	 * and native `.button` variants where appropriate.
 	 *
 	 * Core Admin pages should normally prefer PageRegistry's semantic `fields`
 	 * requirement; Stack is already part of the minimal shell.
@@ -49,11 +51,10 @@ final class FormComposition {
 		}
 
 		if ( self::PRESENTATION_WP_NATIVE === $presentation ) {
-			FormControls::enqueue();
 			wp_enqueue_style(
 				'cb-core-css-form-composition-native',
 				CB_CORE_URL . 'assets/css/components/form-composition-native.css',
-				[ FormControls::STYLE_HANDLE ],
+				[],
 				CB_CORE_VERSION
 			);
 			return;
