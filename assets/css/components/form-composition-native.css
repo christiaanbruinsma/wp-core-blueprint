@@ -1,10 +1,9 @@
-/* Form Composition Foundation — WordPress-native presentation adapter.
+/* Form Composition Foundation — WordPress-native structural adapter.
  *
- * Structural layer for standalone Core Blueprint admin surfaces. WordPress
- * keeps ownership of colours, focus behaviour and admin chrome; the companion
- * form-controls-native.css normalizes only opt-in control geometry. This file
- * owns field grouping and vertical rhythm so sibling extensions do not invent
- * local margin chains.
+ * Standalone Core Blueprint admin surfaces keep WordPress-native controls,
+ * colours, focus behaviour, browser affordances and admin chrome. This file
+ * owns only reusable field grouping and vertical rhythm so sibling extensions
+ * do not invent local spacing chains.
  */
 
 .cb-core-stack {
