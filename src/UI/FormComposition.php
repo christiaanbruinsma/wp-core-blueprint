@@ -5,8 +5,9 @@ declare(strict_types=1);
  *
  * Core Admin already receives Stack through the minimal shell and may opt into
  * Field through PageRegistry. Standalone WordPress admin screens can use this
- * helper to reuse the same semantic markup while keeping native WordPress
- * controls, colours and chrome.
+ * helper to reuse the same semantic markup while keeping WordPress-native
+ * controls, colours and chrome. Base normalizes only reusable field structure
+ * and control geometry inside explicit Foundation-owned scopes.
  *
  * @package Core_Blueprint
  * @since   1.0.0-rc3.36
@@ -29,6 +30,10 @@ final class FormComposition {
 	 * standalone WordPress admin pages use the WP-native adapter. Consumers may
 	 * still force either supported presentation explicitly.
 	 *
+	 * The WP-native adapter also provides scoped control geometry through
+	 * `.cb-core-form-scope` and the semantic `.cb-core-field` contract. It does
+	 * not globally restyle WordPress admin controls or import Core Admin tokens.
+	 *
 	 * Core Admin pages should normally prefer PageRegistry's semantic `fields`
 	 * requirement; Stack is already part of the minimal shell.
 	 *
@@ -44,10 +49,11 @@ final class FormComposition {
 		}
 
 		if ( self::PRESENTATION_WP_NATIVE === $presentation ) {
+			FormControls::enqueue();
 			wp_enqueue_style(
 				'cb-core-css-form-composition-native',
 				CB_CORE_URL . 'assets/css/components/form-composition-native.css',
-				[],
+				[ FormControls::STYLE_HANDLE ],
 				CB_CORE_VERSION
 			);
 			return;

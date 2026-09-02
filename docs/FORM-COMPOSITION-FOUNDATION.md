@@ -5,7 +5,7 @@ Status: **public v1 UI Foundation contract**.
 Form Composition gives Core Blueprint screens one semantic Field + Stack markup contract across both presentation boundaries:
 
 - Core Admin keeps the token-based Design Foundation presentation.
-- Standalone WordPress admin screens keep native WordPress controls, colours and chrome and receive only structural field grouping / vertical rhythm.
+- Standalone WordPress admin screens keep WordPress-native colours, focus behaviour and admin chrome while Base provides shared field structure and opt-in control geometry.
 
 ## Enqueue boundary
 
@@ -22,6 +22,22 @@ With no explicit presentation, Base resolves from the actual admin screen: Core 
 Normal pages registered under the Core Blueprint menu should still prefer PageRegistry's `fields` semantic requirement; Stack is already part of the minimal Core Admin shell.
 
 Consumers must not depend on the internal stylesheet handles or filenames used by this helper.
+
+## WP-native form-control scope
+
+The WP-native adapter includes shared control geometry without globally restyling wp-admin. Semantic `cb-core-field` regions receive it automatically. Existing or more complex extension-owned forms can opt in by wrapping only their owned form surface in `cb-core-form-scope`:
+
+```html
+<div class="cb-core-form-scope">
+    <input type="text" class="regular-text">
+    <select>...</select>
+    <textarea class="widefat"></textarea>
+</div>
+```
+
+Inside that scope Base normalizes reusable box geometry such as control padding, minimum height and textarea inset. WordPress remains the authority for colours, focus behaviour, browser-native affordances and admin chrome. Buttons, checkboxes and radios are not reskinned by this contract.
+
+Do not put `cb-core-form-scope` on the entire WordPress admin document. Scope it to the extension-owned form region so unrelated wp-admin controls remain untouched.
 
 ## Stack contract
 
@@ -81,11 +97,13 @@ Supported structural classes include `cb-core-field`, `cb-core-field--inline`, `
 
 On standalone WordPress admin screens:
 
-- WordPress owns native input/select/textarea/radio/checkbox/button presentation.
-- Form Composition owns only grouping, spacing and field-level structural states.
+- WordPress owns native control colours, focus behaviour, browser affordances and admin chrome.
+- Form Composition owns grouping, spacing and field-level structural states.
+- The WP-native control adapter owns only reusable box geometry inside `cb-core-field` or an explicit `cb-core-form-scope`.
 - `cb-core-stack--form` owns the spacing between peer fields/sections; `cb-core-field` owns the spacing inside one field; `cb-core-field__choices` owns spacing between simple peer choices.
-- Do not load Core Admin tokens/theme merely to obtain spacing.
+- Do not load Core Admin tokens/theme merely to obtain spacing or control padding.
 - Do not add local `field + field { margin-top: ... }` chains when Stack expresses the composition.
+- Do not duplicate native input/select/textarea padding rules inside sibling extensions when this Foundation can own them.
 - Feature-specific grids, previews and task-specific sizing may remain extension-owned.
 
 This adapter intentionally does not make a standalone screen a Core Admin screen and does not add dark mode, Core surfaces, Core buttons or Core form-control skinning.
