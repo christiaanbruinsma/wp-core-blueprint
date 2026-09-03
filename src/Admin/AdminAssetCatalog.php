@@ -111,6 +111,7 @@ final class AdminAssetCatalog {
 	 */
 	public static function enqueue_component_requirement( string $component, ScreenContext $context ): void {
 		$map = [
+			'actions'            => [ 'component.actions' ],
 			'badges'             => [ 'component.badges' ],
 			'cards'              => [ 'component.cards' ],
 			'description-toggle' => [ 'component.disclosure', 'module.description-toggle' ],
@@ -123,7 +124,9 @@ final class AdminAssetCatalog {
 			'metric-tiles'       => [ 'component.tile-grid' ],
 			'nav-tabs'           => [ 'component.nav-tabs' ],
 			'notices'            => [ 'foundation.icons', 'component.notices' ],
+			'overview'           => [ 'foundation.icons', 'component.overview-framework' ],
 			'panels'             => [ 'component.panels' ],
+			'policy-table'       => [ 'component.policy-table' ],
 			'radio-cards'        => [ 'component.radio-card', 'component.interactive-surfaces' ],
 			'state-badges'       => [ 'component.state-badges' ],
 			'status'             => [ 'component.status-indicators' ],
