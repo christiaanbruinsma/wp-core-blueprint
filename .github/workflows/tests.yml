@@ -75,6 +75,7 @@ jobs:
       WP_DB_HOST: 127.0.0.1:3306
       CB_LIFECYCLE_TABLE_PREFIX: cblifecycle_
       CB_CONSUMER_TABLE_PREFIX: cbconsumer_
+      CB_B3_TABLE_PREFIX: cbb3_
 
     steps:
       - name: Checkout
@@ -108,6 +109,9 @@ jobs:
 
       - name: Run pinned Starter consumer scenario
         run: bash tests/bin/run-consumer-scenario.sh
+
+      - name: Run full 12-module request-boundary conformance matrix
+        run: bash tests/bin/run-module-conformance-scenario.sh
 
   uninstall:
     name: Destructive uninstall — WordPress 7.0 — PHP 8.4
