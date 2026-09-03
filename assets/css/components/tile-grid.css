@@ -248,6 +248,7 @@
 	font-weight: var(--cb-fw-semibold);
 	line-height: var(--cb-lh-tight);
 	color: var(--cb-text-strong);
+	margin-inline: 0;
 }
 
 .cb-core-tile__state {
