@@ -207,6 +207,20 @@ final class Reports {
 		}
 	}
 
+	/**
+	 * Disabled Reports remains readable for recovery/history, but no endpoint
+	 * may mutate or delete stored report snapshots until the module is enabled.
+	 */
+	private static function require_enabled_for_mutation(): void {
+		if ( State::is_enabled() ) {
+			return;
+		}
+
+		wp_send_json_error( [
+			'code'    => 'cb_reports_subsystem_disabled',
+			'message' => __( 'Reports is disabled. Enable it from the Core Blueprint Dashboard before changing report history.', 'core-blueprint' ),
+		], 403 );
+	}
 
 	// ─── Delete ───────────────────────────────────────────────────────────────
 
@@ -228,6 +242,8 @@ final class Reports {
 				'message' => __( 'You do not have permission to delete reports.', 'core-blueprint' ),
 			], 403 );
 		}
+
+		self::require_enabled_for_mutation();
 
 		$report_id = Request::int( 'report_id', 0 );
 		if ( $report_id <= 0 ) {
@@ -292,6 +308,8 @@ final class Reports {
 			], 403 );
 		}
 
+		self::require_enabled_for_mutation();
+
 		$confirm_phrase = 'DELETE ALL REPORTS';
 		$typed          = (string) Request::text( 'confirm', '' );
 
@@ -318,7 +336,7 @@ final class Reports {
 		wp_send_json_success( [
 			'deleted' => $deleted,
 			'message' => sprintf(
-				/* translators: %d: number of reports deleted */
+				/* translators: %d: number of deleted reports */
 				_n( '%d report deleted.', '%d reports deleted.', $deleted, 'core-blueprint' ),
 				$deleted
 			),

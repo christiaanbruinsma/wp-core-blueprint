@@ -5,6 +5,7 @@ namespace CB\Core\Integrity\Scheduler;
 
 use CB\Core\Integrity\Scanner\ScanJobRunner;
 use CB\Core\Integrity\Scanner\ScanLockedException;
+use CB\Core\Integrity\State;
 use CB\Core\Integrity\Storage\ResultRepository;
 use CB\Core\Integrity\Support\Audit;
 
@@ -23,7 +24,13 @@ final class Cron {
 		$settings = ResultRepository::settings();
 		$schedule = (string) ( $settings['schedule'] ?? 'disabled' );
 
+		// Converge first: a disabled Scanner must never retain stale scheduled
+		// workload, even when sync_schedule() is called from settings maintenance.
 		wp_clear_scheduled_hook( self::HOOK );
+
+		if ( ! State::is_enabled() ) {
+			return;
+		}
 
 		if ( 'daily' === $schedule || 'weekly' === $schedule ) {
 			wp_schedule_event( time() + 300, $schedule, self::HOOK );
@@ -35,7 +42,7 @@ final class Cron {
 	}
 
 	public static function run_scheduled_scan(): void {
-		if ( ! \CB\Core\Integrity\State::is_enabled() ) {
+		if ( ! State::is_enabled() ) {
 			return;
 		}
 
