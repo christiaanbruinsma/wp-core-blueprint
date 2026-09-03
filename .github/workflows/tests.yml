@@ -1,0 +1,96 @@
+name: Base tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'base-v1-*'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: base-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: PHP lint — 8.4
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          tools: composer:2.10.2
+          coverage: none
+
+      - name: Validate Composer metadata
+        run: composer validate --strict --no-check-publish
+
+      - name: Install locked development dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: PHP syntax
+        run: bash tests/bin/php-lint.sh
+
+  integration:
+    name: WordPress ${{ matrix.wordpress }} — PHP ${{ matrix.php }}
+    runs-on: ubuntu-24.04
+    needs: lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        wordpress: ['7.0', '7.1']
+        php: ['8.4', '8.5']
+
+    services:
+      mariadb:
+        image: mariadb:10.11.19
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      WP_CORE_DIR: /tmp/core-blueprint-wp
+      WP_TESTS_DIR: /tmp/core-blueprint-wp-tests
+      CB_PLUGIN_FILE: /tmp/core-blueprint-wp/wp-content/plugins/core-blueprint/core-blueprint.php
+      WP_DB_NAME: wordpress_test
+      WP_DB_USER: root
+      WP_DB_PASSWORD: root
+      WP_DB_HOST: 127.0.0.1:3306
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, mbstring, mysqli, sodium, xml, xmlwriter
+          tools: composer:2.10.2
+          coverage: none
+
+      - name: Install locked development dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install pinned WordPress test environment
+        run: bash tests/bin/install-wp-tests.sh "${{ matrix.wordpress }}"
+
+      - name: Run integration suite
+        run: vendor/bin/phpunit --testsuite integration
