@@ -15,7 +15,6 @@ namespace CB\Core\PackageDownload;
 use CB\Core\Log\AuditLog;
 
 use CB\Core\Modules\ModuleStateInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 final class State implements ModuleStateInterface {
@@ -32,6 +31,10 @@ final class State implements ModuleStateInterface {
 		}
 
 		update_option( self::OPTION, $enabled ? '1' : '0', false );
+		if ( self::is_enabled() !== $enabled ) {
+			throw new \RuntimeException( __( 'Package Downloads state could not be persisted.', 'core-blueprint' ) );
+		}
+
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log(
 				$enabled ? 'package_download_subsystem_enabled' : 'package_download_subsystem_disabled',

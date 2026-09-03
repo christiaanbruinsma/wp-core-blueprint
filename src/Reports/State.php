@@ -42,7 +42,6 @@ use CB\Core\Log\AuditLog;
 use CB\Core\Settings;
 
 use CB\Core\Modules\ModuleStateInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 final class State implements ModuleStateInterface {
@@ -84,6 +83,10 @@ final class State implements ModuleStateInterface {
 		$reports['enabled'] = $enabled;
 
 		Settings::set_key( 'reports', $reports, 'reports' );
+
+		if ( self::is_enabled() !== $enabled ) {
+			throw new \RuntimeException( __( 'Reports state could not be persisted.', 'core-blueprint' ) );
+		}
 
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log(

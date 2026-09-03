@@ -33,7 +33,6 @@ use CB\Core\Log\AuditLog;
 use CB\Core\Notes\Settings\SettingsRepository;
 
 use CB\Core\Modules\ModuleStateInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 final class State implements ModuleStateInterface {
@@ -69,6 +68,10 @@ final class State implements ModuleStateInterface {
 		// state internally so the other Notes preferences (default_type
 		// etc.) are preserved without us having to re-read and re-pass them.
 		SettingsRepository::update( [ 'enabled' => $enabled ] );
+
+		if ( self::is_enabled() !== $enabled ) {
+			throw new \RuntimeException( __( 'Notes state could not be persisted.', 'core-blueprint' ) );
+		}
 
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log(
