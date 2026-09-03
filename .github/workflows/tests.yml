@@ -73,6 +73,7 @@ jobs:
       WP_DB_USER: root
       WP_DB_PASSWORD: root
       WP_DB_HOST: 127.0.0.1:3306
+      CB_LIFECYCLE_TABLE_PREFIX: cblifecycle_
 
     steps:
       - name: Checkout
@@ -94,3 +95,6 @@ jobs:
 
       - name: Run integration suite
         run: vendor/bin/phpunit --testsuite integration
+
+      - name: Run request-boundary lifecycle/data scenario
+        run: bash tests/bin/run-lifecycle-scenario.sh
