@@ -1,136 +1,487 @@
 # Core Blueprint
 
-The foundation plugin for every Core Blueprint site. Provides the security baseline, audit logging, failsafe lockout prevention, admin theming, site-wide locale preference, shared governance, and the public Foundation boundaries consumed by Core Blueprint extensions.
+> **An open-source foundation for responsible WordPress administration.**
 
-Remote site management is deliberately not part of Base. Install the optional **Core Blueprint Beacon** extension on a managed site when that site needs to connect to **Core Blueprint Hub**.
+Core Blueprint is a WordPress foundation focused on **governance, privacy-conscious design, defensive security, and maintainable site operations**.
+
+It provides a shared baseline for WordPress sites and for the wider Core Blueprint plugin suite, while keeping WordPress itself at the center of the architecture.
+
+Core Blueprint is designed to help site owners, developers, agencies, and operators build and manage WordPress installations with clearer boundaries, better operational visibility, and fewer unnecessary dependencies.
+
+---
+
+## Our mission
+
+WordPress is powerful because it is open, extensible, and gives site owners control over their own platform.
+
+Core Blueprint builds on those strengths.
+
+The project aims to provide a practical foundation for WordPress environments where **ownership, transparency, governance, security, privacy, and long-term maintainability** matter.
+
+That means:
+
+- preferring open and inspectable systems over unnecessary black boxes;
+- using WordPress-native concepts and APIs wherever they are a good fit;
+- making administrative actions and consequences understandable;
+- keeping integrations optional and isolated;
+- avoiding unnecessary vendor lock-in;
+- designing for extensibility without turning the foundation into a monolith.
+
+Core Blueprint does **not** promise perfect security, perfect privacy, or a flawless website. Instead, it aims to provide sensible defensive controls, clearer governance, and a stronger operational baseline.
+
+---
+
+## What Core Blueprint is
+
+Core Blueprint Base is the foundation plugin for every Core Blueprint site.
+
+It provides shared infrastructure used by Base itself and by optional Core Blueprint extensions, including:
+
+- security-related baseline controls;
+- audit logging;
+- failsafe lockout prevention;
+- access and maintenance modes;
+- shared governance;
+- permissions and role policy;
+- admin UI foundations;
+- site-wide locale preferences;
+- media and package-management utilities;
+- governed content-model infrastructure;
+- public extension and UI contracts.
+
+Functionality that does not belong in the shared foundation is kept outside Base and can be provided by separate extensions.
+
+Those extensions are distributed independently and may use different licensing or availability models. Their existence does not make them part of the open-source Base package.
+
+---
+
+## Core principles
+
+### Governance first
+
+Administrative actions should have clear ownership, explicit permissions, understandable consequences, and useful auditability.
+
+Core Blueprint treats governance as a first-class part of site administration rather than an afterthought.
+
+### Privacy-conscious design
+
+Core Blueprint aims to minimize unnecessary dependencies and external data flows.
+
+Privacy is approached as an architectural consideration: what data is needed, where it lives, who can access it, and whether an external service is actually necessary.
+
+### Defensive security
+
+Core Blueprint provides defensive controls intended to reduce avoidable risk and improve visibility.
+
+Security-sensitive workflows favor explicit permissions, auditable actions, safe defaults, and recovery paths.
+
+No software can guarantee that a WordPress site will never be compromised. Core Blueprint should therefore be understood as a defensive layer, not a security guarantee.
+
+### WordPress-native where practical
+
+Core Blueprint prefers WordPress-native data structures, permissions, hooks, REST conventions, roles, capabilities, metadata, and administrative patterns where they can accurately represent the required behavior.
+
+The goal is to extend WordPress rather than replace it with a closed parallel platform.
+
+### Builder-agnostic by design
+
+Core Blueprint is designed to work independently of any specific page builder.
+
+Core data models and public contracts should remain usable without requiring a particular builder, and builder-specific functionality belongs behind isolated adapters.
+
+Core Blueprint currently includes an adapter for **Bricks Builder** where builder-specific integration adds value, including within Content Models.
+
+Bricks is **not required** to use Core Blueprint.
+
+The adapter architecture is intentionally open to additional builders and integrations in the future, provided they remain optional and do not compromise the canonical WordPress/Core Blueprint data model.
+
+### Open extensibility
+
+Base provides shared contracts and foundations that optional extensions can consume without duplicating infrastructure.
+
+Extensions should remain independently understandable and should only add the runtime they actually need.
+
+---
+
+## Included capabilities
+
+### Security baseline
+
+Core Blueprint includes shared security-oriented infrastructure such as:
+
+- a security module registry;
+- defensive access controls;
+- failsafe lockout prevention;
+- governed permission boundaries;
+- audit logging;
+- security-related status and administration surfaces.
+
+These controls are intended to improve defensive posture and operational clarity without presenting Core Blueprint as a complete replacement for every specialized security product or operational process.
+
+### Audit logging
+
+Core Blueprint maintains a durable audit trail for relevant administrative and security-sensitive events.
+
+The audit system supports retention management and export and provides a shared governance boundary that Core Blueprint extensions can use.
+
+### Failsafe lockout prevention
+
+Access restrictions should never make site recovery impossible.
+
+Core Blueprint includes layered failsafe behavior intended to reduce the risk of administrators accidentally locking themselves out through restrictive site modes or related configuration.
+
+### Access modes
+
+Core Blueprint supports governed site-access states such as:
+
+- Public
+- Coming Soon
+- Maintenance
+- Admin-Only
+
+These are treated as explicit operational states rather than as a generic on/off switch.
+
+### Permissions and user roles
+
+Core Blueprint builds on WordPress roles and capabilities while adding suite-wide policy, governance, and audit behavior.
+
+The goal is to keep authorization understandable and compatible with WordPress instead of introducing a completely separate identity system.
+
+### Media Replace
+
+Media Replace allows an existing Media Library file to be replaced while preserving the attachment identity and regenerating WordPress media metadata where appropriate.
+
+Relevant replacements are recorded through the audit layer.
+
+### Media Formats
+
+The optional Media Formats module provides governed upload/output policy for supported image formats and server capabilities, including:
+
+- SVG;
+- WebP;
+- AVIF;
+- experimental JPEG XL support where available;
+- HEIC/HEIF import where supported;
+- generated-image format control.
+
+Support remains dependent on the capabilities exposed by WordPress and the hosting environment.
+
+### Package Downloads
+
+Core Blueprint can package installed plugins and themes into installable ZIP archives from WordPress administration without modifying the original package source directories.
+
+### Content Models
+
+Content Models provides a governed, WordPress-native schema layer for structured site data.
+
+Its scope includes concepts such as:
+
+- post types;
+- taxonomies;
+- Option Pages;
+- post, term, and user fields;
+- Relations;
+- Group and Repeater structures;
+- Conditional Logic;
+- JSON schema transfer and portability;
+- a public plugin API;
+- isolated builder adapters.
+
+The canonical model remains independent of any single visual builder.
+
+The current implementation includes an isolated **Bricks Builder adapter** while preserving canonical JSON/WordPress portability.
+
+---
+
+## UI Foundation
+
+Core Blueprint exposes a shared UI Foundation without forcing one visual skin onto every WordPress admin screen.
+
+### Core Blueprint admin surfaces
+
+Pages that live under the Core Blueprint administration area use the shared Core Admin Theme, design tokens, components, semantic states, Lucide icons, and dark/light presentation.
+
+Core Admin follows WordPress interaction and layout conventions wherever WordPress already provides a strong pattern.
+
+Custom interfaces are used when the workflow genuinely benefits from them rather than simply to make WordPress look different.
+
+### Standalone extension surfaces
+
+Standalone Core Blueprint plugins and operational screens should remain visually close to native WordPress administration where appropriate.
+
+They can consume shared accessibility helpers, semantics, icons, and behavior without being forced to inherit the full Core Admin visual skin.
+
+### Shared components
+
+Base owns shared UI contracts for recurring patterns such as:
+
+- buttons;
+- notices;
+- state badges;
+- status presentation;
+- disclosures;
+- interactive rows;
+- form fields;
+- toolbars;
+- modals;
+- loading/busy states;
+- feedback states;
+- icons.
+
+This helps extensions share behavior and semantics without each plugin shipping a competing mini design system.
+
+### Lucide icons
+
+Lucide is the canonical icon source for the Core Blueprint suite.
+
+Base owns a curated icon registry so extensions can use shared semantic icons without bundling separate Lucide copies when Base is available.
+
+---
+
+## Builder integrations
+
+Core Blueprint deliberately separates **content and system architecture** from **builder-specific presentation**.
+
+A builder adapter may expose Core Blueprint functionality inside a builder, but it should not become the canonical storage or runtime model.
+
+### Bricks Builder
+
+Bricks Builder is currently the first builder for which Core Blueprint includes an isolated adapter where that integration is useful.
+
+This reflects real-world use of Bricks within Core Blueprint development, while keeping the project itself builder-independent.
+
+### Other builders
+
+Core Blueprint is open to additional builder adapters in the future.
+
+A new adapter should:
+
+- remain optional;
+- be isolated from the canonical data model;
+- avoid making the builder a dependency of Base;
+- preserve WordPress-native access to the underlying content or configuration;
+- follow the same public contracts used by other Core Blueprint integrations.
+
+---
+
+## Base and extensions
+
+Core Blueprint uses a foundation-and-extensions model.
+
+**Core Blueprint Base is free and open source.**
+
+Base owns the shared infrastructure, governance boundaries, UI foundations, and public contracts that other Core Blueprint software can build on.
+
+Additional Core Blueprint extensions are developed and distributed separately. They are not automatically included with Base, and their licensing or availability may differ from the Base plugin.
+
+This separation keeps the open-source foundation independently useful while allowing more specialized functionality to remain outside the core package.
+
+An inactive extension should not be required for Base to function.
+
+---
+
+## A European perspective on WordPress infrastructure
+
+Core Blueprint is being developed from Europe with a strong appreciation for **digital autonomy, privacy, transparency, portability, and open systems**.
+
+Those values influence architectural decisions, but Core Blueprint is not intended only for European users.
+
+The project aims to remain useful to the wider WordPress community while demonstrating that modern WordPress infrastructure can be built around ownership and interoperability rather than mandatory dependence on external platforms.
+
+---
+
+## Open source and community
+
+Core Blueprint is intended to grow as an open-source project.
+
+Good code alone is not enough for a healthy open-source ecosystem, so documentation and understandable extension boundaries are important parts of the project.
+
+The long-term direction is to make it easier for developers and contributors to:
+
+- understand how Base is structured;
+- build against stable public contracts;
+- create integrations without modifying Core Blueprint internals;
+- propose support for additional builders and tools;
+- improve documentation;
+- report bugs and security concerns responsibly;
+- contribute improvements without introducing unnecessary lock-in.
+
+The project is still evolving toward its first public release, so APIs and architecture should only be presented as stable once they have passed the relevant release gates.
+
+---
+
+## For developers
+
+Core Blueprint exposes documented public contracts so extensions can build on Base without depending on internal implementation details.
+
+- [**Extension Starter**](https://github.com/christiaanbruinsma/wp-core-blueprint-starter-plugin) — a minimal production-grade reference implementation for building a Core Blueprint extension.
+- [**Developer Documentation**](docs/PUBLIC-API.md) — the canonical entry point for supported public API contracts and extension boundaries.
+- [**Core Admin Design Foundation**](docs/CORE-ADMIN-DESIGN-FOUNDATION.md) — shared admin UI contracts, semantics, and component guidance.
+
+Only contracts documented as public API should be treated as stable extension boundaries.
+
+---
+
+## Open-source ecosystem
+
+Core Blueprint Base is the main open-source foundation, but it does not have to be the only open-source project built around these principles.
+
+Current public projects include:
+
+- [**Core Blueprint Base**](https://github.com/christiaanbruinsma/wp-core-blueprint) — the free and open-source WordPress foundation described in this README.
+- [**Core Blueprint Content Migrator**](https://github.com/christiaanbruinsma/wp-core-blueprint-content-migrator) — a free and open-source, safety-first utility for migrating registered post types and taxonomies on the same WordPress site. It can run standalone and optionally integrates with Core Blueprint governance when Base is available.
+
+This list may grow over time as additional projects are released as open source.
+
+Other Core Blueprint software may be developed and distributed separately under different licensing or availability models. Being part of the wider Core Blueprint ecosystem does not automatically mean that a project is included with Base or released as open source.
 
 ---
 
 ## Requirements
 
-- WordPress 7.0 or newer
-- PHP 8.4 or newer (PHP 8.5 recommended)
-- PHP Sodium (libsodium) extension
+Current Base requirements:
 
-If either PHP or Sodium is missing, Core Blueprint refuses to activate and shows a specific error on the plugins screen.
+- **WordPress 7.0 or newer**
+- **PHP 8.4 or newer**
+- PHP 8.5 recommended
+- **PHP Sodium / libsodium**
+
+If required runtime capabilities are missing, Core Blueprint should refuse activation with a clear WordPress-admin error rather than failing later at runtime.
 
 ---
 
 ## Architecture
 
-### Foundation layer (`CB\Core\*`)
+### Foundation layer
 
-Always active. Contains everything a Core Blueprint site needs as baseline infrastructure.
+The `CB\Core\*` foundation layer is always active and contains the baseline infrastructure shared across Core Blueprint.
 
-- **Security module registry** - one subsystem per module (headers, fingerprinting, failsafe, access mode)
-- **Audit log** - durable record of security-relevant events with retention management and CSV export
-- **Failsafe** - three-layer lockout-prevention mechanism so admin-only mode can never trap the site owner out
-- **Access mode** - public / members / admin-only / maintenance states
-- **Theme system** - Core Blueprint Dark and Core Blueprint Light, pluggable partner themes via `cb_admin_themes` filter
-- **Locale filter** - site-wide language preference
-- **Permissions + User Roles** - native WordPress role/capability management with Core Blueprint safety policy, audit logging, a suite-wide capability catalog, and additive user assignments (one base role plus additional roles)
-- **Media Replace** - transactionally replace a Media Library file while preserving attachment ID, filename and URL; regenerates WordPress media metadata/sub-sizes and records replacements in the audit log
-- **Media Formats** - optional upload/output policy for secure sanitized SVG, WebP, AVIF, experimental JPEG XL and HEIC/HEIF imports, with WordPress-native processing detection and generated-image format control
-- **Package Downloads** - download installed plugins and themes as installable ZIP archives from native WordPress admin screens without writing temporary archives into package source directories
-- **Content Models** - optional governed WordPress-native schema layer for post types, taxonomies, Option Pages, post/term/user fields, Relations, Group/Repeater and Conditional Logic, with JSON schema transfer, a public plugin API, an isolated Bricks adapter and canonical JSON schema portability
-- **Shared admin chrome** - parent menu (`core-blueprint`), shared About page, declarative Dashboard Card API, privacy page
+Key boundaries include:
 
-#### UI Foundation
+- extension registration and lifecycle;
+- security modules;
+- audit and governance;
+- access modes;
+- roles and capabilities;
+- shared admin chrome;
+- UI Foundation;
+- locale handling;
+- media utilities;
+- package utilities;
+- Content Models;
+- public helper and registry contracts.
 
-Core Blueprint exposes shared UI semantics without forcing one visual skin onto every WordPress admin surface.
+### Optional runtime belongs outside Base
 
-- **Core Blueprint admin surfaces** - pages and submenus below the Core Blueprint parent menu use the Core Admin Theme, shared tokens, components, and dark/light identity.
-- **WordPress Pro geometry** - Core Admin follows WordPress admin interaction/layout grammar for page headings, tabs, spacing, forms, tables, and information density wherever WordPress already has a strong convention. Core Blueprint identity comes from colour, dark/light theming, semantic states, Lucide icons, and interaction polish rather than from oversized custom dashboard geometry.
-- **Use custom geometry only when the workflow requires it** - workspaces such as Scanner Findings, User Roles, remediation flows, and consequence-aware switches may use richer Core Blueprint components where WordPress has no suitable native pattern. Ordinary settings, tables, navigation, and reference content should stay visually close to WordPress admin.
-- **Consequence selector geometry** - `MasterSwitch` owns the binary two-card/toggle geometry. Access Mode is a four-state policy picker and therefore uses a 2×2 tile grid plus an explicit apply action; it must not be forced back into a binary toggle model.
-- **Access Mode semantics** - Public is the normal green/live state. Coming Soon, Maintenance and Admin-Only are intentional amber/restricted states with distinct HTTP/SEO behaviour; UI presentation must not collapse them into a generic on/off switch.
-- **MasterSwitch grouping** - the two consequence cards and central toggle already form the visual group. Core Admin consumers must not wrap a MasterSwitch in `cb-core-panel`; use the transparent `cb-core-master-switch-shell` only when a layout/rhythm hook is required.
-- **Dashboard card semantics** - dashboard-style tiles are not interchangeable decoration. Use `navigation` for ordinary destinations, `status-nav` when that destination also communicates an operational state, `status` for richer live-status objects with actions, and `metric` for KPI/value cards. The legacy `quick` variant remains backwards compatible but should not be used by new code.
-- **Standalone WordPress admin surfaces** - sibling-plugin content/operations screens should follow native WordPress admin conventions wherever possible. They may reuse Foundation semantics, accessibility helpers, icons, and interaction behaviour without inheriting Core Blueprint's themed presentation.
-- **Buttons** - new Core Blueprint-admin actions use `cb-core-button` plus one semantic variant (`--primary`, `--secondary`, `--remediation`, `--danger`) and an independent density (`--compact` or the default density). Semantic meaning, density, and state must not be encoded into one another.
-- **Specialized caution** - the existing `--warning` variant is retained for explicit consequential-caution flows such as Failsafe; it is not the general-purpose replacement for `--remediation` or `--danger`.
-- **Button states** - hover, focus, disabled, busy/loading, and `aria-disabled` are states, not variants. Layout margins belong to the parent layout rather than the button component.
-- **Button icons** - use the `cb-core-button__icon` slot (or a direct SVG child) and `cb-core-button__label`; sizing and spacing are owned by the Button primitive. A shared Lucide-backed icon registry is the intended icon source so sibling extensions do not ship competing icon systems.
-- **Interactive surfaces** - Core Admin disclosures use `cb-core-disclosure`; actionable expandable rows use `cb-core-interactive-row` (optionally with `cb-core-interactive-surface`). Both consume the same interaction-state tokens for hover, focus, and open states.
-- **Native disclosure behaviour** - shared disclosures and expandable rows use semantic `<details>/<summary>` markup. The browser owns open/closed state and accessibility semantics; do not add module-specific JavaScript merely to mirror `aria-expanded`.
-- **Description density** - when a page already exposes the global Plain/Technical description mode, compact rows and nested progressive-disclosure content should use `UI::render_description_text()` so both variants remain mode-aware without adding a local TECH/PLAIN toggle at every information level.
-- **Interactive variants vs states** - disclosure variants (`--section`, `--subtle`, `--compact`) describe structure/density. Interactive-row variants (`--warning`, `--critical`, `--failed`, `--ok`) describe semantic emphasis. `:hover`, `:focus-visible`, and `[open]` are states and must remain shared.
-- **Presentation boundary** - Interactive Surface components belong to the Core Admin Theme. Standalone WordPress admin screens should keep WordPress-native presentation; `Assets::enqueue_icons()` remains the narrow opt-in path for shared icons without Core Admin styling.
-- **Presentation adapters** - shared component semantics may later expose a Core Admin renderer and a WordPress-native adapter. The semantic action remains the same even when presentation differs by admin surface.
-- **State badges** - compact live workflow/security state uses `CB\Core\UI\StateBadge` / `cb-core-state-badge`, with independent semantic variants (`neutral`, `info`, `success`, `warning`, `danger`, `error`) and density (`compact` or `default`). Use `danger` for a critical/risk state and `error` for a manifest failure; do not use state badges as action buttons.
-- **Badge vs status** - `cb-core-badge` remains metadata/taxonomy/compliance; `StateBadge` is a compact state label; `CB\Core\UI\Status` is the dot + human-readable statement pattern for service/config state. These patterns are intentionally separate.
-- **Risk metadata** - labels such as `high risk`, `medium risk`, and `restrictive` describe configuration metadata, not live state. Render them with shared `cb-core-badge-*` risk variants rather than module-specific chips or `StateBadge`.
-- **Module racks** - the shared rack primitive may use density modifiers such as `cb-core-module-rack--compact`; page modules should opt into a shared modifier rather than copy rack/toggle/dot geometry into page-specific CSS.
-- **Feedback hierarchy** - `Notice` is persistent in-page feedback, `cbCore.toast` is transient feedback, and `FormStatus` is inline save feedback. Their shared feedback semantics are `info`, `success`, `warning`, and `error`; destructive intent belongs to actions (`--danger`), not error feedback. `Notice` may include optional plain-text bullet items when consequences or prerequisites need a short scannable list; modules should not build a parallel warning-card component for that case.
-- **Busy/loading** - async busy state uses `window.cbCore.busy` / `@cb-core/busy` and the shared Spinner primitive. Button busy state preserves/restores original markup and uses `aria-busy`; region busy state must be explicitly marked and must never apply a global `[aria-busy]` interaction lock to unrelated WordPress admin UI. Busy/loading is a state, never a semantic variant.
-- **Fields** - `CB\Core\UI\Field` / `cb-core-field` is the shared Core Admin form-field composition. Label, control, error, help, and metadata are separate slots. The control remains caller-owned: callers wire `aria-invalid` and `aria-describedby` to the actual input/select/fieldset using the optional field message IDs rather than relying on DOM guessing.
-- **Toolbars / filter bars** - `cb-core-toolbar*` is the canonical Core Admin composition for search/filter/action rows. `--compact` is the dense workspace variant. Historical `cb-core-filter-bar*` selectors remain supported as backwards-compatible aliases for Logs/Reports; do not create page-specific toolbar surfaces when this composition fits.
-- **Modal** - `window.cbCore.modal` remains the shared Core Admin `<dialog>` primitive. Confirm-action semantics come from the Button Foundation; modal form controls use the same Form Control Foundation; title/body/input/status relationships are labelled with ARIA; focus starts on input or Cancel and returns to the opener after close. Input mode supports an explicit `input.label` and falls back to its placeholder for backwards-compatible accessible naming.
-- **Form presentation boundary** - these Field/Toolbar/Modal presentation components belong to the Core Admin Theme. Standalone WordPress admin screens should prefer native WordPress form/table/filter patterns; shared semantics or accessibility helpers may be adapted without importing the Core Admin skin.
+Feature-specific or remote-management runtime should live in the relevant extension instead of gradually turning Base into a monolith.
 
-#### Icons / Lucide
-
-Lucide is the canonical icon source for the Core Blueprint suite. Base owns a curated icon registry through `CB\Core\UI\Icon`; extensions must not bundle their own Lucide copy when Base is available. Prefer semantic aliases such as `quarantine`, `restore`, `delete`, `review`, `public-site`, `locked-site`, and `settings` so a glyph can be changed centrally without changing downstream plugins.
-
-PHP surfaces use `Icon::render()`. Dynamic admin UI uses `window.cbCore.icon` / `@cb-core/icon`. Standalone WordPress admin pages that need dynamic icons opt in with `CB\Core\UI\Assets::enqueue_icons()`; this intentionally does not load the Core Admin Theme. Icons inherit `currentColor`, are decorative (`aria-hidden`) by default, and require an accessible label when the icon itself is the only carrier of meaning. The registry is deliberately curated rather than exposing the full Lucide catalog. Vendor attribution lives in `licenses/LUCIDE.md`.
-
-### Beacon extension (`Core Blueprint Beacon`)
-
-The optional satellite plugin owns `CB\Core\Beacon\*` and all remote-management runtime. Base only exposes the generic scanner, audit, DB, UI, status, CLI and extension boundaries it consumes.
-
-When Beacon is installed and enabled it can pair this site with Core Blueprint Hub using the `core-blueprint/v1` REST namespace, encrypted Bearer authentication, governed backup/update routes, connection logging, and signed redirects.
-
-### Sibling plugins
-
-Core Blueprint is the foundation. Feature plugins hang off it:
-
-- **Core Blueprint Beacon** - optional satellite extension installed on managed sites; connects Base to a Hub without putting remote runtime in Base.
-- **Core Blueprint Hub** - central monitoring and management application for a fleet of Beacon-enabled Core Blueprint sites.
-- Additional plugins are developed separately and integrate through the documented Core Blueprint extension, Dashboard and module-status contracts.
-
----
-
-## Pairing with a Hub
-
-1. Install and activate Core Blueprint Base on the target site
-2. Install and activate **Core Blueprint Beacon**
-3. Go to **Core Blueprint → Beacon**
-4. Click **Generate new key** - this activates the paired Beacon runtime, installs the Connection Log table, and schedules the daily prune cron
-5. On your Hub, add a new site and paste:
-   - **Site URL** - the site's home URL
-   - **Secret Key** - the plaintext key shown once on Beacon (copy it before navigating away)
-
-After the first successful poll from the Hub, the Core Blueprint dashboard shows a "Connected" status tile.
+Base exposes the generic contracts those extensions need.
 
 ---
 
 ## Uninstalling
 
-Deleting Core Blueprint via the Plugins screen runs `uninstall.php`, which removes:
+Deleting Core Blueprint through WordPress runs the Base uninstall process.
 
-- Core Blueprint runtime/configuration options in the normal cleanup namespaces (including per-run update-state options matched by wildcard)
-- User-meta keys `cb_core_theme`, `cb_core_description_mode`, `cb_core_base_role`, and the shared `cb_locale`
-- Transients and scheduled events owned by Core Blueprint
-- The `cb_operator` role and Core Blueprint-owned `cb_*` capabilities from WordPress roles
-- Base-owned database tables such as `{prefix}cb_core_audit_log`
+Base removes the configuration, scheduled events, capabilities, roles, user metadata, and database structures that it owns where removal is safe and intended.
 
-Beacon-owned backup archives and Beacon-owned tables/options are handled by the **Core Blueprint Beacon** plugin and are not removed by uninstalling Base. Core Scanner quarantine evidence is also deliberately preserved across uninstall: the private per-installation vault and its `cb_core_quarantine_workspace` index are retained so uninstall cannot silently destroy quarantined security evidence.
+Data owned by separate extensions remains the responsibility of those extensions.
+
+Security evidence that is deliberately designed to survive ordinary Base removal should not be silently destroyed by uninstall.
 
 ---
 
 ## Development
 
-- Source: every class is in `src/`, one class per file, PSR-4 autoloaded.
-- No Composer. The plugin bootstrap registers its own autoloader.
-- No build step. Code ships as-is to WordPress.
-- Text domain: `core-blueprint`. Translations in `languages/`.
+- Source classes live under `src/`.
+- Classes are PSR-4-style autoloaded by the plugin bootstrap.
+- Base does not require Composer at runtime.
+- There is no mandatory frontend build step for the plugin runtime.
+- Text domain: `core-blueprint`.
+- Translations live in `languages/`.
 
-**Invariants that production installs depend on** (change with care):
+### Production invariants
 
-- Plugin folder name: `core-blueprint`
-- Parent menu slug: `core-blueprint`
-- REST namespace: `core-blueprint/v1`
-- DB tables: `cb_core_audit_log`, `cb_core_beacon_connection_log`
-- Backup error code strings (`CB_BACKUP_ERR_*`) - read by the Hub over REST
+Some identifiers form part of the operational contract and must be changed with care, including:
+
+- plugin folder name: `core-blueprint`;
+- parent menu slug: `core-blueprint`;
+- REST namespace: `core-blueprint/v1`;
+- persistent database identifiers;
+- public error/status identifiers consumed by other Core Blueprint components.
 
 See `CHANGELOG.md` for version history.
+
+---
+
+## Project status
+
+Core Blueprint is currently in **pre-v1 development and launch-quality review**.
+
+The project is actively being hardened around:
+
+- Base/extension contracts;
+- governance and permissions;
+- security boundaries;
+- lifecycle behavior;
+- UI Foundation consistency;
+- internationalization;
+- packaging;
+- runtime validation;
+- extension interoperability.
+
+Until the first stable public release, documentation should distinguish between implemented behavior, release candidates, and future direction.
+
+---
+
+## Documentation
+
+Clear documentation is part of the Core Blueprint project goal, not an optional extra.
+
+Planned and evolving documentation should cover:
+
+- installation and requirements;
+- administrator workflows;
+- security and governance concepts;
+- Base public APIs;
+- extension development;
+- Content Models;
+- builder adapters;
+- UI Foundation usage;
+- upgrade and release guidance.
+
+---
+
+## Contributing
+
+Core Blueprint welcomes contributions that align with the project's architectural principles.
+
+In particular, contributions should aim to preserve:
+
+- WordPress-native interoperability;
+- builder independence;
+- clear permission boundaries;
+- privacy-conscious design;
+- defensive security;
+- explicit lifecycle behavior;
+- accessible administrative UX;
+- maintainable public contracts;
+- portability of user-owned data.
+
+Builder integrations are welcome when they are implemented as optional adapters rather than dependencies.
+
+More detailed contribution and development guidelines will be published as the project approaches its first public release.
+
+---
+
+## Responsible security reporting
+
+Security issues should not be disclosed through a public issue when doing so would expose users before a fix is available.
+
+A dedicated responsible-disclosure process should be documented before the first public stable release.
+
+---
+
+## Philosophy in one sentence
+
+**Own your WordPress stack, understand its behavior, and keep the freedom to change what sits around it.**
