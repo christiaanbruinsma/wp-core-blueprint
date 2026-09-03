@@ -103,6 +103,16 @@ Extensions should remain independently understandable and should only add the ru
 
 ---
 
+## Optional modules
+
+Some Core Blueprint capabilities are provided as optional modules and can be enabled or disabled independently from the Core Blueprint administration interface.
+
+This allows site owners to keep the shared Core Blueprint foundation active without enabling functionality they do not need. If another plugin already manages the same responsibility, the corresponding Core Blueprint module can remain disabled rather than having two systems manage the same area.
+
+Because WordPress plugins can interact in many different ways, this modular design should **not** be interpreted as a guarantee of compatibility with every third-party plugin, theme, hosting environment, or configuration.
+
+---
+
 ## Included capabilities
 
 ### Security baseline
@@ -155,7 +165,11 @@ Relevant replacements are recorded through the audit layer.
 
 ### Media Formats
 
-The optional Media Formats module provides governed upload/output policy for supported image formats and server capabilities, including:
+*Optional module — can be enabled or disabled independently.*
+
+If another plugin already manages media-format handling for the site, Media Formats can remain disabled.
+
+The Media Formats module provides governed upload/output policy for supported image formats and server capabilities, including:
 
 - SVG;
 - WebP;
@@ -171,6 +185,10 @@ Support remains dependent on the capabilities exposed by WordPress and the hosti
 Core Blueprint can package installed plugins and themes into installable ZIP archives from WordPress administration without modifying the original package source directories.
 
 ### Content Models
+
+*Optional module — can be enabled or disabled independently.*
+
+If another plugin already manages structured content models or field registration for the site, Content Models can remain disabled.
 
 Content Models provides a governed, WordPress-native schema layer for structured site data.
 
