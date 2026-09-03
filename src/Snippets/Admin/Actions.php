@@ -7,6 +7,7 @@ use CB\Core\Log\AuditLog;
 use CB\Core\Snippets\ImportExport\Exporter;
 use CB\Core\Snippets\ImportExport\Importer;
 use CB\Core\Snippets\Repository;
+use CB\Core\Snippets\State;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -103,7 +104,9 @@ final class Actions {
 	}
 
 	public static function export(): void {
-		self::guard( 'cb_core_snippets_export', false );
+		// Read-only portability remains intentionally available while Snippets is
+		// disabled so operators can recover/export stored code without re-enabling execution.
+		self::guard( 'cb_core_snippets_export', false, false );
 		$ids = isset( $_POST['snippet_ids'] ) && is_array( $_POST['snippet_ids'] )
 			? array_map( static fn( $id ) => sanitize_key( wp_unslash( $id ) ), $_POST['snippet_ids'] )
 			: [];
@@ -205,11 +208,18 @@ final class Actions {
 		return [ 'relation' => 'and', 'rules' => $rules ];
 	}
 
-	private static function guard( string $nonce_action, bool $requires_file_mods ): void {
+	private static function guard( string $nonce_action, bool $requires_file_mods, bool $requires_enabled = true ): void {
 		if ( ! current_user_can( 'cb_manage_snippets' ) ) {
 			wp_die( esc_html__( 'You do not have permission to manage code snippets.', 'core-blueprint' ), esc_html__( 'Forbidden', 'core-blueprint' ), [ 'response' => 403 ] );
 		}
 		check_admin_referer( $nonce_action );
+		if ( $requires_enabled && ! State::is_enabled() ) {
+			wp_die(
+				esc_html__( 'Snippets is disabled. Enable it from the Dashboard before changing managed snippets.', 'core-blueprint' ),
+				esc_html__( 'Snippets disabled', 'core-blueprint' ),
+				[ 'response' => 409 ]
+			);
+		}
 		if ( $requires_file_mods && function_exists( 'wp_is_file_mod_allowed' ) && ! wp_is_file_mod_allowed( 'capability_update_core' ) ) {
 			wp_die( esc_html__( 'File modifications are disabled by this WordPress installation. Existing snippets can run, but managed snippet files cannot be changed.', 'core-blueprint' ), esc_html__( 'File modifications disabled', 'core-blueprint' ), [ 'response' => 403 ] );
 		}

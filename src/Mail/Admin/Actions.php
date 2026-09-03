@@ -35,6 +35,14 @@ final class Actions {
 	public static function save(): void {
 		self::guard( 'cb_core_mail_save' );
 
+		if ( ! State::is_enabled() ) {
+			wp_die(
+				esc_html__( 'Core Blueprint Mail is disabled. Enable it from the Dashboard before changing transport settings.', 'core-blueprint' ),
+				esc_html__( 'Mail disabled', 'core-blueprint' ),
+				[ 'response' => 409 ]
+			);
+		}
+
 		$current = Settings::all();
 		$next    = $current;
 

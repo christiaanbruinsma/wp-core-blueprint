@@ -10,6 +10,7 @@ namespace CB\Core\MediaFormats\Admin;
 
 use CB\Core\MediaFormats\Environment;
 use CB\Core\MediaFormats\Settings;
+use CB\Core\MediaFormats\State;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +24,14 @@ final class Actions {
 			wp_die( esc_html__( 'You do not have permission to change Media Formats settings.', 'core-blueprint' ), '', [ 'response' => 403 ] );
 		}
 		check_admin_referer( 'cb_core_media_formats_save' );
+
+		if ( ! State::is_enabled() ) {
+			wp_die(
+				esc_html__( 'Media Formats is disabled. Enable it from the Dashboard before changing format settings.', 'core-blueprint' ),
+				esc_html__( 'Media Formats disabled', 'core-blueprint' ),
+				[ 'response' => 409 ]
+			);
+		}
 
 		$output = isset( $_POST['output_format'] ) ? sanitize_key( wp_unslash( $_POST['output_format'] ) ) : 'original';
 		if ( 'webp' === $output && ! Environment::webp_supported() ) {
