@@ -74,6 +74,7 @@ jobs:
       WP_DB_PASSWORD: root
       WP_DB_HOST: 127.0.0.1:3306
       CB_LIFECYCLE_TABLE_PREFIX: cblifecycle_
+      CB_CONSUMER_TABLE_PREFIX: cbconsumer_
 
     steps:
       - name: Checkout
@@ -98,3 +99,59 @@ jobs:
 
       - name: Run request-boundary lifecycle/data scenario
         run: bash tests/bin/run-lifecycle-scenario.sh
+
+      - name: Install pinned canonical Extension Starter
+        run: bash tests/bin/install-pinned-starter.sh
+
+      - name: Run pinned Starter source conformance
+        run: php "$WP_CORE_DIR/wp-content/plugins/core-blueprint-starter-plugin/tools/conformance.php"
+
+      - name: Run pinned Starter consumer scenario
+        run: bash tests/bin/run-consumer-scenario.sh
+
+  uninstall:
+    name: Destructive uninstall — WordPress 7.0 — PHP 8.4
+    runs-on: ubuntu-24.04
+    needs: lint
+
+    services:
+      mariadb:
+        image: mariadb:10.11.19
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      WP_CORE_DIR: /tmp/core-blueprint-uninstall-wp
+      WP_TESTS_DIR: /tmp/core-blueprint-uninstall-wp-tests
+      CB_PLUGIN_FILE: /tmp/core-blueprint-uninstall-wp/wp-content/plugins/core-blueprint/core-blueprint.php
+      WP_DB_NAME: wordpress_test
+      WP_DB_USER: root
+      WP_DB_PASSWORD: root
+      WP_DB_HOST: 127.0.0.1:3306
+      CB_UNINSTALL_TABLE_PREFIX: cbuninstall_
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          extensions: dom, mbstring, mysqli, sodium, xml, xmlwriter
+          tools: composer:2.10.2
+          coverage: none
+
+      - name: Install pinned WordPress 7.0 runtime
+        run: bash tests/bin/install-wp-tests.sh 7.0
+
+      - name: Run real destructive uninstall scenario
+        run: bash tests/bin/run-uninstall-scenario.sh
