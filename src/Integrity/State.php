@@ -40,7 +40,6 @@ use CB\Core\Integrity\Storage\ResultRepository;
 use CB\Core\Integrity\Support\Audit;
 
 use CB\Core\Modules\ModuleStateInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 final class State implements ModuleStateInterface {
@@ -78,6 +77,13 @@ final class State implements ModuleStateInterface {
 		}
 
 		ResultRepository::saveSettings( [ 'enabled' => $enabled ] );
+
+		// WordPress option writes are not a transaction boundary. Re-read the
+		// canonical state before emitting a transition audit or touching runtime
+		// side effects so a refused/failed write cannot masquerade as success.
+		if ( self::is_enabled() !== $enabled ) {
+			throw new \RuntimeException( __( 'Core Scanner state could not be persisted.', 'core-blueprint' ) );
+		}
 
 		if ( class_exists( Audit::class ) ) {
 			Audit::log(

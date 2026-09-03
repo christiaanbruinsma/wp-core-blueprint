@@ -15,7 +15,6 @@ namespace CB\Core\Permissions;
 use CB\Core\Log\AuditLog;
 
 use CB\Core\Modules\ModuleStateInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 final class UserRolesState implements ModuleStateInterface {
@@ -32,6 +31,10 @@ final class UserRolesState implements ModuleStateInterface {
 		}
 
 		update_option( self::OPTION, $enabled ? '1' : '0', false );
+		if ( self::is_enabled() !== $enabled ) {
+			throw new \RuntimeException( __( 'User Roles state could not be persisted.', 'core-blueprint' ) );
+		}
+
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log(
 				$enabled ? 'user_roles_subsystem_enabled' : 'user_roles_subsystem_disabled',
