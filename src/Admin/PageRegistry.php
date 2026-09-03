@@ -60,6 +60,7 @@ final class PageRegistry {
 
 	/** Public semantic Core Admin component requirements. */
 	private const COMPONENT_REQUIREMENTS = [
+		'actions',
 		'badges',
 		'cards',
 		'description-toggle',
@@ -72,7 +73,9 @@ final class PageRegistry {
 		'metric-tiles',
 		'nav-tabs',
 		'notices',
+		'overview',
 		'panels',
+		'policy-table',
 		'radio-cards',
 		'state-badges',
 		'status',
