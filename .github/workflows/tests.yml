@@ -110,7 +110,7 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: base-performance-wp-${{ matrix.wordpress }}-php-${{ matrix.php }}
-          path: ${{ runner.temp }}/cb-performance-baseline/*.json
+          path: ${{ runner.temp }}/cb-performance-baseline
           if-no-files-found: error
           retention-days: 14
 
