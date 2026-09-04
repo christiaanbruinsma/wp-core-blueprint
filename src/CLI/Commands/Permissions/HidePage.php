@@ -48,12 +48,13 @@ final class HidePage implements CommandInterface {
 			);
 		}
 
+		$origin = self::execution_origin();
 		$permissions['hide_from_admins'] = true;
-		Settings::set_key( 'permissions', $permissions, 'console' );
+		Settings::set_key( 'permissions', $permissions, $origin );
 
 		AuditLog::log( 'permissions.hide_changed', 'notice', [
 			'enabled' => true,
-			'by'      => 'console',
+			'by'      => $origin,
 		] );
 
 		return Result::success(
@@ -91,5 +92,9 @@ final class HidePage implements CommandInterface {
 			return;
 		}
 		\WP_CLI::success( $result->message );
+	}
+
+	private static function execution_origin(): string {
+		return defined( 'WP_CLI' ) && WP_CLI ? 'cli' : 'console';
 	}
 }
