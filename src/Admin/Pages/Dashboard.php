@@ -36,6 +36,7 @@ use CB\Core\Admin\PageBase;
 use CB\Core\ContentModels\Admin\Page as ContentModelsPage;
 use CB\Core\ContentModels\State as ContentModelsState;
 use CB\Core\Dashboard\CardRegistry as DashboardCardRegistry;
+use CB\Core\ExtensionLifecycle;
 use CB\Core\Extensions;
 use CB\Core\ExtensionRegistry;
 use CB\Core\MediaReplace\Admin\Page as MediaReplacePage;
@@ -111,8 +112,8 @@ final class Dashboard extends PageBase {
 		// visible here for discoverability while their functional pages hide; the
 		// compact status menu is the single activation surface. Logs has no module
 		// activation state and remains a regular navigation card.
-		$notes_enabled            = class_exists( '\\CB\\Core\\Notes\\State' ) ? \CB\Core\Notes\State::is_enabled() : true;
-		$reports_enabled          = class_exists( '\\CB\\Core\\Reports\\State' ) ? \CB\Core\Reports\State::is_enabled() : true;
+		$notes_enabled            = class_exists( '\CB\Core\Notes\State' ) ? \CB\Core\Notes\State::is_enabled() : true;
+		$reports_enabled          = class_exists( '\CB\Core\Reports\State' ) ? \CB\Core\Reports\State::is_enabled() : true;
 		$user_roles_enabled       = UserRolesState::is_enabled();
 		$media_replace_enabled    = MediaReplaceState::is_enabled();
 		$media_formats_enabled    = MediaFormatsState::is_enabled();
@@ -519,31 +520,22 @@ final class Dashboard extends PageBase {
 		return $cards;
 	}
 
-	/** Build a status/shortcut menu for a sibling extension card. */
+	/** Build the Base-owned lifecycle/status menu for a sibling extension card. */
 	private static function extension_status_menu( array $extension ): string {
 		$active       = ! empty( $extension['active'] );
 		$state        = self::extension_dashboard_state( $extension );
 		$extension_id = sanitize_key( (string) ( $extension['id'] ?? '' ) );
-		$definition   = $active && '' !== $extension_id ? ActivationRegistry::definition( $extension_id ) : null;
-		$managed      = is_array( $definition );
-		$enabled      = $managed ? ActivationRegistry::is_enabled( $extension_id ) : false;
-		$labels       = [
-			'active'   => __( 'Active', 'core-blueprint' ),
-			'inactive' => __( 'Inactive', 'core-blueprint' ),
-			'warning'  => __( 'Warning', 'core-blueprint' ),
-			'idle'     => __( 'Idle', 'core-blueprint' ),
-			'error'    => __( 'Error', 'core-blueprint' ),
-		];
-		$actions = [];
+		$capability   = '' !== $extension_id ? ExtensionLifecycle::capability( $extension_id ) : null;
+		$actions      = [];
 
-		if ( $managed && current_user_can( $definition['capability'] ) ) {
+		if ( null !== $capability && current_user_can( $capability ) ) {
 			$actions[] = [
 				'type'    => 'button',
-				'label'   => $enabled ? __( 'Turn off', 'core-blueprint' ) : __( 'Turn on', 'core-blueprint' ),
-				'variant' => $enabled ? 'danger' : 'default',
+				'label'   => $active ? __( 'Turn off', 'core-blueprint' ) : __( 'Turn on', 'core-blueprint' ),
+				'variant' => $active ? 'danger' : 'default',
 				'attrs'   => [
-					'data-cb-core-module-action'  => $extension_id,
-					'data-cb-core-module-enabled' => $enabled ? '0' : '1',
+					'data-cb-core-extension-action' => $extension_id,
+					'data-cb-core-extension-active' => $active ? '0' : '1',
 				],
 			];
 		}
@@ -569,7 +561,7 @@ final class Dashboard extends PageBase {
 		return StatusMenu::render( [
 			'id'      => 'cb-dashboard-status-' . sanitize_html_class( (string) ( $extension['id'] ?? 'extension' ) ),
 			'state'   => $state,
-			'label'   => $managed ? ( $enabled ? __( 'On', 'core-blueprint' ) : __( 'Off', 'core-blueprint' ) ) : $labels[ $state ],
+			'label'   => $active ? __( 'On', 'core-blueprint' ) : __( 'Off', 'core-blueprint' ),
 			'detail'  => self::extension_status_line( $extension ),
 			'actions' => $actions,
 		] );
@@ -585,11 +577,6 @@ final class Dashboard extends PageBase {
 		}
 		if ( false === ( $extension['compatible'] ?? null ) ) {
 			return 'error';
-		}
-
-		$extension_id = sanitize_key( (string) ( $extension['id'] ?? '' ) );
-		if ( '' !== $extension_id && null !== ActivationRegistry::definition( $extension_id ) && ! ActivationRegistry::is_enabled( $extension_id ) ) {
-			return 'idle';
 		}
 
 		return match ( (string) ( $extension['health'] ?? 'unknown' ) ) {
@@ -613,11 +600,6 @@ final class Dashboard extends PageBase {
 			return __( 'Incompatible with Core API', 'core-blueprint' );
 		}
 
-		$extension_id = sanitize_key( (string) ( $extension['id'] ?? '' ) );
-		if ( '' !== $extension_id && null !== ActivationRegistry::definition( $extension_id ) && ! ActivationRegistry::is_enabled( $extension_id ) ) {
-			return __( 'Off', 'core-blueprint' );
-		}
-
 		$detail = trim( (string) ( $extension['health_detail'] ?? '' ) );
 		if ( '' !== $detail ) {
 			return $detail;
@@ -627,7 +609,7 @@ final class Dashboard extends PageBase {
 			'ok'   => __( 'Healthy', 'core-blueprint' ),
 			'warn' => __( 'Needs attention', 'core-blueprint' ),
 			'err'  => __( 'Error', 'core-blueprint' ),
-			'off'  => __( 'Off', 'core-blueprint' ),
+			'off'  => __( 'Feature inactive', 'core-blueprint' ),
 			default => __( 'Status unavailable', 'core-blueprint' ),
 		};
 	}
