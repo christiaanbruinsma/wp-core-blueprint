@@ -10,7 +10,9 @@ declare(strict_types=1);
  * execute() (Console) schedules the shared resumable job and returns an
  * async-poll Result. WP-CLI does the same by default; --wait drives those same
  * persisted scan slices in the foreground without depending on cron.
- * Both surfaces are live - see Console\Rest\RunController and CLI\Registry.
+ * Browser Console records its authenticated WordPress operator. Trusted
+ * server-side WP-CLI records user id 0 rather than accepting a caller-selected
+ * WordPress identity as scan provenance.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -60,7 +62,7 @@ final class Run implements CommandInterface {
 			);
 		}
 
-		// Resolve user - required arg, accepted as ID/login/email.
+		// Browser Console records its authenticated, explicitly selected operator.
 		$user_ref = (string) ( $args['user'] ?? '' );
 		$user     = self::resolve_user( $user_ref );
 		if ( null === $user ) {
@@ -132,20 +134,21 @@ final class Run implements CommandInterface {
 	}
 
 	/**
-	 * Trigger a Core Scanner scan.
+	 * Trigger a Core Scanner scan from trusted server-side WP-CLI.
+	 *
+	 * The terminal itself is the trusted execution context, so the persisted
+	 * Scanner actor is user id 0. A WordPress user may not be supplied as
+	 * attribution for this command.
 	 *
 	 * ## OPTIONS
-	 *
-	 * --user=<user>
-	 * : User ID, login, or email to record as the scan operator. Required.
 	 *
 	 * [--wait]
 	 * : Block until the scan completes (or fails).
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp cb scan run --user=chris
-	 *     wp cb scan run --user=chris --wait
+	 *     wp cb scan run
+	 *     wp cb scan run --wait
 	 *
 	 * @when after_wp_load
 	 *
@@ -160,14 +163,6 @@ final class Run implements CommandInterface {
 			\WP_CLI::error( 'Core Scanner is disabled. Enable it in Safeguards › Core Scanner first.' );
 		}
 
-		$user_ref = isset( $assoc_args['user'] ) ? (string) $assoc_args['user'] : '';
-		if ( '' === $user_ref ) {
-			\WP_CLI::error( 'The --user=<user> flag is required.' );
-		}
-		$user = self::resolve_user( $user_ref );
-		if ( null === $user ) {
-			\WP_CLI::error( sprintf( 'No user matches "%s".', $user_ref ) );
-		}
 		$wait = ! empty( $assoc_args['wait'] );
 
 		$active_job = ScanJobStatus::active_job();
@@ -183,9 +178,9 @@ final class Run implements CommandInterface {
 
 		if ( $wait ) {
 			try {
-				$job = ScanJobDispatcher::start_foreground( 'manual', (int) $user->ID, false );
+				$job = ScanJobDispatcher::start_foreground( 'manual', 0, false );
 				$job_id = (string) ( $job['job_id'] ?? '' );
-				\WP_CLI::line( sprintf( 'Running resumable scan job %s in the foreground (operator: %s).', $job_id, $user->user_login ) );
+				\WP_CLI::line( sprintf( 'Running resumable scan job %s in the foreground (operator: server CLI).', $job_id ) );
 				ScanJobRunner::run_to_completion( $job_id );
 			} catch ( ScanLockedException $locked ) {
 				\WP_CLI::warning( $locked->getMessage() );
@@ -199,7 +194,7 @@ final class Run implements CommandInterface {
 		}
 
 		try {
-			$queued = ScanJobDispatcher::dispatch( 'manual', (int) $user->ID, true );
+			$queued = ScanJobDispatcher::dispatch( 'manual', 0, true );
 		} catch ( ScanLockedException $locked ) {
 			\WP_CLI::warning( $locked->getMessage() );
 			return;
@@ -208,14 +203,13 @@ final class Run implements CommandInterface {
 		}
 
 		$job_id = (string) $queued['job_id'];
-		\WP_CLI::line( sprintf( 'Scheduled scan job %s (operator: %s).', $job_id, $user->user_login ) );
+		\WP_CLI::line( sprintf( 'Scheduled scan job %s (operator: server CLI).', $job_id ) );
 		\WP_CLI::success( 'Scan scheduled. Run `wp cb scan latest` once it completes.' );
-
 	}
 
 	/**
 	 * Resolve a user reference to a WP_User. Returns null when no match -
-	 * Console-friendly. CLI dispatch wraps this with WP_CLI::error on null.
+	 * Console-friendly.
 	 *
 	 * Precedence: numeric → ID; with @ → email; fall through → login.
 	 */
