@@ -8,9 +8,8 @@ declare(strict_types=1);
  * {@see Bootstrap::register_admin_page()}, the AJAX guards on the
  * generate-report endpoint, the retention-pruner short-circuit in
  * {@see Storage::cleanup_expired_registered()}, and the master-switch UI
- * from the Dashboard; written by the shared module activation handler
- * `cb_core_set_reports_enabled` registered in
- * {@see \CB\Core\Ajax\Handlers\Reports}.
+ * from the Dashboard; written through the canonical module activation
+ * authority in {@see \CB\Core\Modules\ActivationRegistry}.
  *
  * The `enabled` flag lives directly under the existing
  * `cb_core_settings['reports']` array (sibling of `branding` and

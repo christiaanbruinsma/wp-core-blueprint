@@ -110,16 +110,6 @@ final class ScanController {
 			'permission_callback' => [ $controller, 'can_manage_policy' ],
 		] );
 
-		// Subsystem master switch (1.3.23-dev). PUT only - flips the
-		// `enabled` flag inside the integrity settings, syncs the cron
-		// schedule via State::set_enabled(), and emits an audit event.
-		// Read paths use ResultRepository::settings()['enabled'] directly.
-		register_rest_route( 'core-blueprint/v1', '/integrity/admin/enable', [
-			'methods'             => WP_REST_Server::EDITABLE,
-			'callback'            => [ $controller, 'set_subsystem_enabled' ],
-			'permission_callback' => [ $controller, 'can_manage_policy' ],
-		] );
-
 		// Distribution-locale management (1.3.12-dev). Re-detect runs
 		// the LocaleDetector and persists its result. Set-mode lets
 		// the operator switch between auto-detected, manual override,
@@ -202,9 +192,8 @@ final class ScanController {
 	 * Returned by {@see scan()}, {@see approve_baseline()},
 	 * {@see approve_component_baseline()}, and {@see redetect_locale()} when
 	 * Core Scanner's master switch is off. Read endpoints, settings PUT,
-	 * baseline-cleanup endpoints, and locale-mode-set are NOT guarded - they
-	 * must remain available so the operator can flip the master back on
-	 * without losing access to history, settings, or housekeeping.
+	 * baseline-cleanup endpoints, and locale-mode-set remain available;
+	 * module activation itself is owned centrally by Modules\ActivationRegistry.
 	 */
 	private function subsystem_disabled_response(): WP_Error {
 		return new WP_Error(
@@ -808,30 +797,6 @@ final class ScanController {
 		$this->audit_settings_changed( ResultRepository::settings() );
 
 		return new WP_REST_Response( [ 'settings' => ResultRepository::settings() ], 200 );
-	}
-
-	/**
-	 * Toggle the Core Scanner master switch. Atomic - touches only the
-	 * `enabled` flag and synchronises the cron schedule via
-	 * {@see State::set_enabled()}.
-	 *
-	 * Other settings are preserved as-is. The endpoint is intentionally
-	 * kept narrow: callers that want to update `enabled` together with
-	 * other fields have a generic `/integrity/admin/settings` for that.
-	 *
-	 * @since   1.0.0
-	 */
-	public function set_subsystem_enabled( WP_REST_Request $request ): WP_REST_Response {
-		$enabled = (bool) $request->get_param( 'enabled' );
-		$user    = wp_get_current_user();
-		$actor   = ( $user && $user->ID ) ? 'admin:' . $user->user_login : 'admin:unknown';
-
-		State::set_enabled( $enabled, $actor );
-
-		return new WP_REST_Response( [
-			'enabled'  => State::is_enabled(),
-			'settings' => ResultRepository::settings(),
-		], 200 );
 	}
 
 	/**

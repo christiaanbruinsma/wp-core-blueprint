@@ -47,7 +47,6 @@ final class Reports {
 		add_action( 'wp_ajax_cb_core_download_maintenance_report',     [ __CLASS__, 'download_maintenance' ] );
 		add_action( 'wp_ajax_cb_core_delete_maintenance_report',       [ __CLASS__, 'delete_maintenance' ] );
 		add_action( 'wp_ajax_cb_core_delete_all_maintenance_reports',  [ __CLASS__, 'delete_all_maintenance' ] );
-		add_action( 'wp_ajax_cb_core_set_reports_enabled',             [ __CLASS__, 'set_reports_enabled' ] );
 	}
 
 	// ─── Generate ─────────────────────────────────────────────────────────────
@@ -340,39 +339,6 @@ final class Reports {
 				_n( '%d report deleted.', '%d reports deleted.', $deleted, 'core-blueprint' ),
 				$deleted
 			),
-		] );
-	}
-
-	// ─── Master switch ────────────────────────────────────────────────────────
-
-	/**
-	 * Toggle the Reports subsystem master switch. Atomic - touches only
-	 * the `enabled` flag via {@see State::set_enabled()}, which handles
-	 * the audit-log entry and preserves every other Reports setting
-	 * (branding, retention_days).
-	 *
-	 * Capability: cb_manage_reports. Dashboard renders the activation action
-	 * only for users with this capability; this handler repeats the check.
-	 *
-	 * @since   1.0.0
-	 */
-	public static function set_reports_enabled(): void {
-		Request::nonce( 'cb_core_admin' );
-		self::require_manage_reports();
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing - Request::nonce() above.
-		$enabled = ! empty( $_POST['enabled'] ) && 'false' !== (string) $_POST['enabled'];
-
-		$user  = wp_get_current_user();
-		$actor = ( $user && $user->ID ) ? 'admin:' . $user->user_login : 'admin:unknown';
-
-		State::set_enabled( $enabled, $actor );
-
-		wp_send_json_success( [
-			'enabled' => State::is_enabled(),
-			'message' => $enabled
-				? __( 'Reports enabled.',  'core-blueprint' )
-				: __( 'Reports disabled.', 'core-blueprint' ),
 		] );
 	}
 
