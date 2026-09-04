@@ -84,7 +84,7 @@ final class Remove implements CommandInterface {
 		AuditLog::log( 'permissions.operator_removed', 'warning', [
 			'user_id'    => (int) $user->ID,
 			'user_login' => $user->user_login,
-			'by'         => 'console',
+			'by'         => self::execution_origin(),
 			'forced'     => $force,
 		] );
 
@@ -174,6 +174,10 @@ final class Remove implements CommandInterface {
 			return;
 		}
 		\WP_CLI::success( $result->message );
+	}
+
+	private static function execution_origin(): string {
+		return defined( 'WP_CLI' ) && WP_CLI ? 'cli' : 'console';
 	}
 
 	private static function resolve_user( string $ref ): ?\WP_User {
