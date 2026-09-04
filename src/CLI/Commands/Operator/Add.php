@@ -59,7 +59,7 @@ final class Add implements CommandInterface {
 		AuditLog::log( 'permissions.operator_added', 'notice', [
 			'user_id'    => (int) $user->ID,
 			'user_login' => $user->user_login,
-			'by'         => 'console',
+			'by'         => self::execution_origin(),
 		] );
 
 		do_action( 'cb_permissions_operator_added', (int) $user->ID, 0 );
@@ -130,6 +130,10 @@ final class Add implements CommandInterface {
 			return;
 		}
 		\WP_CLI::success( $result->message );
+	}
+
+	private static function execution_origin(): string {
+		return defined( 'WP_CLI' ) && WP_CLI ? 'cli' : 'console';
 	}
 
 	/**
