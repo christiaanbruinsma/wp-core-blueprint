@@ -76,6 +76,8 @@ jobs:
       CB_LIFECYCLE_TABLE_PREFIX: cblifecycle_
       CB_CONSUMER_TABLE_PREFIX: cbconsumer_
       CB_B3_TABLE_PREFIX: cbb3_
+      CB_CLI_TABLE_PREFIX: cbcli_
+      CB_WP_CLI_PHAR: /tmp/core-blueprint-tools/wp-cli-2.12.0.phar
 
     steps:
       - name: Checkout
@@ -112,6 +114,12 @@ jobs:
 
       - name: Run full 12-module request-boundary conformance matrix
         run: bash tests/bin/run-module-conformance-scenario.sh
+
+      - name: Install pinned WP-CLI 2.12.0
+        run: bash tests/bin/install-wp-cli.sh
+
+      - name: Run real WP-CLI smoke scenario
+        run: bash tests/bin/run-cli-smoke-scenario.sh "${{ matrix.wordpress }}"
 
   uninstall:
     name: Destructive uninstall — WordPress 7.0 — PHP 8.4
