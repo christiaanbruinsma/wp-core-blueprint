@@ -15,7 +15,6 @@ final class NotesController {
     public static function register(): void {
         register_rest_route( 'core-blueprint/v1', '/notes/list',   [ 'methods' => 'GET',  'callback' => [ self::class, 'list'    ], 'permission_callback' => [ self::class, 'can_manage' ] ] );
         register_rest_route( 'core-blueprint/v1', '/notes/action', [ 'methods' => 'POST', 'callback' => [ self::class, 'action'  ], 'permission_callback' => [ self::class, 'can_manage' ] ] );
-        register_rest_route( 'core-blueprint/v1', '/notes/enable', [ 'methods' => 'POST', 'callback' => [ self::class, 'enable'  ], 'permission_callback' => [ self::class, 'can_manage' ] ] );
     }
 
     public static function can_manage(): bool {
@@ -24,8 +23,7 @@ final class NotesController {
 
     /**
      * Standard "subsystem off" response shared by Notes write/read paths.
-     * The /enable endpoint itself is intentionally NOT guarded - operators
-     * must always be able to flip the master back on.
+     * Module activation is owned centrally by Modules\ActivationRegistry.
      */
     private static function subsystem_disabled_response(): WP_REST_Response {
         return new WP_REST_Response(
@@ -176,41 +174,6 @@ final class NotesController {
         }
 
         return new WP_REST_Response( [ 'success' => false, 'message' => __( 'Invalid notes action.', 'core-blueprint' ) ], 400 );
-    }
-
-    /**
-     * Toggle the Notes subsystem master switch. Atomic - touches only
-     * the `enabled` flag via {@see State::set_enabled()}, which handles
-     * the audit-log entry and preserves every other Notes setting.
-     *
-     * Other settings are preserved as-is. The endpoint is intentionally
-     * kept narrow: callers wanting to update `enabled` together with
-     * other fields use the existing form-POST handler in
-     * {@see \CB\Core\Notes\Admin\PreferencesPage}.
-     *
-     * @since   1.0.0
-     */
-    public static function enable( WP_REST_Request $request ): WP_REST_Response {
-        $nonce = $request->get_header( 'X-WP-Nonce' );
-        if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-            return new WP_REST_Response( [ 'success' => false, 'message' => __( 'Invalid nonce.', 'core-blueprint' ) ], 403 );
-        }
-
-        $params  = $request->get_json_params();
-        $enabled = ! empty( $params['enabled'] );
-
-        $user  = wp_get_current_user();
-        $actor = ( $user && $user->ID ) ? 'admin:' . $user->user_login : 'admin:unknown';
-
-        State::set_enabled( $enabled, $actor );
-
-        return new WP_REST_Response( [
-            'success' => true,
-            'enabled' => State::is_enabled(),
-            'message' => $enabled
-                ? __( 'Notes enabled.',  'core-blueprint' )
-                : __( 'Notes disabled.', 'core-blueprint' ),
-        ] );
     }
 
     private static function note_not_found_response(): WP_REST_Response {
