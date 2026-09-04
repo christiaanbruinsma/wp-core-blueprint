@@ -64,15 +64,94 @@ site="http://127.0.0.1:$port"
 wp_cli option update home "$site" >/dev/null
 wp_cli option update siteurl "$site" >/dev/null
 log="${RUNNER_TEMP:-/tmp}/cb-b2-http-$WP_VERSION.log"
-php -S "127.0.0.1:$port" -t "$WP_CORE_DIR" >"$log" 2>&1 & pid=$!
-for _ in {1..30}; do curl -sS -o /dev/null "$site/wp-login.php" && break; sleep .2; done
-kill -0 "$pid" >/dev/null 2>&1 || { cat "$log" >&2; fail 'Local WordPress HTTP server failed'; }
+
+start_http_server(){
+	if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
+		return 0
+	fi
+	php -S "127.0.0.1:$port" -t "$WP_CORE_DIR" >>"$log" 2>&1 &
+	pid=$!
+}
+
+wait_for_http_server(){
+	local attempt
+	for attempt in {1..30}; do
+		if command curl -sS -o /dev/null "$site/wp-login.php"; then
+			return 0
+		fi
+		if ! kill -0 "$pid" >/dev/null 2>&1; then
+			return 1
+		fi
+		sleep .2
+	done
+	return 1
+}
+
+restart_http_server(){
+	if [[ -n "$pid" ]]; then
+		kill "$pid" >/dev/null 2>&1 || true
+		wait "$pid" >/dev/null 2>&1 || true
+	fi
+	pid=""
+	start_http_server
+	if ! wait_for_http_server; then
+		cat "$log" >&2
+		fail 'Local WordPress HTTP server failed to restart'
+	fi
+	echo "[B2] Local WordPress HTTP server restarted after transient runner failure" >&2
+}
+
+B2_HTTP_CODE=""
+browser_request(){
+	local attempt=1
+	local max_attempts="${CB_B2_HTTP_MAX_ATTEMPTS:-4}"
+	local exit_code=0
+	local result=""
+
+	B2_HTTP_CODE=""
+	while true; do
+		if [[ -z "$pid" ]] || ! kill -0 "$pid" >/dev/null 2>&1; then
+			restart_http_server
+		fi
+
+		if result="$(command curl "$@")"; then
+			B2_HTTP_CODE="$result"
+			return 0
+		else
+			exit_code=$?
+		fi
+
+		if (( exit_code != 7 && exit_code != 52 )); then
+			return "$exit_code"
+		fi
+
+		if (( attempt >= max_attempts )); then
+			cat "$log" >&2
+			echo "[B2] Transient localhost transport failure persisted after ${attempt} attempts (exit ${exit_code})" >&2
+			return "$exit_code"
+		fi
+
+		if ! kill -0 "$pid" >/dev/null 2>&1; then
+			restart_http_server
+		else
+			sleep .25
+		fi
+		attempt=$((attempt + 1))
+	done
+}
+
+start_http_server
+if ! wait_for_http_server; then
+	cat "$log" >&2
+	fail 'Local WordPress HTTP server failed'
+fi
 
 mapfile -t browser < <(auth "$target_id")
 [[ ${#browser[@]} -ge 3 ]] || fail 'Browser Console auth fixture failed'
 browser_cookie="${browser[0]}=${browser[1]}"
 browser_rest="${browser[2]}"
-code="$(curl -sS -o /tmp/cb-b2-console-show.json -w '%{http_code}' -X POST -H "Cookie: $browser_cookie" -H "X-WP-Nonce: $browser_rest" -H 'Content-Type: application/json' --data '{"id":"cb-permissions-show","args":{}}' "$site/?rest_route=/core-blueprint/v1/console/run")"
+browser_request -sS -o /tmp/cb-b2-console-show.json -w '%{http_code}' -X POST -H "Cookie: $browser_cookie" -H "X-WP-Nonce: $browser_rest" -H 'Content-Type: application/json' --data '{"id":"cb-permissions-show","args":{}}' "$site/?rest_route=/core-blueprint/v1/console/run"
+code="$B2_HTTP_CODE"
 eq "$code" 200 'Browser Console show-page failed'
 contains "$(cat /tmp/cb-b2-console-show.json)" '"status":"success"' 'Browser Console show-page did not complete successfully'
 contains "$(audit_context permissions_hide_changed)" '"by":"console"' 'Browser Console specific audit lost console provenance'
@@ -92,7 +171,8 @@ eq "$(wp_cli eval '$j=\CB\Core\Integrity\Scanner\ScanJobRepository::get();echo i
 wp_cli eval '\CB\Core\Integrity\Scanner\ScanJobRunner::cancel_active();' >/dev/null
 eq "$(wp_cli eval 'echo null===\CB\Core\Integrity\Scanner\ScanJobRepository::get()?"empty":"present";')" empty 'Terminal Scanner fixture cleanup failed'
 
-code="$(curl -sS -o /tmp/cb-b2-console-scan.json -w '%{http_code}' -X POST -H "Cookie: $browser_cookie" -H "X-WP-Nonce: $browser_rest" -H 'Content-Type: application/json' --data "{\"id\":\"cb-scan-run\",\"args\":{\"user\":\"$target_id\"}}" "$site/?rest_route=/core-blueprint/v1/console/run")"
+browser_request -sS -o /tmp/cb-b2-console-scan.json -w '%{http_code}' -X POST -H "Cookie: $browser_cookie" -H "X-WP-Nonce: $browser_rest" -H 'Content-Type: application/json' --data "{\"id\":\"cb-scan-run\",\"args\":{\"user\":\"$target_id\"}}" "$site/?rest_route=/core-blueprint/v1/console/run"
+code="$B2_HTTP_CODE"
 eq "$code" 200 'Browser Console Scanner failed'
 contains "$(cat /tmp/cb-b2-console-scan.json)" '"status":"success"' 'Browser Console Scanner did not schedule successfully'
 browser_actor="$(wp_cli eval '$j=\CB\Core\Integrity\Scanner\ScanJobRepository::get();echo is_array($j)?(int)($j["started_by_user_id"]??-1):-1;')"

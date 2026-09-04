@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Build a deterministic Core Blueprint production ZIP.
+
+The package boundary is allowlist-based so repository/test tooling can never
+silently leak into a public plugin archive.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import re
+import sys
+import zipfile
+from pathlib import Path
+
+PLUGIN_ROOT = "core-blueprint"
+ROOT_FILES = (
+    "core-blueprint.php",
+    "uninstall.php",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+)
+OPTIONAL_ROOT_FILES = ("CHANGELOG-HISTORY.md",)
+RUNTIME_DIRS = (
+    "src",
+    "includes",
+    "assets",
+    "templates",
+    "languages",
+    "licenses",
+)
+FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
+
+
+def fail(message: str) -> "NoReturn":
+    print(f"[release] ERROR: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def read_version(plugin_file: Path) -> str:
+    text = plugin_file.read_text(encoding="utf-8")
+    header = re.search(r"^\s*\*\s*Version:\s*([^\s]+)\s*$", text, re.MULTILINE)
+    constant = re.search(r"define\(\s*'CB_CORE_VERSION'\s*,\s*'([^']+)'\s*\);", text)
+    if not header or not constant:
+        fail("Could not resolve both plugin header Version and CB_CORE_VERSION.")
+    if header.group(1) != constant.group(1):
+        fail(
+            "Version mismatch: plugin header "
+            f"{header.group(1)!r} != CB_CORE_VERSION {constant.group(1)!r}."
+        )
+    return header.group(1)
+
+
+def collect_files(source: Path) -> list[Path]:
+    files: list[Path] = []
+
+    for relative in ROOT_FILES:
+        path = source / relative
+        if not path.is_file():
+            fail(f"Required release file is missing: {relative}")
+        if path.is_symlink():
+            fail(f"Release file may not be a symlink: {relative}")
+        files.append(path)
+
+    for relative in OPTIONAL_ROOT_FILES:
+        path = source / relative
+        if path.exists():
+            if not path.is_file() or path.is_symlink():
+                fail(f"Optional release file is not a regular file: {relative}")
+            files.append(path)
+
+    for relative in RUNTIME_DIRS:
+        root = source / relative
+        if not root.is_dir():
+            fail(f"Required runtime directory is missing: {relative}/")
+        if root.is_symlink():
+            fail(f"Runtime directory may not be a symlink: {relative}/")
+        for path in sorted(root.rglob("*")):
+            if path.is_symlink():
+                fail(f"Release tree may not contain symlinks: {path.relative_to(source)}")
+            if path.is_file():
+                files.append(path)
+
+    if not files:
+        fail("Release allowlist resolved to zero files.")
+
+    return sorted(files, key=lambda item: item.relative_to(source).as_posix())
+
+
+def add_file(archive: zipfile.ZipFile, source: Path, path: Path) -> None:
+    relative = path.relative_to(source).as_posix()
+    info = zipfile.ZipInfo(f"{PLUGIN_ROOT}/{relative}", FIXED_ZIP_TIME)
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.create_system = 3
+    info.external_attr = 0o100644 << 16
+    archive.writestr(info, path.read_bytes(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+
+
+def build(source: Path, output_dir: Path) -> tuple[Path, Path]:
+    source = source.resolve()
+    output_dir = output_dir.resolve()
+
+    plugin_file = source / "core-blueprint.php"
+    version = read_version(plugin_file)
+    files = collect_files(source)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = output_dir / f"core-blueprint-{version}.zip"
+    checksum_path = output_dir / f"core-blueprint-{version}.zip.sha256"
+
+    if zip_path.exists():
+        zip_path.unlink()
+    if checksum_path.exists():
+        checksum_path.unlink()
+
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        for path in files:
+            add_file(archive, source, path)
+
+    digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()
+    checksum_path.write_text(f"{digest}  {zip_path.name}\n", encoding="utf-8")
+
+    print(f"[release] version: {version}")
+    print(f"[release] files: {len(files)}")
+    print(f"[release] zip: {zip_path}")
+    print(f"[release] sha256: {digest}")
+    return zip_path, checksum_path
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    default_source = Path(__file__).resolve().parents[1]
+    parser.add_argument(
+        "--source",
+        type=Path,
+        default=default_source,
+        help="Repository/source root to package (default: repository containing this tool).",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=default_source / "dist",
+        help="Directory for ZIP and SHA-256 output (default: <source>/dist).",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    if not args.source.is_dir():
+        fail(f"Source directory does not exist: {args.source}")
+    build(args.source, args.output_dir)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

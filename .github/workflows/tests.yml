@@ -190,3 +190,90 @@ jobs:
 
       - name: Run real destructive uninstall scenario
         run: bash tests/bin/run-uninstall-scenario.sh
+
+  release-package:
+    name: Release package — WordPress 7.0 — PHP 8.4
+    runs-on: ubuntu-24.04
+    needs: lint
+
+    services:
+      mariadb:
+        image: mariadb:10.11.19
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      CB_PREVIOUS_RC_SHA: 4fcd0892a2a734c1559960db5e8c7e2c2cb41f45
+      CB_PREVIOUS_RC_VERSION: 1.0.0-rc3.40
+      CB_CANDIDATE_VERSION: 1.0.0-rc3.41
+      CB_WP_CLI_PHAR: /tmp/core-blueprint-release-tools/wp-cli-2.12.0.phar
+      WP_DB_NAME: wordpress_test
+      WP_DB_USER: root
+      WP_DB_PASSWORD: root
+      WP_DB_HOST: 127.0.0.1:3306
+
+    steps:
+      - name: Checkout candidate with previous RC history
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          extensions: dom, mbstring, mysqli, sodium, xml, xmlwriter
+          coverage: none
+
+      - name: Build candidate production ZIP
+        run: python3 tools/build-release --output-dir "$RUNNER_TEMP/cb-release-candidate"
+
+      - name: Resolve candidate artifact
+        run: echo "CB_CANDIDATE_ZIP=$RUNNER_TEMP/cb-release-candidate/core-blueprint-$CB_CANDIDATE_VERSION.zip" >> "$GITHUB_ENV"
+
+      - name: Validate candidate package boundary
+        run: bash tests/bin/run-release-package-scenario.sh "$CB_CANDIDATE_ZIP" "$CB_CANDIDATE_VERSION"
+
+      - name: Materialize pinned previous RC
+        run: git worktree add --detach "$RUNNER_TEMP/cb-release-previous-source" "$CB_PREVIOUS_RC_SHA"
+
+      - name: Build pinned previous RC with current canonical builder
+        run: >-
+          python3 tools/build-release
+          --source "$RUNNER_TEMP/cb-release-previous-source"
+          --output-dir "$RUNNER_TEMP/cb-release-previous"
+
+      - name: Resolve previous RC artifact
+        run: echo "CB_PREVIOUS_ZIP=$RUNNER_TEMP/cb-release-previous/core-blueprint-$CB_PREVIOUS_RC_VERSION.zip" >> "$GITHUB_ENV"
+
+      - name: Validate previous RC package boundary
+        run: bash tests/bin/run-release-package-scenario.sh "$CB_PREVIOUS_ZIP" "$CB_PREVIOUS_RC_VERSION"
+
+      - name: Install pinned WP-CLI 2.12.0
+        run: bash tests/bin/install-wp-cli.sh
+
+      - name: Run release ZIP fresh-install and update smoke
+        run: >-
+          bash tests/bin/run-release-install-scenario.sh
+          "$CB_CANDIDATE_ZIP"
+          "$CB_PREVIOUS_ZIP"
+          "$CB_CANDIDATE_VERSION"
+          "$CB_PREVIOUS_RC_VERSION"
+
+      - name: Upload candidate release artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: core-blueprint-${{ env.CB_CANDIDATE_VERSION }}
+          path: |
+            ${{ runner.temp }}/cb-release-candidate/core-blueprint-${{ env.CB_CANDIDATE_VERSION }}.zip
+            ${{ runner.temp }}/cb-release-candidate/core-blueprint-${{ env.CB_CANDIDATE_VERSION }}.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
