@@ -16,6 +16,14 @@ user_hash(){ wp_cli_eval_args '$u=get_userdata((int)$args[0]);$m=get_user_meta($
 audit_count(){ wp_cli_eval_args '$q=\CB\Core\Log\AuditLog::query(["event_type"=>$args[0],"per_page"=>1]);echo (int)$q["total"];' "$1"; }
 auth(){ wp_cli_eval_args '$u=get_userdata((int)$args[0]);$e=time()+3600;$t=WP_Session_Tokens::get_instance($u->ID)->create($e);$c=wp_generate_auth_cookie($u->ID,$e,"logged_in",$t);$_COOKIE[LOGGED_IN_COOKIE]=$c;wp_set_current_user($u->ID);echo LOGGED_IN_COOKIE,"\n",$c,"\n",wp_create_nonce("wp_rest"),"\n",wp_create_nonce("cb_core_admin"),"\n";' "$1"; }
 
+pid=""
+cleanup(){
+	if [[ -n "$pid" ]]; then
+		kill "$pid" >/dev/null 2>&1 || true
+	fi
+}
+trap cleanup EXIT
+
 echo "[B1] Starting C2-B1 real WP-CLI/browser conformance on WordPress $WP_VERSION"
 wp_cli plugin is-active core-blueprint >/dev/null 2>&1 || fail 'Core Blueprint is not active from B0'
 wp_cli help cb operator add >/dev/null
@@ -90,10 +98,88 @@ browser_user_id="$(wp_cli user create cb-b1-browser-user cb-b1-browser-user@exam
 
 port="${CB_B1_HTTP_PORT:-8099}"; site="http://127.0.0.1:$port"
 wp_cli option update home "$site" >/dev/null; wp_cli option update siteurl "$site" >/dev/null
-log="${RUNNER_TEMP:-/tmp}/cb-b1-http-$WP_VERSION.log"; php -S "127.0.0.1:$port" -t "$WP_CORE_DIR" >"$log" 2>&1 & pid=$!
-trap 'kill "$pid" >/dev/null 2>&1 || true' EXIT
-for _ in {1..30}; do curl -sS -o /dev/null "$site/wp-login.php" && break; sleep .2; done
-kill -0 "$pid" >/dev/null 2>&1 || { cat "$log" >&2; fail 'Local WordPress HTTP server failed'; }
+log="${RUNNER_TEMP:-/tmp}/cb-b1-http-$WP_VERSION.log"
+
+start_http_server(){
+	if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
+		return 0
+	fi
+	php -S "127.0.0.1:$port" -t "$WP_CORE_DIR" >>"$log" 2>&1 &
+	pid=$!
+}
+
+wait_for_http_server(){
+	local attempt
+	for attempt in {1..30}; do
+		if command curl -sS -o /dev/null "$site/wp-login.php"; then
+			return 0
+		fi
+		if ! kill -0 "$pid" >/dev/null 2>&1; then
+			return 1
+		fi
+		sleep .2
+	done
+	return 1
+}
+
+restart_http_server(){
+	if [[ -n "$pid" ]]; then
+		kill "$pid" >/dev/null 2>&1 || true
+		wait "$pid" >/dev/null 2>&1 || true
+	fi
+	pid=""
+	start_http_server
+	if ! wait_for_http_server; then
+		cat "$log" >&2
+		fail 'Local WordPress HTTP server failed to restart'
+	fi
+	echo "[B1] Local WordPress HTTP server restarted after transient runner failure" >&2
+}
+
+B1_HTTP_RESULT=""
+browser_request(){
+	local attempt=1
+	local max_attempts="${CB_B1_HTTP_MAX_ATTEMPTS:-4}"
+	local exit_code=0
+	local result=""
+
+	B1_HTTP_RESULT=""
+	while true; do
+		if [[ -z "$pid" ]] || ! kill -0 "$pid" >/dev/null 2>&1; then
+			restart_http_server
+		fi
+
+		if result="$(command curl "$@")"; then
+			B1_HTTP_RESULT="$result"
+			return 0
+		else
+			exit_code=$?
+		fi
+
+		if (( exit_code != 7 && exit_code != 52 )); then
+			return "$exit_code"
+		fi
+
+		if (( attempt >= max_attempts )); then
+			cat "$log" >&2
+			echo "[B1] Transient localhost transport failure persisted after ${attempt} attempts (exit ${exit_code})" >&2
+			return "$exit_code"
+		fi
+
+		if ! kill -0 "$pid" >/dev/null 2>&1; then
+			restart_http_server
+		else
+			sleep .25
+		fi
+		attempt=$((attempt + 1))
+	done
+}
+
+start_http_server
+if ! wait_for_http_server; then
+	cat "$log" >&2
+	fail 'Local WordPress HTTP server failed'
+fi
 
 mapfile -t a < <(auth "$admin_id"); [[ ${#a[@]} -ge 4 ]] || fail 'Admin browser auth fixture failed'
 admin_cookie="${a[0]}=${a[1]}"; admin_rest="${a[2]}"; admin_ajax="${a[3]}"
@@ -101,36 +187,46 @@ mapfile -t o < <(auth "$browser_operator_id"); operator_cookie="${o[0]}=${o[1]}"
 mapfile -t f < <(auth "$failsafe_admin_id"); failsafe_cookie="${f[0]}=${f[1]}"; failsafe_ajax="${f[3]}"
 mapfile -t u < <(auth "$browser_user_id"); user_cookie="${u[0]}=${u[1]}"; user_ajax="${u[3]}"
 
-code="$(curl -sS -o /tmp/b1-admin-console.json -w '%{http_code}' -H "Cookie: $admin_cookie" -H "X-WP-Nonce: $admin_rest" "$site/?rest_route=/core-blueprint/v1/console/commands&WP_CLI=1")"
-eq "$code" 403 'Browser Administrator fabricated trusted shell/Console access'; contains "$(cat /tmp/b1-admin-console.json)" cb_console_forbidden 'Console denial used wrong boundary'
-code="$(curl -sS -o /tmp/b1-operator-console.json -w '%{http_code}' -H "Cookie: $operator_cookie" -H "X-WP-Nonce: $operator_rest" "$site/?rest_route=/core-blueprint/v1/console/commands")"
-eq "$code" 200 'Approved operator cannot reach browser Console'; catalog="$(cat /tmp/b1-operator-console.json)"; contains "$catalog" cb-permissions-repair-role-policy 'Console omitted repair command'; contains "$catalog" cb_manage_roles 'Console omitted command-specific gate'
+browser_request -sS -o /tmp/b1-admin-console.json -w '%{http_code}' -H "Cookie: $admin_cookie" -H "X-WP-Nonce: $admin_rest" "$site/?rest_route=/core-blueprint/v1/console/commands&WP_CLI=1"
+code="$B1_HTTP_RESULT"; eq "$code" 403 'Browser Administrator fabricated trusted shell/Console access'; contains "$(cat /tmp/b1-admin-console.json)" cb_console_forbidden 'Console denial used wrong boundary'
+browser_request -sS -o /tmp/b1-operator-console.json -w '%{http_code}' -H "Cookie: $operator_cookie" -H "X-WP-Nonce: $operator_rest" "$site/?rest_route=/core-blueprint/v1/console/commands"
+code="$B1_HTTP_RESULT"; eq "$code" 200 'Approved operator cannot reach browser Console'; catalog="$(cat /tmp/b1-operator-console.json)"; contains "$catalog" cb-permissions-repair-role-policy 'Console omitted repair command'; contains "$catalog" cb_manage_roles 'Console omitted command-specific gate'
 wp_cli cb failsafe enable >/dev/null
-code="$(curl -sS -o /tmp/b1-no-confirm.json -w '%{http_code}' -X POST -H "Cookie: $operator_cookie" -H "X-WP-Nonce: $operator_rest" -H 'Content-Type: application/json' --data '{"id":"cb-failsafe-disable","args":{}}' "$site/?rest_route=/core-blueprint/v1/console/run")"
-eq "$code" 400 'Destructive Console command ran without confirm token'; contains "$(cat /tmp/b1-no-confirm.json)" cb_console_confirm_required 'Console confirm denial used wrong contract'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" '' 'Rejected Console request mutated state'
+browser_request -sS -o /tmp/b1-no-confirm.json -w '%{http_code}' -X POST -H "Cookie: $operator_cookie" -H "X-WP-Nonce: $operator_rest" -H 'Content-Type: application/json' --data '{"id":"cb-failsafe-disable","args":{}}' "$site/?rest_route=/core-blueprint/v1/console/run"
+code="$B1_HTTP_RESULT"; eq "$code" 400 'Destructive Console command ran without confirm token'; contains "$(cat /tmp/b1-no-confirm.json)" cb_console_confirm_required 'Console confirm denial used wrong contract'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" '' 'Rejected Console request mutated state'
 echo "[B1] Terminal vs browser Console trust/confirm boundary PASS"
 
 success0="$(audit_count failsafe_emergency_activated)"
-code="$(curl -sS -o /tmp/b1-no-nonce.json -w '%{http_code}' -X POST -H "Cookie: $admin_cookie" --data 'action=cb_core_panic_activate' --data 'password=cb-cli-password-only-for-ci' "$site/wp-admin/admin-ajax.php")"; eq "$code" 403 'Panic accepted missing nonce'
-code="$(curl -sS -o /tmp/b1-non-admin.json -w '%{http_code}' -X POST -H "Cookie: $user_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$user_ajax" --data 'password=cb-b1-browser-user-pass' "$site/wp-admin/admin-ajax.php")"; eq "$code" 403 'Panic accepted missing manage_options'
-code="$(curl -sS -o /tmp/b1-wrong-pass.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$failsafe_ajax" --data 'password=wrong' "$site/wp-admin/admin-ajax.php")"; eq "$code" 401 'Panic accepted wrong password'
+browser_request -sS -o /tmp/b1-no-nonce.json -w '%{http_code}' -X POST -H "Cookie: $admin_cookie" --data 'action=cb_core_panic_activate' --data 'password=cb-cli-password-only-for-ci' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 403 'Panic accepted missing nonce'
+browser_request -sS -o /tmp/b1-non-admin.json -w '%{http_code}' -X POST -H "Cookie: $user_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$user_ajax" --data 'password=cb-b1-browser-user-pass' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 403 'Panic accepted missing manage_options'
+browser_request -sS -o /tmp/b1-wrong-pass.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$failsafe_ajax" --data 'password=wrong' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 401 'Panic accepted wrong password'
 eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" '' 'Rejected browser recovery mutated Layer 2'; eq "$(audit_count failsafe_emergency_activated)" "$success0" 'Rejected browser recovery emitted success audit'
-code="$(curl -sS -o /tmp/b1-panic-ok.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$failsafe_ajax" --data 'password=cb-b1-failsafe-admin-pass' --data 'reason=C2-B1' "$site/wp-admin/admin-ajax.php")"; eq "$code" 200 'Valid browser panic failed'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" emergency 'Valid browser panic did not mutate'; eq "$(audit_count failsafe_emergency_activated)" "$((success0+1))" 'Valid browser panic audit mismatch'
-code="$(curl -sS -o /tmp/b1-panic-off.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_deactivate' --data-urlencode "nonce=$failsafe_ajax" "$site/wp-admin/admin-ajax.php")"; eq "$code" 200 'Browser panic deactivate failed'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" '' 'Browser panic deactivate did not clear state'
+browser_request -sS -o /tmp/b1-panic-ok.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_activate' --data-urlencode "nonce=$failsafe_ajax" --data 'password=cb-b1-failsafe-admin-pass' --data 'reason=C2-B1' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 200 'Valid browser panic failed'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" emergency 'Valid browser panic did not mutate'; eq "$(audit_count failsafe_emergency_activated)" "$((success0+1))" 'Valid browser panic audit mismatch'
+browser_request -sS -o /tmp/b1-panic-off.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_panic_deactivate' --data-urlencode "nonce=$failsafe_ajax" "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 200 'Browser panic deactivate failed'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_OPT,"");')" '' 'Browser panic deactivate did not clear state'
 echo "[B1] Browser nonce/manage_options/password/no-success-audit matrix PASS"
 
 invalid="$(printf '0%.0s' {1..64})"; [[ "$invalid" != "$token" ]] || invalid="$(printf '1%.0s' {1..64})"
 reject0="$(audit_count failsafe_bypass_url_rejected)"; used0="$(audit_count failsafe_bypass_url_used)"
-curl -sS -o /tmp/b1-invalid.html "$site/?cb_core_bypass=$invalid" >/dev/null
+browser_request -sS -o /tmp/b1-invalid.html "$site/?cb_core_bypass=$invalid"
 eq "$(wp_cli eval 'echo get_transient(\CB\Core\Security\Failsafe::BYPASS_TRANSIENT)?:"";')" '' 'Invalid token opened window'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')" "$hash0" 'Invalid token mutated hash'; eq "$(audit_count failsafe_bypass_url_rejected)" "$((reject0+1))" 'Invalid token rejection audit mismatch'; eq "$(audit_count failsafe_bypass_url_used)" "$used0" 'Invalid token emitted success audit'
-curl -sS -o /tmp/b1-valid.html "$site/?cb_core_bypass=$token" >/dev/null; contains "$(cat /tmp/b1-valid.html)" 'Emergency Bypass Active' 'Valid token missed confirmation surface'; eq "$(wp_cli eval 'echo get_transient(\CB\Core\Security\Failsafe::BYPASS_TRANSIENT)?:"";')" active 'Valid token did not open window'; eq "$(audit_count failsafe_bypass_url_used)" "$((used0+1))" 'Valid token success audit mismatch'
+browser_request -sS -o /tmp/b1-valid.html "$site/?cb_core_bypass=$token"
+contains "$(cat /tmp/b1-valid.html)" 'Emergency Bypass Active' 'Valid token missed confirmation surface'; eq "$(wp_cli eval 'echo get_transient(\CB\Core\Security\Failsafe::BYPASS_TRANSIENT)?:"";')" active 'Valid token did not open window'; eq "$(audit_count failsafe_bypass_url_used)" "$((used0+1))" 'Valid token success audit mismatch'
 hash1="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; [[ "$hash1" != "$hash0" ]] || fail 'Valid token did not rotate hash'; eq "$(wp_cli_eval_args '$t=$args[0];echo wp_check_password($t,get_option(CB_CORE_BYPASS_TOK,""))?"yes":"no";' "$token")" no 'Used token still validates'
-wp_cli cb failsafe close-window >/dev/null; hash2="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; curl -sS -o /tmp/b1-reuse.html "$site/?cb_core_bypass=$token" >/dev/null
+wp_cli cb failsafe close-window >/dev/null; hash2="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"
+browser_request -sS -o /tmp/b1-reuse.html "$site/?cb_core_bypass=$token"
 eq "$(wp_cli eval 'echo get_transient(\CB\Core\Security\Failsafe::BYPASS_TRANSIENT)?:"";')" '' 'Reused token reopened window'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')" "$hash2" 'Reused token mutated hash'; eq "$(audit_count failsafe_bypass_url_rejected)" "$((reject0+2))" 'Reused token rejection audit mismatch'
 echo "[B1] Secret token invalid/valid/rotate/reuse/audit lifecycle PASS"
 
-before="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; code="$(curl -sS -o /tmp/b1-rotate-wrong.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=wrong' "$site/wp-admin/admin-ajax.php")"; eq "$code" 401 'Browser rotate accepted wrong password'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')" "$before" 'Rejected browser rotate mutated hash'
-code="$(curl -sS -o /tmp/b1-rotate-ok.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=cb-b1-failsafe-admin-pass' "$site/wp-admin/admin-ajax.php")"; eq "$code" 200 'Valid browser rotate failed'; after="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; [[ "$after" != "$before" ]] || fail 'Valid browser rotate did not change hash'; eq "$(wp_cli_eval_args 'echo get_transient("cb_core_new_token_".(int)$args[0])?"yes":"no";' "$failsafe_admin_id")" yes 'Browser rotate did not create one-time display transient'
+before="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"
+browser_request -sS -o /tmp/b1-rotate-wrong.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=wrong' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 401 'Browser rotate accepted wrong password'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')" "$before" 'Rejected browser rotate mutated hash'
+browser_request -sS -o /tmp/b1-rotate-ok.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=cb-b1-failsafe-admin-pass' "$site/wp-admin/admin-ajax.php"
+code="$B1_HTTP_RESULT"; eq "$code" 200 'Valid browser rotate failed'; after="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; [[ "$after" != "$before" ]] || fail 'Valid browser rotate did not change hash'; eq "$(wp_cli_eval_args 'echo get_transient("cb_core_new_token_".(int)$args[0])?"yes":"no";' "$failsafe_admin_id")" yes 'Browser rotate did not create one-time display transient'
 echo "[B1] Browser token rotation lifecycle PASS"
 
 failsafe_admin_remove="$(wp_cli cb operator remove "$failsafe_admin_id" --force)"; contains "$failsafe_admin_remove" 'demoted from CB Operator' 'Browser Failsafe Administrator operator remove failed'
