@@ -172,11 +172,9 @@ require_once CB_CORE_DIR . 'includes/cb-about-page.php';
 register_activation_hook(   __FILE__, [ \CB\Core\Core::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ \CB\Core\Core::class, 'deactivate' ] );
 
-// BASE-10E.1: install the screen-asset resolver before Core::instance() lets
-// Admin::init() register the historical super-loader callback. Both callbacks
-// intentionally keep priority 10; registration order lets the resolver remove
-// the historical callback and invoke it once through the private E1 catalog
-// provider, preserving rc3.25 output while changing orchestration only.
+// The resolver is the sole WordPress hook owner for Core Admin screen assets.
+// Admin::enqueue_assets() remains an internal compatibility full-set provider
+// invoked through AdminAssetCatalog for unresolved compatibility surfaces.
 if ( \CB\Core\RequestContext::is_admin_screen() ) {
 	\CB\Core\Admin\AdminAssetResolver::init();
 }

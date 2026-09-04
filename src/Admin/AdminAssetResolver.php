@@ -26,12 +26,6 @@ final class AdminAssetResolver {
 
 		self::$initialized = true;
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue' ], 10 );
-		add_action( 'admin_init', [ __CLASS__, 'prepare' ], 0 );
-	}
-
-	/** Remove the historical direct loader before enqueue dispatch starts. */
-	public static function prepare(): void {
-		remove_action( 'admin_enqueue_scripts', [ Admin::class, 'enqueue_assets' ], 10 );
 	}
 
 	/** Resolve the current screen and enqueue its private Base requirements. */
