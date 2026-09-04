@@ -39,7 +39,6 @@ final class Admin {
 	public static function init(): void {
 		add_action( 'admin_menu',            [ __CLASS__, 'register_parent_menu' ], 5 );
 		add_action( 'admin_menu',            [ __CLASS__, 'remove_duplicate_submenu' ], 999 );
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 
 		// Register Core Blueprint's own pages at the right moment. Sibling
 		// CB plugins do the same via this hook.
