@@ -18,6 +18,7 @@ use CB\Core\ContentModels\Admin\Transfer;
 use CB\Core\ContentModels\Admin\UserMeta;
 use CB\Core\ContentModels\Adapters\Bricks\Bootstrap as BricksAdapter;
 use CB\Core\ContentModels\Importers\NativeWordPress\Bootstrap as NativeImporter;
+use CB\Core\RequestContext;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,14 +41,22 @@ final class Bootstrap {
 		add_action( 'init', [ __CLASS__, 'register_i18n_filters' ], 1 );
 		add_action( 'cb_hud_register_items', [ __CLASS__, 'register_hud_item' ] );
 
-		if ( is_admin() ) {
-			Actions::boot();
+		if ( RequestContext::is_admin_screen() ) {
 			MetaBoxes::boot();
 			OptionPages::boot();
 			TermMeta::boot();
 			UserMeta::boot();
+		}
+
+		if ( RequestContext::is_admin_post() ) {
+			Actions::boot();
+			OptionPages::boot();
 			Transfer::boot();
 			NativeImporter::boot();
+		}
+
+		if ( RequestContext::is_ajax() ) {
+			Actions::boot();
 		}
 	}
 
