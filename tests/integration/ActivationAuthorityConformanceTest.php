@@ -197,14 +197,17 @@ final class CB_Base_Activation_Authority_Conformance_Test extends WP_UnitTestCas
     }
 
     private function capture_termination( callable $callback ): string {
-        $handler = static function (): callable {
-            return static function (): void {
-                throw new CB_C3_Test_Termination( '__CB_C3_TEST_TERMINATION__' );
-            };
+        $die_handler = static function ( $message = '', $title = '', $args = [] ): void {
+            unset( $message, $title, $args );
+            throw new CB_C3_Test_Termination( '__CB_C3_TEST_TERMINATION__' );
         };
+        $handler_filter = static fn() => $die_handler;
+        $ajax_filter = static fn() => true;
+        $level = ob_get_level();
 
-        add_filter( 'wp_die_handler', $handler, PHP_INT_MAX );
-        add_filter( 'wp_die_ajax_handler', $handler, PHP_INT_MAX );
+        add_filter( 'wp_die_handler', $handler_filter, PHP_INT_MAX );
+        add_filter( 'wp_die_ajax_handler', $handler_filter, PHP_INT_MAX );
+        add_filter( 'wp_doing_ajax', $ajax_filter, PHP_INT_MAX );
 
         ob_start();
         try {
@@ -214,11 +217,12 @@ final class CB_Base_Activation_Authority_Conformance_Test extends WP_UnitTestCas
             unset( $termination );
             $output = (string) ob_get_clean();
         } finally {
-            if ( ob_get_level() > 0 ) {
+            while ( ob_get_level() > $level ) {
                 ob_end_clean();
             }
-            remove_filter( 'wp_die_handler', $handler, PHP_INT_MAX );
-            remove_filter( 'wp_die_ajax_handler', $handler, PHP_INT_MAX );
+            remove_filter( 'wp_die_handler', $handler_filter, PHP_INT_MAX );
+            remove_filter( 'wp_die_ajax_handler', $handler_filter, PHP_INT_MAX );
+            remove_filter( 'wp_doing_ajax', $ajax_filter, PHP_INT_MAX );
         }
 
         return $output;
