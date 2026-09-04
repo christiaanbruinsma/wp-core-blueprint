@@ -38,11 +38,23 @@ final class CB_Base_Activation_Authority_Conformance_Test extends WP_UnitTestCas
     }
 
     public function test_c3_legacy_activation_authorities_are_absent(): void {
-        ScanController::register_routes();
-        NotesController::register();
-        ReportsActions::init();
+        global $wp_rest_server;
+        $wp_rest_server = null;
 
+        self::assertNotFalse(
+            has_action( 'rest_api_init', [ ScanController::class, 'register_routes' ] ),
+            'Scanner REST controller is not attached to the canonical rest_api_init lifecycle.'
+        );
+        self::assertNotFalse(
+            has_action( 'rest_api_init', [ NotesController::class, 'register' ] ),
+            'Notes REST controller is not attached to the canonical rest_api_init lifecycle.'
+        );
+
+        // rest_get_server() creates the server and fires rest_api_init through
+        // WordPress itself. Do not call controller registration methods directly:
+        // WordPress intentionally flags that as incorrect usage in integration tests.
         $routes = rest_get_server()->get_routes();
+        ReportsActions::init();
 
         self::assertArrayNotHasKey(
             '/core-blueprint/v1/integrity/admin/enable',
@@ -117,26 +129,22 @@ final class CB_Base_Activation_Authority_Conformance_Test extends WP_UnitTestCas
             $target = ! $initial;
 
             wp_set_current_user( $subscriber_id );
-            $before_denied_audit = $this->audit_count( $this->event_for( $spec['event_prefix'], $target ) );
+            $denied_event = $this->event_for( $spec['event_prefix'], $target );
+            $denied_audit = $this->audit_count( $denied_event );
             $denied = $this->invoke_module_action( $module, $target );
+
             self::assertFalse( (bool) ( $denied['success'] ?? true ), $module . ': wrong-capability request unexpectedly succeeded.' );
             self::assertSame( $initial, (bool) $state::is_enabled(), $module . ': wrong-capability request mutated state.' );
-            self::assertSame(
-                $before_denied_audit,
-                $this->audit_count( $this->event_for( $spec['event_prefix'], $target ) ),
-                $module . ': wrong-capability request emitted a success audit.'
-            );
+            self::assertSame( $denied_audit, $this->audit_count( $denied_event ), $module . ': denied request emitted a success audit.' );
 
             wp_set_current_user( $operator_id );
-            $before_success_audit = $this->audit_count( $this->event_for( $spec['event_prefix'], $target ) );
+            $success_event = $this->event_for( $spec['event_prefix'], $target );
+            $success_audit = $this->audit_count( $success_event );
             $success = $this->invoke_module_action( $module, $target );
+
             self::assertTrue( (bool) ( $success['success'] ?? false ), $module . ': canonical activation request failed.' );
             self::assertSame( $target, (bool) $state::is_enabled(), $module . ': canonical activation request did not persist.' );
-            self::assertSame(
-                $before_success_audit + 1,
-                $this->audit_count( $this->event_for( $spec['event_prefix'], $target ) ),
-                $module . ': canonical activation request did not emit exactly one transition audit.'
-            );
+            self::assertSame( $success_audit + 1, $this->audit_count( $success_event ), $module . ': transition did not emit exactly one audit.' );
 
             $restore = $this->invoke_module_action( $module, $initial );
             self::assertTrue( (bool) ( $restore['success'] ?? false ), $module . ': canonical restore request failed.' );
