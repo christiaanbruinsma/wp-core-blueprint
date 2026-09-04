@@ -121,6 +121,9 @@ jobs:
       - name: Run real WP-CLI smoke scenario
         run: bash tests/bin/run-cli-smoke-scenario.sh "${{ matrix.wordpress }}"
 
+      - name: Run real WP-CLI Role Policy / Failsafe conformance
+        run: bash tests/bin/run-cli-role-policy-failsafe-conformance.sh "${{ matrix.wordpress }}"
+
   uninstall:
     name: Destructive uninstall — WordPress 7.0 — PHP 8.4
     runs-on: ubuntu-24.04
