@@ -101,12 +101,16 @@ final class AdminModuleDefinitionsCore {
 					'src'  => 'features/module-activation.js',
 					'deps' => [ '@cb-core/dom', '@cb-core/toast' ],
 					'data' => [
-						'nonce'   => $admin_nonce,
-						'modules' => class_exists( '\\CB\\Core\\Modules\\ActivationRegistry' )
+						'nonce'      => $admin_nonce,
+						'modules'    => class_exists( '\\CB\\Core\\Modules\\ActivationRegistry' )
 							? \CB\Core\Modules\ActivationRegistry::slugs()
 							: [],
-						'i18n'    => [
-							'updateFailed' => __( 'Could not update module - try again.', 'core-blueprint' ),
+						'extensions' => class_exists( '\\CB\\Core\\ExtensionLifecycle' )
+							? \CB\Core\ExtensionLifecycle::ids()
+							: [],
+						'i18n'       => [
+							'updateFailed'          => __( 'Could not update module - try again.', 'core-blueprint' ),
+							'extensionUpdateFailed' => __( 'Could not update extension - try again.', 'core-blueprint' ),
 						],
 					],
 				];

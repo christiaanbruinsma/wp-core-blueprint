@@ -6,15 +6,16 @@ declare(strict_types=1);
  * Thin dispatcher that boots the feature-focused handler classes. Each
  * handler owns its own domain:
  *
- *   - Failsafe    - rotate_token, panic buttons, close_window
- *   - Settings    - site_mode, shield, modules/features, defaults, email alerts
- *   - Preferences - description mode, header test
- *   - Exports     - CSV streams for audit/system/mr logs
- *   - Privacy     - privacy panel state + mode switching
- *   - LoginShield - config save + custom-URL self-test
- *   - Reports     - maintenance-report generation + PDF download streaming
- *   - Permissions - operator-assignment + hide-toggle + admin-can-generate
- *   - Branding    - reports-tab branding save + reset
+ *   - Failsafe           - rotate_token, panic buttons, close_window
+ *   - Settings           - site_mode, shield, modules/features, defaults, email alerts
+ *   - Preferences        - description mode, header test
+ *   - Exports            - CSV streams for audit/system/mr logs
+ *   - Privacy            - privacy panel state + mode switching
+ *   - LoginShield        - config save + custom-URL self-test
+ *   - ExtensionLifecycle - native plugin activation/deactivation for extensions
+ *   - Reports            - maintenance-report generation + PDF download streaming
+ *   - Permissions        - operator-assignment + hide-toggle + admin-can-generate
+ *   - Branding           - reports-tab branding save + reset
  *
  * Class loading is handled by the PSR-4 autoloader - no includes here.
  *
@@ -25,6 +26,7 @@ namespace CB\Core\Ajax;
 
 use CB\Core\Ajax\Handlers\Branding;
 use CB\Core\Ajax\Handlers\Exports;
+use CB\Core\Ajax\Handlers\ExtensionLifecycle;
 use CB\Core\Ajax\Handlers\Failsafe;
 use CB\Core\Ajax\Handlers\LoginShield;
 use CB\Core\Ajax\Handlers\Modules;
@@ -46,6 +48,7 @@ final class SecurityRouter {
 		Privacy::init();
 		LoginShield::init();
 		Modules::init();
+		ExtensionLifecycle::init();
 		Reports::init();
 		Permissions::init();
 		Branding::init();

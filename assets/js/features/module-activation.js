@@ -1,11 +1,9 @@
 /**
- * Core Blueprint - shared optional-module master switch.
+ * Core Blueprint - shared Dashboard activation controls.
  *
- * Consumes Dashboard Status Menu activation actions and legacy UI\MasterSwitch
- * instances whose name is present in the server-side module allowlist. The
- * authoritative state is always written by Modules\ActivationRegistry and the
- * page reloads after a successful mutation so menus, HUD items and module-specific
- * notices reflect the same state immediately.
+ * Optional Base modules continue to use Modules\ActivationRegistry. Installed
+ * Core Blueprint extensions use the separate Base-owned WordPress plugin
+ * lifecycle endpoint; extensions do not provide their own global state writer.
  *
  * @since   1.0.0
  */
@@ -16,6 +14,7 @@ const dataEl = document.getElementById( 'wp-script-module-data-@cb-core/module-a
 const data   = dataEl ? JSON.parse( dataEl.textContent ) : {};
 const nonce  = data.nonce || '';
 const modules = Array.isArray( data.modules ) ? new Set( data.modules ) : new Set();
+const extensions = Array.isArray( data.extensions ) ? new Set( data.extensions ) : new Set();
 const i18n   = data.i18n || {};
 
 const repaint = ( root, on ) => {
@@ -26,8 +25,44 @@ const repaint = ( root, on ) => {
 	}
 };
 
-if ( nonce && modules.size ) {
+const setBusy = ( button, busy ) => {
+	button.disabled = busy;
+	if ( busy ) {
+		button.setAttribute( 'aria-busy', 'true' );
+	} else {
+		button.removeAttribute( 'aria-busy' );
+	}
+};
+
+if ( nonce && ( modules.size || extensions.size ) ) {
 	document.addEventListener( 'click', async ( event ) => {
+		const extensionAction = event.target.closest( '[data-cb-core-extension-action]' );
+		if ( extensionAction ) {
+			const extension = extensionAction.dataset.cbCoreExtensionAction || '';
+			if ( ! extensions.has( extension ) ) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+			const target = extensionAction.dataset.cbCoreExtensionActive === '1';
+			setBusy( extensionAction, true );
+
+			try {
+				const response = await apiPost( 'cb_core_set_extension_active', nonce, {
+					extension,
+					active: target ? 1 : 0,
+				} );
+				if ( response?.success ) {
+					window.location.reload();
+					return;
+				}
+				window.cbCore?.toast?.error?.( response?.data?.message || i18n.extensionUpdateFailed || 'Could not update extension.' );
+			} catch ( error ) {
+				window.cbCore?.toast?.error?.( error?.message || i18n.extensionUpdateFailed || 'Could not update extension.' );
+			} finally {
+				setBusy( extensionAction, false );
+			}
+			return;
+		}
 
 		const menuAction = event.target.closest( '[data-cb-core-module-action]' );
 		if ( menuAction ) {
@@ -37,8 +72,7 @@ if ( nonce && modules.size ) {
 			event.preventDefault();
 			event.stopPropagation();
 			const target = menuAction.dataset.cbCoreModuleEnabled === '1';
-			menuAction.disabled = true;
-			menuAction.setAttribute( 'aria-busy', 'true' );
+			setBusy( menuAction, true );
 
 			try {
 				const response = await apiPost( 'cb_core_set_module_enabled', nonce, {
@@ -53,11 +87,11 @@ if ( nonce && modules.size ) {
 			} catch ( error ) {
 				window.cbCore?.toast?.error?.( error?.message || i18n.updateFailed || 'Could not update module.' );
 			} finally {
-				menuAction.disabled = false;
-				menuAction.removeAttribute( 'aria-busy' );
+				setBusy( menuAction, false );
 			}
 			return;
 		}
+
 		const trigger = event.target.closest( '[data-cb-core-master-switch-toggle], [data-cb-core-master-switch-state]' );
 		if ( ! trigger ) return;
 
