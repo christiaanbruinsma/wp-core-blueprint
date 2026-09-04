@@ -6,6 +6,7 @@ namespace CB\Core\CLI\Commands\Logs;
 use CB\Core\Console\CommandInterface;
 use CB\Core\Console\Result;
 use CB\Core\Governance\RetentionPolicy;
+use CB\Core\Log\AuditLog;
 use CB\Core\Log\Retention;
 
 defined( 'ABSPATH' ) || exit;
@@ -53,6 +54,14 @@ final class Prune implements CommandInterface {
 			\WP_CLI::error( 'Unknown retention category. Use security, maintenance, logins, settings, or general.' );
 		}
 		$result = Retention::prune_audit( $category );
+
+		AuditLog::log( 'logs.pruned', 'notice', [
+			'category'  => $category ?? 'all',
+			'total'     => (int) $result['total'],
+			'breakdown' => $result['breakdown'],
+			'via'       => 'cli',
+		] );
+
 		foreach ( $result['breakdown'] as $name => $deleted ) {
 			\WP_CLI::log( sprintf( '%s: %d', $name, $deleted ) );
 		}
