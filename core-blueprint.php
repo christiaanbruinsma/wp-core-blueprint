@@ -3,7 +3,7 @@
  * Plugin Name: Core Blueprint
  * Plugin URI:  https://coreblueprint.io
  * Description: The Core Blueprint foundation plugin. Security baseline, audit logging, failsafe lockout prevention, admin theming, site-wide locale preference, and governed shared services for the Core Blueprint suite.
- * Version:     1.0.0-rc5
+ * Version:     1.0.0-rc6
  * Author:      Core Blueprint
  * Author URI:  https://coreblueprint.io
  * License:     GPL-2.0+
@@ -34,7 +34,7 @@ if ( defined( 'CB_CORE_FILE' ) || defined( 'CB_CORE_VERSION' ) ) {
 
 // ─── Plugin constants ─────────────────────────────────────────────────────────
 
-define( 'CB_CORE_VERSION',     '1.0.0-rc5' );
+define( 'CB_CORE_VERSION',     '1.0.0-rc6' );
 define( 'CB_CORE_API_VERSION', '1.0' );
 define( 'CB_CORE_MIN_PHP',         '8.4' );
 define( 'CB_CORE_RECOMMENDED_PHP', '8.5' );
@@ -180,6 +180,11 @@ if ( \CB\Core\RequestContext::is_admin_screen() ) {
 }
 
 \CB\Core\Core::instance();
+
+// AI Governance is a Base foundation concern rather than an extension module.
+// Boot after the canonical Core hook owner so it can register its schema before
+// the priority-5 reconciliation sweep and contribute its Base-owned admin page.
+\CB\Core\AIGovernance\Bootstrap::boot();
 
 // ─── WP-CLI commands ─────────────────────────────────────────────────────────
 
