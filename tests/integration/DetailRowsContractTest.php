@@ -139,4 +139,17 @@ final class CB_Base_Detail_Rows_Contract_Test extends WP_UnitTestCase {
         self::assertTrue( wp_style_is( 'cb-core-css-status-indicators', 'enqueued' ) );
         self::assertTrue( wp_style_is( 'cb-core-css-buttons', 'enqueued' ) );
     }
+
+    public function test_detail_rows_css_uses_base_tokens_and_responsive_stack_boundary(): void {
+        $css = file_get_contents( CB_CORE_DIR . 'assets/css/components/detail-rows.css' );
+
+        self::assertIsString( $css );
+        self::assertStringContainsString( '@media (max-width: 782px)', $css );
+        self::assertStringContainsString( 'grid-template-columns: minmax(0, 1fr);', $css );
+        self::assertStringContainsString( 'var(--cb-border)', $css );
+        self::assertStringContainsString( 'var(--cb-text-strong)', $css );
+        self::assertStringContainsString( 'var(--cb-interactive-focus)', $css );
+        self::assertStringNotContainsString( '#fff', strtolower( $css ) );
+        self::assertStringNotContainsString( '#000', strtolower( $css ) );
+    }
 }
