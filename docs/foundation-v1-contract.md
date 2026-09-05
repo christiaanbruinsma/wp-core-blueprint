@@ -27,6 +27,8 @@ Status: **public v1 freeze candidate**.
 
 Consumers provide business meaning and exact values. Foundation owns generic behavior, accessibility and presentation adapters.
 
+The Modal Foundation includes the additive public `confirmCheck: { label }` option. Presence means a required, initially unchecked native acknowledgement checkbox. `confirmCheck` is orthogonal to the existing confirm/typed/input modes, never changes their resolved value, and composes with other gates so Confirm is available only when every active gate is valid. Invalid or empty labels fail closed; see `MODAL-FOUNDATION.md`.
+
 `Stack` is the shared vertical composition primitive (`.cb-core-stack`, plus compact/loose spacing variants). `Field` and Stack share one semantic markup contract across Core Admin and standalone WordPress admin screens. Standalone consumers use the narrow WordPress-native Form Composition adapter so WordPress keeps ownership of native controls, colours and chrome while Base owns only field grouping and vertical rhythm; see `FORM-COMPOSITION-FOUNDATION.md`. Child components keep ownership of their internal geometry. `Form Controls` owns the Core-scoped native file-input and `::file-selector-button` presentation, so modules must not redraw upload controls locally.
 
 ## Core Admin component contracts
