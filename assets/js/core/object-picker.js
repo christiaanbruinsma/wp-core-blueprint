@@ -1,12 +1,17 @@
-const dataEl = document.getElementById('wp-script-module-data-@cb-core/object-picker');
+const hasDocument = typeof document !== 'undefined';
+const browserWindow = typeof window !== 'undefined' ? window : null;
+const dataEl = hasDocument ? document.getElementById('wp-script-module-data-@cb-core/object-picker') : null;
 let data = {};
 try {
 	data = dataEl ? JSON.parse(dataEl.textContent) : {};
 } catch {
 	data = {};
 }
-const ajaxUrl = data.ajaxUrl || window.ajaxurl || '';
+const ajaxUrl = data.ajaxUrl || browserWindow?.ajaxurl || '';
 const i18n = data.i18n || {};
+const IDENTIFIER_MAX_BYTES = 191;
+const phpTrimPattern = /^[\u0000\t\n\r\v ]+|[\u0000\t\n\r\v ]+$/g;
+const textEncoder = new TextEncoder();
 
 const parseJson = (value, fallback) => {
 	try {
@@ -14,6 +19,60 @@ const parseJson = (value, fallback) => {
 	} catch {
 		return fallback;
 	}
+};
+
+export const normalizeIdentifier = (value) => {
+	let raw = '';
+	if (typeof value === 'string' || typeof value === 'number') {
+		raw = String(value);
+	} else if (typeof value === 'boolean') {
+		raw = value ? '1' : '';
+	} else {
+		return '';
+	}
+
+	const identifier = raw.replace(phpTrimPattern, '');
+	if (!identifier || identifier.includes(',') || textEncoder.encode(identifier).byteLength > IDENTIFIER_MAX_BYTES) {
+		return '';
+	}
+	return identifier;
+};
+
+export const normalizePickerItem = (item) => {
+	if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+	const id = normalizeIdentifier(item.id);
+	if (!id) return null;
+	return {
+		id,
+		label: String(item.label || `#${id}`),
+		meta: String(item.meta || ''),
+	};
+};
+
+export const normalizeSelection = (items, multiple = true) => {
+	if (!Array.isArray(items)) return [];
+	const selected = [];
+	items.forEach((item) => {
+		if (!multiple && selected.length) return;
+		const normalized = normalizePickerItem(item);
+		if (!normalized || selected.some((candidate) => candidate.id === normalized.id)) return;
+		selected.push(normalized);
+	});
+	return selected;
+};
+
+export const addSelection = (selected, item, multiple = true) => {
+	const current = Array.isArray(selected) ? selected : [];
+	const normalized = normalizePickerItem(item);
+	if (!normalized || current.some((candidate) => candidate.id === normalized.id)) return current;
+	return multiple ? [...current, normalized] : [normalized];
+};
+
+export const removeSelection = (selected, identifier) => {
+	const current = Array.isArray(selected) ? selected : [];
+	const normalized = normalizeIdentifier(identifier);
+	if (!normalized) return current;
+	return current.filter((candidate) => candidate.id !== normalized);
 };
 
 const initPicker = (root) => {
@@ -32,15 +91,7 @@ const initPicker = (root) => {
 	const initial = parseJson(root.dataset.selected, []);
 	if (!action || !nonce || !Array.isArray(initial)) return;
 
-	let selected = initial
-		.filter((item) => item && Number.parseInt(item.id, 10) > 0)
-		.map((item) => ({
-			id: Number.parseInt(item.id, 10),
-			label: String(item.label || `#${item.id}`),
-			meta: String(item.meta || ''),
-		}));
-	if (!multiple && selected.length > 1) selected = [selected[0]];
-
+	let selected = normalizeSelection(initial, multiple);
 	let timer = null;
 	let controller = null;
 
@@ -79,7 +130,7 @@ const initPicker = (root) => {
 			remove.setAttribute('aria-label', `${i18n.remove || 'Remove'} ${item.label}`);
 			remove.textContent = '×';
 			remove.addEventListener('click', () => {
-				selected = selected.filter((candidate) => candidate.id !== item.id);
+				selected = removeSelection(selected, item.id);
 				syncInput();
 				renderSelected();
 			});
@@ -104,24 +155,23 @@ const initPicker = (root) => {
 			return;
 		}
 		items.forEach((item) => {
-			const id = Number.parseInt(item?.id, 10);
-			if (!id || selected.some((candidate) => candidate.id === id)) return;
+			const normalized = normalizePickerItem(item);
+			if (!normalized || selected.some((candidate) => candidate.id === normalized.id)) return;
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = 'button cb-core-object-picker__result';
 			const label = document.createElement('span');
 			label.className = 'cb-core-object-picker__result-label';
-			label.textContent = String(item.label || `#${id}`);
+			label.textContent = normalized.label;
 			button.appendChild(label);
-			if (item.meta) {
+			if (normalized.meta) {
 				const meta = document.createElement('span');
 				meta.className = 'cb-core-object-picker__result-meta';
-				meta.textContent = String(item.meta);
+				meta.textContent = normalized.meta;
 				button.appendChild(meta);
 			}
 			button.addEventListener('click', () => {
-				const chosen = { id, label: label.textContent, meta: String(item.meta || '') };
-				selected = multiple ? [...selected, chosen] : [chosen];
+				selected = addSelection(selected, normalized, multiple);
 				syncInput();
 				renderSelected();
 				search.value = '';
@@ -175,8 +225,8 @@ const initPicker = (root) => {
 	renderSelected();
 
 	search.addEventListener('input', () => {
-		window.clearTimeout(timer);
-		timer = window.setTimeout(runSearch, 250);
+		globalThis.clearTimeout(timer);
+		timer = globalThis.setTimeout(runSearch, 250);
 	});
 	search.addEventListener('keydown', (event) => {
 		if (event.key === 'Escape') closeResults();
@@ -186,15 +236,20 @@ const initPicker = (root) => {
 	});
 };
 
-const init = (scope = document) => {
+const init = (scope = hasDocument ? document : null) => {
+	if (!scope || typeof scope.querySelectorAll !== 'function') return;
 	scope.querySelectorAll('[data-cb-core-object-picker]').forEach(initPicker);
 };
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => init());
-} else {
-	init();
+if (hasDocument) {
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', () => init());
+	} else {
+		init();
+	}
 }
 
-window.cbCore = window.cbCore || {};
-window.cbCore.objectPicker = Object.freeze({ init });
+if (browserWindow) {
+	browserWindow.cbCore = browserWindow.cbCore || {};
+	browserWindow.cbCore.objectPicker = Object.freeze({ init });
+}

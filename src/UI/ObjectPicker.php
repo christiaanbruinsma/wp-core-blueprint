@@ -15,6 +15,8 @@ namespace CB\Core\UI;
 defined( 'ABSPATH' ) || exit;
 
 final class ObjectPicker {
+	private const IDENTIFIER_MAX_BYTES = 191;
+
 	/**
 	 * Render an async searchable object picker over one real text input.
 	 *
@@ -36,28 +38,44 @@ final class ObjectPicker {
 			return '';
 		}
 
-		$ids = [];
+		$normalized_selected = [];
+		$ids                 = [];
 		foreach ( $selected as $item ) {
 			if ( ! is_array( $item ) ) {
 				continue;
 			}
-			$item_id = absint( $item['id'] ?? 0 );
-			if ( $item_id > 0 && ! in_array( $item_id, $ids, true ) ) {
-				$ids[] = $item_id;
+
+			$item_id = self::normalize_identifier( $item['id'] ?? null );
+			if ( null === $item_id || in_array( $item_id, $ids, true ) ) {
+				continue;
+			}
+
+			$label = is_scalar( $item['label'] ?? null ) ? (string) $item['label'] : '';
+			if ( '' === trim( $label ) ) {
+				$label = '#' . $item_id;
+			}
+			$meta = is_scalar( $item['meta'] ?? null ) ? (string) $item['meta'] : '';
+
+			$ids[] = $item_id;
+			$normalized_selected[] = [
+				'id'    => $item_id,
+				'label' => $label,
+				'meta'  => $meta,
+			];
+
+			if ( ! $multiple ) {
+				break;
 			}
 		}
-		if ( ! $multiple && count( $ids ) > 1 ) {
-			$ids = [ $ids[0] ];
-		}
 
-		$value = implode( ',', $ids );
+		$value   = implode( ',', $ids );
 		$classes = [ 'cb-core-object-picker' ];
 		if ( '' !== $extra ) {
 			$classes[] = $extra;
 		}
 
 		$context_json  = wp_json_encode( $context );
-		$selected_json = wp_json_encode( array_values( $selected ) );
+		$selected_json = wp_json_encode( $normalized_selected );
 		if ( ! is_string( $context_json ) || ! is_string( $selected_json ) ) {
 			return '';
 		}
@@ -79,5 +97,31 @@ final class ObjectPicker {
 		$html .= '</div></div>';
 
 		return $html;
+	}
+
+	/**
+	 * Normalize one transport identifier without interpreting its domain meaning.
+	 *
+	 * The current multiple-value transport is comma-separated, so commas are not
+	 * valid inside an identifier. The byte bound keeps rendered dataset/input
+	 * payloads predictable while leaving the identifier itself opaque.
+	 *
+	 * @param mixed $value Candidate identifier.
+	 */
+	private static function normalize_identifier( $value ): ?string {
+		if ( ! is_scalar( $value ) ) {
+			return null;
+		}
+
+		$identifier = trim( (string) $value );
+		if (
+			'' === $identifier
+			|| strlen( $identifier ) > self::IDENTIFIER_MAX_BYTES
+			|| str_contains( $identifier, ',' )
+		) {
+			return null;
+		}
+
+		return $identifier;
 	}
 }
