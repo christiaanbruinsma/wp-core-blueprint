@@ -132,7 +132,7 @@ final class AdminAssetCatalog {
 			'policy-table', 'overview-framework', 'form-status', 'disclosure', 'hud', 'cards', 'modals', 'toasts',
 			'interactive-surfaces', 'state-badges', 'status-indicators', 'spinner', 'empty-state', 'nav-tabs',
 			'table-cols', 'actions', 'log-table', 'field', 'radio-card', 'master-switch', 'choice-group',
-			'integration-grid', 'status-menu', 'notices',
+			'integration-grid', 'detail-rows', 'status-menu', 'notices',
 		] as $component ) {
 			$assets[] = 'component.' . $component;
 		}
@@ -169,6 +169,7 @@ final class AdminAssetCatalog {
 			'badges'             => [ 'component.badges' ],
 			'cards'              => [ 'component.cards' ],
 			'description-toggle' => [ 'component.disclosure', 'module.description-toggle' ],
+			'detail-rows'        => [ 'component.status-indicators', 'component.detail-rows', 'shell.buttons' ],
 			'disclosure'         => [ 'foundation.icons', 'component.interactive-surfaces' ],
 			'empty-state'        => [ 'component.empty-state' ],
 			'fields'             => [ 'component.field' ],
@@ -326,7 +327,7 @@ final class AdminAssetCatalog {
 				'policy-table', 'overview-framework', 'form-status', 'disclosure', 'hud', 'cards', 'modals', 'toasts',
 				'interactive-surfaces', 'state-badges', 'status-indicators', 'spinner', 'empty-state', 'nav-tabs',
 				'table-cols', 'actions', 'log-table', 'field', 'radio-card', 'master-switch', 'choice-group',
-				'integration-grid', 'status-menu', 'notices',
+				'integration-grid', 'detail-rows', 'status-menu', 'notices',
 			];
 			if ( in_array( $name, $allowed, true ) ) {
 				return [
