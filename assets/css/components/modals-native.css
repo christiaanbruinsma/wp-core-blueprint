@@ -96,6 +96,23 @@ body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__status.is-error {
 	color: #d63638;
 }
 
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__confirm-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 12px 0 0;
+	color: #2c3338;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__confirm-check-input {
+	flex: 0 0 auto;
+	margin: 2px 0 0;
+}
+
+body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__confirm-check-label {
+	line-height: 1.45;
+}
+
 body.wp-admin dialog.cb-core-modal--wp-native .cb-core-modal__actions {
 	display: flex;
 	justify-content: flex-end;
