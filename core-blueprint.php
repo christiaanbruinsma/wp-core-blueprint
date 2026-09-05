@@ -173,8 +173,8 @@ register_activation_hook(   __FILE__, [ \CB\Core\Core::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ \CB\Core\Core::class, 'deactivate' ] );
 
 // The resolver is the sole WordPress hook owner for Core Admin screen assets.
-// Admin::enqueue_assets() remains an internal compatibility full-set provider
-// invoked through AdminAssetCatalog for unresolved compatibility surfaces.
+// Screen-specific and open extension-tab requirements resolve through the
+// canonical private asset/module catalogs.
 if ( \CB\Core\RequestContext::is_admin_screen() ) {
 	\CB\Core\Admin\AdminAssetResolver::init();
 }
