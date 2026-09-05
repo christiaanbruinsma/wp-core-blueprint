@@ -72,7 +72,7 @@ final class CB_Base_Integration_Grid_Contract_Test extends WP_UnitTestCase {
         self::assertStringContainsString( 'cb-core-status__dot--warning', $html );
         self::assertStringContainsString( 'cb-core-status__dot--muted', $html );
         self::assertStringContainsString( 'cb-core-status__dot--danger', $html );
-        self::assertStringContainsString( 'No configuration required', $html );
+        self::assertStringNotContainsString( 'cb-core-integration-card__footer', $html );
     }
 
     public function test_renderer_escapes_content_and_only_emits_complete_cta(): void {
@@ -105,8 +105,9 @@ final class CB_Base_Integration_Grid_Contract_Test extends WP_UnitTestCase {
     public function test_invalid_items_fail_closed(): void {
         self::assertSame( '', \CB\Core\UI\IntegrationGrid::render( [] ) );
         self::assertSame( '', \CB\Core\UI\IntegrationGrid::render( [
-            [ 'name' => '', 'status' => 'ready' ],
-            [ 'name' => 'Unknown', 'status' => 'mystery' ],
+            [ 'name' => '', 'status' => 'ready', 'status_label' => 'Ready' ],
+            [ 'name' => 'Missing label', 'status' => 'ready' ],
+            [ 'name' => 'Unknown', 'status' => 'mystery', 'status_label' => 'Mystery' ],
             'not-an-item',
         ] ) );
     }
