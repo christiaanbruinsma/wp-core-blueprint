@@ -65,6 +65,7 @@ final class PageRegistry {
 		'badges',
 		'cards',
 		'description-toggle',
+		'detail-rows',
 		'disclosure',
 		'empty-state',
 		'fields',
