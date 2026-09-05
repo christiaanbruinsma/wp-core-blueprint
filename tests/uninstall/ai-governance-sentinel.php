@@ -70,7 +70,7 @@ try {
 	}
 
 	$db = cb_ai_uninstall_db();
-	$stmt = $db->prepare( 'SHOW TABLES LIKE ?' );
+	$stmt = $db->prepare( 'SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1' );
 	if ( false === $stmt ) {
 		throw new RuntimeException( 'Could not prepare AI Governance table lookup.' );
 	}
