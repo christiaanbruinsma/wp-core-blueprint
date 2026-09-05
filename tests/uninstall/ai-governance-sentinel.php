@@ -77,7 +77,7 @@ try {
 	$stmt->bind_param( 's', $activity_table );
 	$stmt->execute();
 	$table_result = $stmt->get_result();
-	$table_exists = false !== $table_result->fetch_row();
+	$table_exists = null !== $table_result->fetch_row();
 	$stmt->close();
 
 	if ( 'seed' === $stage ) {
