@@ -26,6 +26,11 @@
  *     // Mode selectors (mutually exclusive - pick at most one):
  *     typedConfirm: 'DELETE ALL',           // user must type this exact string
  *     input: { type, label, placeholder, … }, // user enters text/password
+ *
+ *     // Orthogonal confirmation gate (may combine with any mode):
+ *     confirmCheck: {
+ *       label: 'I understand that this action cannot be undone.'
+ *     },
  *   });
  *
  * Modes & resolved values:
@@ -46,6 +51,14 @@
  *     null   = user cancelled
  *     The `input.required` option (default true) forces a non-empty value
  *     before Confirm is enabled. Set to false for optional reasons/notes.
+ *
+ * Confirmation gates:
+ *   `confirmCheck` is not a modal mode and never changes the resolved value.
+ *   When present it renders a native unchecked checkbox with the caller-owned
+ *   label and keeps Confirm disabled until checked. It composes with typed and
+ *   input modes; every active gate must be valid before Confirm is available.
+ *   An invalid or empty `confirmCheck.label` rejects the returned Promise and
+ *   no modal is rendered, so a requested acknowledgement never fails open.
  *
  * confirmVariant controls only the semantic presentation of the confirm
  * action. The danger variant also marks the title. Variants never change
@@ -92,6 +105,31 @@ function resolveMode( opts ) {
 }
 
 /**
+ * Normalize the optional acknowledgement gate. Presence means required;
+ * callers cannot request a pre-checked or optional confirmation checkbox.
+ * Invalid configuration fails closed rather than silently removing the gate.
+ *
+ * @param {object} opts
+ * @returns {{label:string}|null}
+ */
+function resolveConfirmCheck( opts ) {
+	if ( opts.confirmCheck === undefined || opts.confirmCheck === null ) {
+		return null;
+	}
+
+	if ( typeof opts.confirmCheck !== 'object' || Array.isArray( opts.confirmCheck ) ) {
+		throw new TypeError( 'Core Blueprint modal confirmCheck.label must be a non-empty string.' );
+	}
+
+	const label = typeof opts.confirmCheck.label === 'string' ? opts.confirmCheck.label.trim() : '';
+	if ( label === '' ) {
+		throw new TypeError( 'Core Blueprint modal confirmCheck.label must be a non-empty string.' );
+	}
+
+	return { label };
+}
+
+/**
  * Build the dialog DOM. Returns the <dialog> element with refs to its
  * interactive children stashed on the element for the show() handler.
  *
@@ -101,6 +139,7 @@ function resolveMode( opts ) {
 function buildDialog( opts ) {
 	const mode = resolveMode( opts );
 	const confirmVariant = resolveConfirmVariant( opts );
+	const confirmCheck = resolveConfirmCheck( opts );
 
 	const dialog = document.createElement( 'dialog' );
 	const modalId = ++modalSequence;
@@ -200,6 +239,28 @@ function buildDialog( opts ) {
 		input.setAttribute( 'aria-describedby', status.id );
 	}
 
+	// ─── Orthogonal confirmation checkbox gate ──────────────────────────
+	let confirmCheckInput = null;
+	if ( confirmCheck ) {
+		const checkWrap = document.createElement( 'div' );
+		checkWrap.className = 'cb-core-modal__confirm-check';
+
+		confirmCheckInput = document.createElement( 'input' );
+		confirmCheckInput.type = 'checkbox';
+		confirmCheckInput.id = `cb-core-modal-confirm-check-${ modalId }`;
+		confirmCheckInput.className = 'cb-core-modal__confirm-check-input';
+		confirmCheckInput.checked = false;
+
+		const checkLabel = document.createElement( 'label' );
+		checkLabel.htmlFor = confirmCheckInput.id;
+		checkLabel.className = 'cb-core-modal__confirm-check-label';
+		checkLabel.textContent = confirmCheck.label;
+
+		checkWrap.appendChild( confirmCheckInput );
+		checkWrap.appendChild( checkLabel );
+		form.appendChild( checkWrap );
+	}
+
 	// ─── Actions ────────────────────────────────────────────────────────
 	const actions    = document.createElement( 'menu' );
 	actions.className = 'cb-core-modal__actions';
@@ -231,18 +292,6 @@ function buildDialog( opts ) {
 		confirmBtn.textContent = confirmLabel;
 	}
 
-	// Confirm button starts disabled when there's a gate to clear:
-	// typed-confirm always gates; input mode gates by default unless
-	// the caller explicitly sets `input.required: false`.
-	if ( mode === 'typed' ) {
-		confirmBtn.disabled = true;
-	} else if ( mode === 'input' ) {
-		const required = opts.input?.required !== false;
-		if ( required ) {
-			confirmBtn.disabled = true;
-		}
-	}
-
 	if ( cancelBtn ) actions.appendChild( cancelBtn );
 	actions.appendChild( confirmBtn );
 	form.appendChild( actions );
@@ -250,13 +299,14 @@ function buildDialog( opts ) {
 	dialog.appendChild( form );
 
 	// Stash refs for the show() handler.
-	dialog._cbMode       = mode;
-	dialog._cbForm       = form;
-	dialog._cbBody       = body;
-	dialog._cbCancelBtn  = cancelBtn;
-	dialog._cbConfirmBtn = confirmBtn;
-	dialog._cbInput      = input;
-	dialog._cbStatus     = status;
+	dialog._cbMode         = mode;
+	dialog._cbForm         = form;
+	dialog._cbBody         = body;
+	dialog._cbCancelBtn    = cancelBtn;
+	dialog._cbConfirmBtn   = confirmBtn;
+	dialog._cbInput        = input;
+	dialog._cbStatus       = status;
+	dialog._cbConfirmCheck = confirmCheckInput;
 
 	return dialog;
 }
@@ -268,6 +318,7 @@ function buildDialog( opts ) {
  *   - 'confirm' mode  → boolean
  *   - 'typed' mode    → boolean
  *   - 'input' mode    → string (entered value) on confirm, null on cancel
+ *   - confirmCheck    → gate only; never changes the value above
  *
  * @param {object} opts See API docblock at top of file.
  * @returns {Promise<boolean|string|null>}
@@ -281,6 +332,18 @@ function show( opts ) {
 		const mode = dialog._cbMode;
 		let settled = false;
 		let confirmPending = false;
+		const inputRequired = mode === 'input' && opts.input?.required !== false;
+
+		const allGatesValid = () => {
+			const typedValid = mode !== 'typed' || dialog._cbInput?.value === opts.typedConfirm;
+			const inputValid = ! inputRequired || ( dialog._cbInput?.value ?? '' ).trim() !== '';
+			const checkValid = ! dialog._cbConfirmCheck || dialog._cbConfirmCheck.checked;
+			return typedValid && inputValid && checkValid;
+		};
+
+		const updateConfirmAvailability = () => {
+			dialog._cbConfirmBtn.disabled = confirmPending || ! allGatesValid();
+		};
 
 		const settle = ( confirmed ) => {
 			if ( settled ) return;
@@ -324,7 +387,10 @@ function show( opts ) {
 		} );
 
 		const confirm = async () => {
-			if ( confirmPending || dialog._cbConfirmBtn.disabled ) return;
+			if ( confirmPending || ! allGatesValid() ) {
+				updateConfirmAvailability();
+				return;
+			}
 
 			if ( typeof opts.onConfirm !== 'function' ) {
 				settle( true );
@@ -334,9 +400,8 @@ function show( opts ) {
 			confirmPending = true;
 			const button = dialog._cbConfirmBtn;
 			const cancelButton = dialog._cbCancelBtn;
-			const wasDisabled = button.disabled;
 			const cancelWasDisabled = cancelButton?.disabled ?? false;
-			button.disabled = true;
+			updateConfirmAvailability();
 			if ( cancelButton ) cancelButton.disabled = true;
 			dialog.setAttribute( 'aria-busy', 'true' );
 
@@ -358,8 +423,8 @@ function show( opts ) {
 				confirmPending = false;
 				dialog.removeAttribute( 'aria-busy' );
 				if ( ! settled ) {
-					button.disabled = wasDisabled;
 					if ( cancelButton ) cancelButton.disabled = cancelWasDisabled;
+					updateConfirmAvailability();
 				}
 			}
 		};
@@ -376,7 +441,6 @@ function show( opts ) {
 			const expected = opts.typedConfirm;
 			const onInput = () => {
 				const matches = dialog._cbInput.value === expected;
-				dialog._cbConfirmBtn.disabled = ! matches;
 				if ( dialog._cbStatus ) {
 					if ( dialog._cbInput.value === '' || matches ) {
 						dialog._cbStatus.textContent = '';
@@ -386,6 +450,7 @@ function show( opts ) {
 						dialog._cbStatus.classList.add( 'is-error' );
 					}
 				}
+				updateConfirmAvailability();
 			};
 			dialog._cbInput.addEventListener( 'input', onInput );
 			dialog._cbInput.addEventListener( 'keydown', ( ev ) => {
@@ -397,20 +462,22 @@ function show( opts ) {
 		}
 
 		if ( mode === 'input' ) {
-			const required = opts.input?.required !== false;
-			if ( required ) {
-				dialog._cbInput.addEventListener( 'input', () => {
-					dialog._cbConfirmBtn.disabled = dialog._cbInput.value.trim() === '';
-				} );
+			if ( inputRequired ) {
+				dialog._cbInput.addEventListener( 'input', updateConfirmAvailability );
 			}
 			dialog._cbInput.addEventListener( 'keydown', ( ev ) => {
-				if ( ev.key === 'Enter' && ( ! required || dialog._cbInput.value.trim() !== '' ) ) {
+				if ( ev.key === 'Enter' && ( ! inputRequired || dialog._cbInput.value.trim() !== '' ) ) {
 					ev.preventDefault();
 					confirm();
 				}
 			} );
 		}
 
+		if ( dialog._cbConfirmCheck ) {
+			dialog._cbConfirmCheck.addEventListener( 'change', updateConfirmAvailability );
+		}
+
+		updateConfirmAvailability();
 		dialog.showModal();
 
 		let focusTarget = null;

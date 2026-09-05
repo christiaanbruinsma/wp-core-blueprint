@@ -95,6 +95,23 @@ dialog.cb-core-modal--core .cb-core-modal__status.is-error {
 	color: var(--cb-error);
 }
 
+dialog.cb-core-modal--core .cb-core-modal__confirm-check {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--cb-space-2);
+	margin: var(--cb-space-3) 0 0;
+	color: var(--cb-text);
+}
+
+dialog.cb-core-modal--core .cb-core-modal__confirm-check-input {
+	flex: 0 0 auto;
+	margin: 2px 0 0;
+}
+
+dialog.cb-core-modal--core .cb-core-modal__confirm-check-label {
+	line-height: 1.45;
+}
+
 dialog.cb-core-modal--core .cb-core-modal__actions {
 	display: flex;
 	justify-content: flex-end;

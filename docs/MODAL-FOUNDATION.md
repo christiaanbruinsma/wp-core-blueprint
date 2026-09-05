@@ -50,6 +50,39 @@ const confirmed = await window.cbCore.modal.show( {
 
 Resolves to `true` when confirmed and `false` when dismissed.
 
+### Required confirmation checkbox
+
+Use `confirmCheck` when a confirmation must remain unavailable until the user
+explicitly acknowledges caller-owned copy:
+
+```js
+const confirmed = await window.cbCore.modal.show( {
+    title: 'Delete license product?',
+    body: 'This permanently removes this License Product.',
+    confirmLabel: 'Delete product',
+    confirmVariant: 'danger',
+    confirmCheck: {
+        label: 'I understand that this action cannot be undone.',
+    },
+} );
+```
+
+`confirmCheck` is an orthogonal gate, not a fourth modal mode. Presence means the
+acknowledgement is required. Base renders a native checkbox and associated
+`<label>`; the checkbox always starts unchecked. Confirm remains disabled until
+all active gates are valid, so `confirmCheck` may safely compose with
+`typedConfirm` or a required `input`.
+
+The option is intentionally strict: there is no `required`, initial checked
+state, return value, or checkbox value passed to `onConfirm`. The consumer owns
+only the user-facing label and the domain/business decision that requires the
+acknowledgement. A missing, non-string, or whitespace-only label rejects the
+returned Promise and no modal is rendered, so a requested acknowledgement never
+fails open.
+
+`confirmCheck` does not change resolution semantics: confirm/typed-confirm still
+resolve to `boolean`; input still resolves to `string|null`.
+
 ### Dismiss-only / informational
 
 Use `dismissOnly: true` for help and reference content. It renders one quiet
@@ -106,6 +139,7 @@ Resolves to the entered string when confirmed and `null` when dismissed.
 - `typedConfirm` — exact phrase gate.
 - `typedConfirmHint` / `typedConfirmMismatch` — optional copy overrides.
 - `input` — `{ type, label, placeholder, maxLength, required }`.
+- `confirmCheck` — `{ label }`; required acknowledgement gate, always initially unchecked.
 
 `danger` remains destructive intent. It must not be used merely because a modal
 contains an error message.
