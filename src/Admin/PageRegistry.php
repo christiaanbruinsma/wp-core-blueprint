@@ -28,6 +28,7 @@ final class PageRegistry {
 	/** Base-owned slugs are protected independently of registration order. */
 	private const BASE_RESERVED_SLUGS = [
 		'core-blueprint',
+		'core-blueprint-ai-governance',
 		'core-blueprint-console',
 		'core-blueprint-content-models',
 		'core-blueprint-logs',
