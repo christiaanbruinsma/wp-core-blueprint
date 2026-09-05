@@ -4,8 +4,8 @@ declare(strict_types=1);
  * Evidence-based request/source attribution for AI Governance.
  *
  * REST, CLI and PHP are transports, not AI identities. Only the exact official
- * WordPress MCP Adapter default HTTP route / CLI command is attributed here.
- * Unknown attribution remains unknown.
+ * WordPress MCP Adapter runtime combined with its default HTTP route / CLI
+ * command is attributed here. Unknown attribution remains unknown.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -17,15 +17,17 @@ use CB\Core\RequestContext;
 defined( 'ABSPATH' ) || exit;
 
 final class SourceContext {
+	private const OFFICIAL_MCP_ADAPTER_CLASS = 'WP\\MCP\\Core\\McpAdapter';
+
 	/** @return array{transport:string,source_id:?string,source_label:?string,evidence:array<string,mixed>} */
 	public static function detect(): array {
 		if ( RequestContext::is_cli() ) {
 			if ( self::is_official_mcp_cli() ) {
 				return [
-					'transport'   => 'mcp-stdio',
-					'source_id'   => 'wordpress-mcp-adapter',
-					'source_label'=> 'WordPress MCP Adapter',
-					'evidence'    => [ 'source_basis' => 'wp-cli-command' ],
+					'transport'    => 'mcp-stdio',
+					'source_id'    => 'wordpress-mcp-adapter',
+					'source_label' => 'WordPress MCP Adapter',
+					'evidence'     => [ 'source_basis' => 'adapter-runtime+wp-cli-command' ],
 				];
 			}
 			return [
@@ -39,10 +41,10 @@ final class SourceContext {
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			if ( self::is_official_mcp_http_route() ) {
 				return [
-					'transport'   => 'mcp-http',
-					'source_id'   => 'wordpress-mcp-adapter',
-					'source_label'=> 'WordPress MCP Adapter',
-					'evidence'    => [ 'source_basis' => 'rest-route' ],
+					'transport'    => 'mcp-http',
+					'source_id'    => 'wordpress-mcp-adapter',
+					'source_label' => 'WordPress MCP Adapter',
+					'evidence'     => [ 'source_basis' => 'adapter-runtime+rest-route' ],
 				];
 			}
 			return [
@@ -61,7 +63,14 @@ final class SourceContext {
 		];
 	}
 
+	private static function official_mcp_adapter_loaded(): bool {
+		return class_exists( self::OFFICIAL_MCP_ADAPTER_CLASS );
+	}
+
 	private static function is_official_mcp_cli(): bool {
+		if ( ! self::official_mcp_adapter_loaded() ) {
+			return false;
+		}
 		$argv = $GLOBALS['argv'] ?? [];
 		if ( ! is_array( $argv ) ) {
 			return false;
@@ -77,6 +86,9 @@ final class SourceContext {
 	}
 
 	private static function is_official_mcp_http_route(): bool {
+		if ( ! self::official_mcp_adapter_loaded() ) {
+			return false;
+		}
 		$route = '';
 		if ( isset( $GLOBALS['wp']->query_vars['rest_route'] ) && is_string( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
 			$route = $GLOBALS['wp']->query_vars['rest_route'];
