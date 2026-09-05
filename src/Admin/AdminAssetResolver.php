@@ -3,12 +3,11 @@ declare(strict_types=1);
 /**
  * Core Admin screen asset resolver.
  *
- * BASE-10E.2 resolves Base screens through ScreenContext + private manifests.
- * Unregistered sibling-pattern screens and open extension-contributed tabs keep
- * the rc3.26 full-set provider until their contracts are reviewed in E3.
+ * Base-owned screens resolve through ScreenContext and private manifests.
+ * Registered open Logs/Reports addon tabs without semantic requirements use
+ * the dedicated extension-tab full-set provider.
  *
  * @package Core_Blueprint
- * @since   1.0.0-rc3.26
  */
 
 namespace CB\Core\Admin;
@@ -35,10 +34,8 @@ final class AdminAssetResolver {
 			return;
 		}
 
-		// Preserve exact rc3.26 ordering for compatibility-only surfaces. Do not
-		// prepend the new shell because that would alter the historical cascade.
 		if ( ScreenAssetRegistry::requires_full_set( $context ) ) {
-			AdminAssetCatalog::enqueue( AdminAssetCatalog::E1_FULL_SET, $context );
+			AdminAssetCatalog::enqueue( AdminAssetCatalog::EXTENSION_TAB_FULL_SET, $context );
 			return;
 		}
 
@@ -63,9 +60,6 @@ final class AdminAssetResolver {
 
 		$public_requirements_enqueued = false;
 		foreach ( $weighted as $asset ) {
-			// Historically PageRegistry requirements were resolved immediately
-			// after tokens/icons and before the rest of the central stylesheet
-			// cascade. Keep that ordering for registered extension pages.
 			if ( ! $public_requirements_enqueued && $asset['priority'] > 15 ) {
 				PageRegistry::enqueue_requirements_for_hook( $hook );
 				$public_requirements_enqueued = true;
