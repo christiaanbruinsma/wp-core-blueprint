@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class AdminAssetCatalog {
 
-	public const E1_FULL_SET = 'e1.full-set';
+	public const EXTENSION_TAB_FULL_SET = 'provider.extension-tab-full-set';
 
 	/** Enqueue one selected private asset/provider. */
 	public static function enqueue( string $asset_id, ScreenContext $context ): void {
@@ -198,7 +198,7 @@ final class AdminAssetCatalog {
 
 	/** @return array<string,mixed>|null */
 	private static function definition( string $asset_id ): ?array {
-		if ( self::E1_FULL_SET === $asset_id ) {
+		if ( self::EXTENSION_TAB_FULL_SET === $asset_id ) {
 			return [
 				'type'     => 'provider',
 				'provider' => static function ( ScreenContext $context ): void {
