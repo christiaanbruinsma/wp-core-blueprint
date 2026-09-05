@@ -18,6 +18,7 @@
 - Extension registry — `CB\Core\ExtensionRegistry` via `cb_core_register_extensions`; canonical identity/inventory/compatibility boundary.
 - Capability catalog — `cb_core_capability_catalog`.
 - Access Mode request bypass — prefer `CB\Core\Security\AccessMode::register_bypass()`; advanced policy may use `cb_core_access_mode_bypass_request`.
+- AI Governance activity reporting — `CB\Core\AIGovernance\Activity::record()`; see `AI-GOVERNANCE.md` for the stable v1 evidence, privacy and attribution contract.
 
 ## Canonical module identity and activation
 
