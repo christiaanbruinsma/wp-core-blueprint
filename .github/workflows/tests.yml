@@ -214,9 +214,9 @@ jobs:
           --health-retries=20
 
     env:
-      CB_PREVIOUS_RC_SHA: fc58804cc09ef64699ec0dab0b685f35c8d8d622
-      CB_PREVIOUS_RC_VERSION: 1.0.0-rc6.1
-      CB_CANDIDATE_VERSION: 1.0.0-rc6.2
+      CB_PREVIOUS_RC_SHA: 1e13bdf8276c21534d82974d09680429e0baec99
+      CB_PREVIOUS_RC_VERSION: 1.0.0-rc6.2
+      CB_CANDIDATE_VERSION: 1.0.0-rc1
       CB_WP_CLI_PHAR: /tmp/core-blueprint-release-tools/wp-cli-2.12.0.phar
       WP_DB_NAME: wordpress_test
       WP_DB_USER: root
