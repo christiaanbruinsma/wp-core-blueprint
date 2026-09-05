@@ -8,7 +8,6 @@ declare(strict_types=1);
  * therefore stays behind the consuming module.
  *
  * @package Core_Blueprint
- * @since   1.0.0-rc3.27
  */
 
 namespace CB\Core\Admin;
@@ -27,6 +26,11 @@ final class AdminModuleCatalog {
 
 	/** @var array<string,bool> */
 	private static array $enqueued = [];
+
+	/** @return string[] Private module IDs known to Base. */
+	public static function ids(): array {
+		return array_keys( self::factories() );
+	}
 
 	public static function enqueue( string $id, ScreenContext $context ): void {
 		if ( isset( self::$enqueued[ $id ] ) ) {

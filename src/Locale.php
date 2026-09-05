@@ -64,12 +64,9 @@ final class Locale {
 
 	// ─── Allowlist ────────────────────────────────────────────────────────────
 
-	/**
-	 * Locale codes Core Blueprint recognises. v1.0 ships with EN / NL / DE plus
-	 * 'auto'. Sibling plugins or site operators may extend via filter.
-	 */
+	/** Locale codes shipped and recognised by Core Blueprint. */
 	public static function allowed(): array {
-		$defaults = [ self::AUTO_MODE, 'en_US', 'nl_NL', 'de_DE' ];
+		$defaults = [ self::AUTO_MODE, 'en_US', 'nl_NL', 'de_DE', 'fr_FR', 'es_ES', 'it_IT', 'pt_PT' ];
 		/**
 		 * Filter: cb_core_locale_allowed
 		 *
@@ -185,6 +182,10 @@ final class Locale {
 			'en_US'         => 'English (US)',
 			'nl_NL'         => 'Nederlands',
 			'de_DE'         => 'Deutsch',
+			'fr_FR'         => 'Français',
+			'es_ES'         => 'Español',
+			'it_IT'         => 'Italiano',
+			'pt_PT'         => 'Português',
 		];
 		/**
 		 * Filter: cb_core_locale_labels

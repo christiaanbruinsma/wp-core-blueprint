@@ -3,7 +3,7 @@
  * Plugin Name: Core Blueprint
  * Plugin URI:  https://coreblueprint.io
  * Description: The Core Blueprint foundation plugin. Security baseline, audit logging, failsafe lockout prevention, admin theming, site-wide locale preference, and governed shared services for the Core Blueprint suite.
- * Version:     1.0.0-rc3.41
+ * Version:     1.0.0-rc4
  * Author:      Core Blueprint
  * Author URI:  https://coreblueprint.io
  * License:     GPL-2.0+
@@ -34,7 +34,7 @@ if ( defined( 'CB_CORE_FILE' ) || defined( 'CB_CORE_VERSION' ) ) {
 
 // ─── Plugin constants ─────────────────────────────────────────────────────────
 
-define( 'CB_CORE_VERSION',     '1.0.0-rc3.41' );
+define( 'CB_CORE_VERSION',     '1.0.0-rc4' );
 define( 'CB_CORE_API_VERSION', '1.0' );
 define( 'CB_CORE_MIN_PHP',         '8.4' );
 define( 'CB_CORE_RECOMMENDED_PHP', '8.5' );
@@ -173,8 +173,8 @@ register_activation_hook(   __FILE__, [ \CB\Core\Core::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ \CB\Core\Core::class, 'deactivate' ] );
 
 // The resolver is the sole WordPress hook owner for Core Admin screen assets.
-// Admin::enqueue_assets() remains an internal compatibility full-set provider
-// invoked through AdminAssetCatalog for unresolved compatibility surfaces.
+// Screen-specific and open extension-tab requirements resolve through the
+// canonical private asset/module catalogs.
 if ( \CB\Core\RequestContext::is_admin_screen() ) {
 	\CB\Core\Admin\AdminAssetResolver::init();
 }

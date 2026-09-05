@@ -8,7 +8,6 @@ declare(strict_types=1);
  * PageRegistry and never expose these IDs/handles.
  *
  * @package Core_Blueprint
- * @since   1.0.0-rc3.26
  */
 
 namespace CB\Core\Admin;
@@ -34,33 +33,20 @@ final class ScreenAssetRegistry {
 		'core-blueprint-snippets',
 	];
 
-	/** Whether the normalized context belongs to a Core Admin screen. */
+	/** Whether the normalized context belongs to a registered Core Admin screen. */
 	public static function owns( ScreenContext $context ): bool {
-		if ( '' !== $context->registered_slug() ) {
-			return true;
-		}
-
-		$hook = $context->hook();
-		return $hook === 'toplevel_page_' . CB_CORE_PARENT_MENU
-			|| str_starts_with( $hook, CB_CORE_PARENT_MENU . '_page_cb-' )
-			|| str_starts_with( $hook, CB_CORE_PARENT_MENU . '_page_core-blueprint-' );
+		return '' !== $context->registered_slug()
+			|| $context->hook() === 'toplevel_page_' . CB_CORE_PARENT_MENU;
 	}
 
 	/**
-	 * Compatibility-only contexts that retain rc3.26's full-set loader in E2.
-	 *
-	 * E3 owns removal of the unregistered sibling-pattern fallback. Logs and
-	 * Reports also expose extension tab registries; unknown tabs retain the full
-	 * set until their first-party consumers are checked rather than guessing
-	 * private dependencies.
+	 * Registered Base surfaces with open extension-tab registries retain the
+	 * complete Base asset set for unknown tabs until those extension contracts
+	 * can declare their semantic requirements directly.
 	 */
 	public static function requires_full_set( ScreenContext $context ): bool {
 		if ( ! self::owns( $context ) ) {
 			return false;
-		}
-
-		if ( '' === $context->registered_slug() ) {
-			return true;
 		}
 
 		if ( 'core-blueprint-logs' === $context->page()
@@ -100,7 +86,7 @@ final class ScreenAssetRegistry {
 		return array_values( array_unique( $requirements ) );
 	}
 
-	/** Cross-page Base features that intentionally remain until E3. */
+	/** Cross-page Base features shared by every registered Core Admin screen. */
 	private static function cross_page_requirements(): array {
 		return [
 			'foundation.icons',

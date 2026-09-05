@@ -1,5 +1,14 @@
 # Core Blueprint changelog
 
+## 1.0.0-rc4 — 2026-09-05
+
+### Golden Standard release-quality closure
+
+- Promote the next testable Base candidate to `1.0.0-rc4`; stable `1.0.0` remains a separate explicit approval gate after staging/manual validation.
+- Align the locale allowlist and endonym labels with all seven shipped languages: EN, NL, DE, FR, ES, IT and PT.
+- Continue the release-quality architecture cleanup identified by the Golden Standard QC without changing the public API version (`1.0`) or database schema version (`1.0`).
+- Keep Failsafe hardening out of rc4 unless the previously identified abuse concern is reproduced as a production defect.
+
 ## 1.0.0-rc3.41 — 2026-09-04
 
 ### BASE-V1-H — Final Base release candidate
