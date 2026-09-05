@@ -29,14 +29,6 @@ final class IntegrationGrid {
 		self::UNAVAILABLE => 'error',
 	];
 
-	/** Default English labels used only when the consumer omits status_label. */
-	private const DEFAULT_LABELS = [
-		self::READY       => 'Ready',
-		self::NEEDS_SETUP => 'Needs setup',
-		self::OPTIONAL    => 'Optional',
-		self::UNAVAILABLE => 'Unavailable',
-	];
-
 	/**
 	 * Render a responsive integration-card grid.
 	 *
@@ -101,7 +93,7 @@ final class IntegrationGrid {
 			: '';
 
 		if ( '' === $status_label ) {
-			$status_label = __( self::DEFAULT_LABELS[ $status ], 'core-blueprint' );
+			$status_label = self::default_label( $status );
 		}
 
 		// A partial CTA is not actionable and therefore fails closed to no CTA.
@@ -118,6 +110,21 @@ final class IntegrationGrid {
 			'action_url'   => $action_url,
 			'action_label' => $action_label,
 		];
+	}
+
+	private static function default_label( string $status ): string {
+		switch ( $status ) {
+			case self::READY:
+				return __( 'Ready', 'core-blueprint' );
+			case self::NEEDS_SETUP:
+				return __( 'Needs setup', 'core-blueprint' );
+			case self::OPTIONAL:
+				return __( 'Optional', 'core-blueprint' );
+			case self::UNAVAILABLE:
+				return __( 'Unavailable', 'core-blueprint' );
+			default:
+				return '';
+		}
 	}
 
 	/**
