@@ -9,6 +9,7 @@ Foundation owns:
 - ordered selected-item state;
 - debounced async search transport;
 - removable selected-item chips;
+- opaque identifier transport and exact-string deduplication;
 - Core Admin and WordPress-native presentation adapters;
 - the public runtime `window.cbCore.objectPicker.init()`.
 
@@ -20,7 +21,32 @@ Consumers own:
 - object semantics and labels;
 - persistence and validation.
 
-This boundary deliberately prevents Foundation from knowing about Content Models, posts, users, terms, Certificates, Backups, or any other product domain.
+This boundary deliberately prevents Foundation from knowing about Content Models, posts, users, terms, CRM entities, Certificates, Backups, or any other product domain.
+
+## Identifier contract
+
+`item.id` is an opaque transport identifier. Base does not infer an object type, provider or numeric meaning from it.
+
+A valid identifier:
+
+- is supplied as a scalar value and normalized to a string;
+- is trimmed before use;
+- is non-empty after trimming;
+- is at most 191 bytes;
+- does not contain a comma.
+
+The comma restriction exists because the v1 multiple-selection transport remains a comma-separated ordered list. There is no parallel JSON/value/provider transport in this Foundation contract.
+
+Numeric identifiers remain fully supported. An item returned as `13` is transported internally as the string `"13"`, while the submitted input still contains `13`. Existing consumers that normalize submitted values with `absint()` therefore continue to work unchanged.
+
+Opaque identifiers such as these are valid and remain distinct even when they share the same numeric suffix:
+
+```text
+crm:contact:42
+crm:organization:42
+```
+
+Selection, initial state, deduplication and removal all compare the complete normalized string identifier.
 
 ## Rendering
 
@@ -36,25 +62,29 @@ echo ObjectPicker::render( [
     'context'  => [ 'scope' => 'example' ],
     'selected' => [
         [ 'id' => 42, 'label' => 'Example', 'meta' => 'Post · #42' ],
+        [ 'id' => 'vendor:object:42', 'label' => 'Extension object', 'meta' => 'Example provider' ],
     ],
 ] );
 ```
 
-The submitted fallback value is one integer ID for single selection or a comma-separated ordered ID list for multiple selection. Consumers normalize that transport representation into their own typed storage contract.
+The submitted fallback value is one normalized opaque identifier for single selection or a comma-separated ordered identifier list for multiple selection. Consumers normalize that transport representation into their own domain-specific storage contract.
 
 ## Search response
 
-The consumer AJAX action should return:
+The consumer AJAX action may return numeric or opaque string identifiers:
 
 ```php
 wp_send_json_success( [
     'items' => [
         [ 'id' => 42, 'label' => 'Example', 'meta' => 'Post · #42' ],
+        [ 'id' => 'vendor:object:42', 'label' => 'Extension object', 'meta' => 'Example provider' ],
     ],
 ] );
 ```
 
-Never treat the browser-provided search context as authorization. Resolve trusted configuration again on the server and apply the consumer's capability boundary before returning objects.
+Base normalizes each valid result ID to its opaque string representation before comparing or storing browser selection state. Invalid or empty identifiers are ignored safely.
+
+Never treat the browser-provided search context or identifier contents as authorization. Resolve trusted configuration again on the server and apply the consumer's capability boundary before returning objects or persisting a submitted selection.
 
 ## Assets
 
