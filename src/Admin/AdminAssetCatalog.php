@@ -8,7 +8,6 @@ declare(strict_types=1);
  * catalog directly.
  *
  * @package Core_Blueprint
- * @since   1.0.0-rc3.26
  */
 
 namespace CB\Core\Admin;
@@ -102,6 +101,61 @@ final class AdminAssetCatalog {
 	}
 
 	/**
+	 * Complete private Base asset inventory used only by registered open addon
+	 * tabs that cannot yet declare semantic per-tab requirements.
+	 *
+	 * @return string[]
+	 */
+	public static function extension_tab_full_set(): array {
+		$assets = [
+			'shell.tokens',
+			'foundation.icons',
+			'foundation.modal',
+			'foundation.toast',
+			'foundation.clipboard',
+			'foundation.time-picker',
+			'foundation.object-picker',
+			'foundation.icon-picker',
+			'foundation.capability-picker',
+			'foundation.select-picker',
+			'foundation.choice-group',
+			'foundation.token-input',
+			'shell.scrollbar',
+			'component.meta',
+			'component.mode-switcher',
+			'component.filter-bar',
+			'shell.layout',
+		];
+
+		foreach ( [
+			'activity-chart', 'maintenance-summary', 'tile-grid', 'kv-tables', 'badges', 'rack-modules', 'inert-text', 'meta-bar', 'panels', 'utility',
+			'policy-table', 'overview-framework', 'form-status', 'disclosure', 'hud', 'cards', 'modals', 'toasts',
+			'interactive-surfaces', 'state-badges', 'status-indicators', 'spinner', 'empty-state', 'nav-tabs',
+			'table-cols', 'actions', 'log-table', 'field', 'radio-card', 'master-switch', 'choice-group',
+			'status-menu', 'notices',
+		] as $component ) {
+			$assets[] = 'component.' . $component;
+		}
+
+		$assets[] = 'shell.buttons';
+		$assets[] = 'shell.form-controls';
+		$assets[] = 'shell.theme-canvas';
+
+		foreach ( [
+			'dashboard', 'logs', 'reports', 'preferences', 'privacy', 'appearance', 'language', 'security',
+			'preferences-notifications', 'preferences-permissions', 'preferences-cli', 'console', 'mail',
+			'safeguards-modules', 'safeguards-failsafe', 'safeguards-login-shield', 'safeguards-site-mode',
+			'safeguards-core-shield', 'safeguards-core-scanner', 'notes', 'user-roles', 'media-replace',
+			'media-formats', 'content-models', 'snippets',
+		] as $page ) {
+			$assets[] = 'page.' . $page;
+		}
+
+		$assets[] = 'page.preferences-floating-menu';
+		return $assets;
+	}
+
+	/**
 	 * Resolve one public Core Admin Design Foundation component requirement.
 	 *
 	 * Semantic component IDs are public through PageRegistry; the private asset
@@ -148,7 +202,7 @@ final class AdminAssetCatalog {
 			return [
 				'type'     => 'provider',
 				'provider' => static function ( ScreenContext $context ): void {
-					Admin::enqueue_assets( $context->hook() );
+					AdminExtensionTabAssetProvider::enqueue( $context );
 				},
 			];
 		}
@@ -245,15 +299,15 @@ final class AdminAssetCatalog {
 	/** @return array{handle:string,src:string,deps:string[]}|null */
 	private static function style_definition( string $asset_id ): ?array {
 		$fixed = [
-			'shell.tokens'       => [ 'handle' => 'cb-core-css-tokens', 'src' => 'assets/css/tokens.css', 'deps' => [] ],
-			'shell.scrollbar'    => [ 'handle' => 'cb-core-css-scrollbar', 'src' => 'assets/css/components/scrollbar.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'shell.layout'       => [ 'handle' => 'cb-core-css-layout', 'src' => 'assets/css/layout.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'shell.buttons'      => [ 'handle' => 'cb-core-css-buttons', 'src' => 'assets/css/components/buttons.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'shell.form-controls'=> [ 'handle' => 'cb-core-css-form-controls', 'src' => 'assets/css/components/form-controls.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'shell.theme-canvas' => [ 'handle' => 'cb-core-css-theme-canvas', 'src' => 'assets/css/themes/canvas.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'component.meta'         => [ 'handle' => 'cb-core-css-meta', 'src' => 'assets/css/components/meta.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'component.mode-switcher'=> [ 'handle' => 'cb-core-css-mode-switcher', 'src' => 'assets/css/components/mode-switcher.css', 'deps' => [ 'cb-core-css-tokens' ] ],
-			'component.filter-bar'   => [ 'handle' => 'cb-core-css-filter-bar', 'src' => 'assets/css/components/filter-bar.css', 'deps' => [ 'cb-core-css-tokens', 'cb-core-css-mode-switcher' ] ],
+			'shell.tokens'        => [ 'handle' => 'cb-core-css-tokens', 'src' => 'assets/css/tokens.css', 'deps' => [] ],
+			'shell.scrollbar'     => [ 'handle' => 'cb-core-css-scrollbar', 'src' => 'assets/css/components/scrollbar.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'shell.layout'        => [ 'handle' => 'cb-core-css-layout', 'src' => 'assets/css/layout.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'shell.buttons'       => [ 'handle' => 'cb-core-css-buttons', 'src' => 'assets/css/components/buttons.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'shell.form-controls' => [ 'handle' => 'cb-core-css-form-controls', 'src' => 'assets/css/components/form-controls.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'shell.theme-canvas'  => [ 'handle' => 'cb-core-css-theme-canvas', 'src' => 'assets/css/themes/canvas.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'component.meta'          => [ 'handle' => 'cb-core-css-meta', 'src' => 'assets/css/components/meta.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'component.mode-switcher' => [ 'handle' => 'cb-core-css-mode-switcher', 'src' => 'assets/css/components/mode-switcher.css', 'deps' => [ 'cb-core-css-tokens' ] ],
+			'component.filter-bar'    => [ 'handle' => 'cb-core-css-filter-bar', 'src' => 'assets/css/components/filter-bar.css', 'deps' => [ 'cb-core-css-tokens', 'cb-core-css-mode-switcher' ] ],
 			'page.preferences-floating-menu' => [
 				'handle' => 'cb-core-css-page-preferences-floating-menu',
 				'src'    => 'assets/css/pages/preferences-floating-menu.css',
