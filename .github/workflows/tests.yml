@@ -182,6 +182,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: dom, mbstring, mysqli, sodium, xml, xmlwriter
+          tools: composer:2.10.2
           coverage: none
 
       - name: Install pinned WordPress 7.0 runtime
