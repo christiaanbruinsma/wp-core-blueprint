@@ -1,5 +1,15 @@
 # Core Blueprint changelog
 
+## 1.0.0-rc5 — 2026-09-05
+
+### Modal Foundation confirmation checkbox gate
+
+- Add the public additive `confirmCheck: { label }` Modal Foundation option as a required, initially unchecked native acknowledgement gate without changing existing modal result types.
+- Centralize confirm-button eligibility so typed confirmation, required input, `confirmCheck`, and async `onConfirm` busy state cannot independently overwrite each other's disabled state.
+- Keep `confirmCheck` orthogonal to existing modal modes, with all active gates required before Confirm becomes available and invalid labels failing closed.
+- Present the shared gate through both Core Admin and WordPress-native Modal adapters without introducing consumer-specific modal code or business logic.
+- Keep the public Core API version and database schema version at `1.0`; stable `1.0.0` remains a separate explicit approval gate after staging/manual validation.
+
 ## 1.0.0-rc4 — 2026-09-05
 
 ### Golden Standard release-quality closure
