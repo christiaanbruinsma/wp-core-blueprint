@@ -36,7 +36,7 @@ final class IntegrationGrid {
 	 * - name: required human-readable integration name.
 	 * - description: optional explanatory copy.
 	 * - status: required one of ready, needs-setup, optional, unavailable.
-	 * - status_label: optional caller-localised visible status label.
+	 * - status_label: required caller-localised visible status label.
 	 * - action_url/action_label: optional CTA; both must be non-empty.
 	 *
 	 * Invalid items fail closed and are omitted. Unknown statuses are not
@@ -72,18 +72,18 @@ final class IntegrationGrid {
 	 * @return array{name:string,description:string,status:string,status_label:string,action_url:string,action_label:string}|null
 	 */
 	private static function normalize_item( array $item ): ?array {
-		$name   = isset( $item['name'] ) && is_scalar( $item['name'] ) ? trim( (string) $item['name'] ) : '';
-		$status = isset( $item['status'] ) && is_scalar( $item['status'] ) ? trim( (string) $item['status'] ) : '';
+		$name         = isset( $item['name'] ) && is_scalar( $item['name'] ) ? trim( (string) $item['name'] ) : '';
+		$status       = isset( $item['status'] ) && is_scalar( $item['status'] ) ? trim( (string) $item['status'] ) : '';
+		$status_label = isset( $item['status_label'] ) && is_scalar( $item['status_label'] )
+			? trim( (string) $item['status_label'] )
+			: '';
 
-		if ( '' === $name || ! isset( self::STATUS_VARIANTS[ $status ] ) ) {
+		if ( '' === $name || '' === $status_label || ! isset( self::STATUS_VARIANTS[ $status ] ) ) {
 			return null;
 		}
 
 		$description = isset( $item['description'] ) && is_scalar( $item['description'] )
 			? trim( (string) $item['description'] )
-			: '';
-		$status_label = isset( $item['status_label'] ) && is_scalar( $item['status_label'] )
-			? trim( (string) $item['status_label'] )
 			: '';
 		$action_url = isset( $item['action_url'] ) && is_scalar( $item['action_url'] )
 			? trim( (string) $item['action_url'] )
@@ -91,10 +91,6 @@ final class IntegrationGrid {
 		$action_label = isset( $item['action_label'] ) && is_scalar( $item['action_label'] )
 			? trim( (string) $item['action_label'] )
 			: '';
-
-		if ( '' === $status_label ) {
-			$status_label = self::default_label( $status );
-		}
 
 		// A partial CTA is not actionable and therefore fails closed to no CTA.
 		if ( '' === $action_url || '' === $action_label ) {
@@ -110,21 +106,6 @@ final class IntegrationGrid {
 			'action_url'   => $action_url,
 			'action_label' => $action_label,
 		];
-	}
-
-	private static function default_label( string $status ): string {
-		switch ( $status ) {
-			case self::READY:
-				return __( 'Ready', 'core-blueprint' );
-			case self::NEEDS_SETUP:
-				return __( 'Needs setup', 'core-blueprint' );
-			case self::OPTIONAL:
-				return __( 'Optional', 'core-blueprint' );
-			case self::UNAVAILABLE:
-				return __( 'Unavailable', 'core-blueprint' );
-			default:
-				return '';
-		}
 	}
 
 	/**
@@ -148,10 +129,6 @@ final class IntegrationGrid {
 				esc_url( $item['action_url'] ),
 				esc_html( $item['action_label'] )
 			);
-			$out .= '</footer>';
-		} elseif ( self::READY === $item['status'] ) {
-			$out .= '<footer class="cb-core-integration-card__footer cb-core-integration-card__footer--note">';
-			$out .= '<span class="cb-core-integration-card__note">' . esc_html__( 'No configuration required', 'core-blueprint' ) . '</span>';
 			$out .= '</footer>';
 		}
 
