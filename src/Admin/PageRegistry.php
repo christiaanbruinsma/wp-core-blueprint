@@ -69,6 +69,7 @@ final class PageRegistry {
 		'empty-state',
 		'fields',
 		'form-controls',
+		'integration-grid',
 		'kv-table',
 		'master-switch',
 		'metric-tiles',
