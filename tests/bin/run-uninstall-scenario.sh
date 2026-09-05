@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 REQUEST="$ROOT/tests/uninstall/request.php"
+AI_SENTINEL="$ROOT/tests/uninstall/ai-governance-sentinel.php"
 
 : "${WP_CORE_DIR:?WP_CORE_DIR is required}"
 : "${CB_PLUGIN_FILE:?CB_PLUGIN_FILE is required}"
@@ -36,13 +37,33 @@ run_stage() {
   fi
 }
 
+run_ai_stage() {
+  local stage="$1"
+  local output
+  local marker="ai-governance-$stage"
+
+  echo "[A3 uninstall] AI Governance stage: $stage"
+  if ! output="$(php "$AI_SENTINEL" "$stage" 2>&1)"; then
+    printf '%s\n' "$output"
+    return 1
+  fi
+
+  printf '%s\n' "$output"
+  if ! grep -Fq "[A3 uninstall] $marker PASS" <<<"$output"; then
+    echo "[A3 uninstall] $marker FAIL: child process exited without its explicit PASS marker." >&2
+    return 1
+  fi
+}
+
 # The plugin is deleted only through WordPress' real delete_plugins() path.
 # Every transition runs in a fresh PHP process against one persistent site.
 run_stage install
 run_stage activate-base
+run_ai_stage seed
 run_stage seed
 run_stage deactivate-base
 run_stage delete-base
 run_stage verify
+run_ai_stage verify
 
 echo "[A3 uninstall] destructive uninstall scenario PASS"
