@@ -8,6 +8,9 @@ declare(strict_types=1);
  * evidence. Callbacks intentionally use only the common argument subset for the
  * 6.9/7.0 before/after actions so the same code is signature-safe on 7.1.
  *
+ * Observation is always best-effort: no logging/storage failure is allowed to
+ * change an Ability's input, permissions, callback result or execution flow.
+ *
  * @package Core_Blueprint
  * @since   1.0.0
  */
@@ -40,95 +43,115 @@ final class AbilityObserver {
 
 	public static function on_invoked( string $ability_name, mixed $input, mixed $ability = null ): void {
 		unset( $ability );
-		self::open( $ability_name, 'invoked', [ 'arguments_shape' => Privacy::summarize( $input ) ] );
+		self::observe( static function () use ( $ability_name, $input ): void {
+			self::open( $ability_name, 'invoked', [ 'arguments_shape' => Privacy::summarize( $input ) ] );
+		} );
 	}
 
 	public static function on_before_execute( string $ability_name, mixed $input ): void {
-		if ( ! self::has_current( $ability_name ) ) {
-			self::open( $ability_name, 'authorized', [ 'arguments_shape' => Privacy::summarize( $input ) ] );
-			return;
-		}
-		self::touch( $ability_name, 'authorized', [ 'normalized_arguments_shape' => Privacy::summarize( $input ) ] );
+		self::observe( static function () use ( $ability_name, $input ): void {
+			if ( ! self::has_current( $ability_name ) ) {
+				self::open( $ability_name, 'authorized', [ 'arguments_shape' => Privacy::summarize( $input ) ] );
+				return;
+			}
+			self::touch( $ability_name, 'authorized', [ 'normalized_arguments_shape' => Privacy::summarize( $input ) ] );
+		} );
 	}
 
 	public static function on_after_execute( string $ability_name, mixed $input, mixed $result ): void {
 		unset( $input );
-		self::finish( $ability_name, 'succeeded', 'completed', [ 'result_shape' => Privacy::summarize( $result ) ] );
+		self::observe( static function () use ( $ability_name, $result ): void {
+			self::finish( $ability_name, 'succeeded', 'completed', [ 'result_shape' => Privacy::summarize( $result ) ] );
+		} );
 	}
 
 	public static function on_pre_execute( mixed $pre, string $ability_name, mixed $input, mixed $ability = null ): mixed {
 		unset( $input, $ability );
-		$is_sentinel = is_object( $pre ) && 'WP_Filter_Sentinel' === get_class( $pre );
-		if ( ! $is_sentinel ) {
-			self::finish( $ability_name, 'short-circuited', 'short-circuited', [ 'result_shape' => Privacy::summarize( $pre ) ] );
-		}
+		self::observe( static function () use ( $pre, $ability_name ): void {
+			$is_sentinel = is_object( $pre ) && 'WP_Filter_Sentinel' === get_class( $pre );
+			if ( ! $is_sentinel ) {
+				self::finish( $ability_name, 'short-circuited', 'short-circuited', [ 'result_shape' => Privacy::summarize( $pre ) ] );
+			}
+		} );
 		return $pre;
 	}
 
 	public static function on_normalize_input( mixed $input, string $ability_name, mixed $ability = null ): mixed {
 		unset( $ability );
-		if ( is_wp_error( $input ) ) {
-			self::finish( $ability_name, 'invalid', 'normalized', [ 'normalization_result' => Privacy::summarize( $input ) ], self::first_error_code( $input ) );
-			return $input;
-		}
-		self::touch( $ability_name, 'normalized', [ 'normalized_arguments_shape' => Privacy::summarize( $input ) ] );
+		self::observe( static function () use ( $input, $ability_name ): void {
+			if ( is_wp_error( $input ) ) {
+				self::finish( $ability_name, 'invalid', 'normalized', [ 'normalization_result' => Privacy::summarize( $input ) ], self::first_error_code( $input ) );
+				return;
+			}
+			self::touch( $ability_name, 'normalized', [ 'normalized_arguments_shape' => Privacy::summarize( $input ) ] );
+		} );
 		return $input;
 	}
 
 	public static function on_validate_input( mixed $valid, mixed $input, string $ability_name ): mixed {
 		unset( $input );
-		if ( false === $valid || is_wp_error( $valid ) ) {
-			$error = is_wp_error( $valid ) ? self::first_error_code( $valid ) : 'ability_invalid_input';
-			self::finish( $ability_name, 'invalid', 'input-validation', [ 'input_validation' => Privacy::summarize( $valid ) ], $error );
-			return $valid;
-		}
-		self::touch( $ability_name, 'input-validated', [ 'input_validation' => [ 'type' => 'passed' ] ] );
+		self::observe( static function () use ( $valid, $ability_name ): void {
+			if ( false === $valid || is_wp_error( $valid ) ) {
+				$error = is_wp_error( $valid ) ? self::first_error_code( $valid ) : 'ability_invalid_input';
+				self::finish( $ability_name, 'invalid', 'input-validation', [ 'argument_validation' => Privacy::summarize( $valid ) ], $error );
+				return;
+			}
+			self::touch( $ability_name, 'input-validated', [ 'argument_validation' => [ 'type' => 'passed' ] ] );
+		} );
 		return $valid;
 	}
 
 	public static function on_permission_result( mixed $permission, string $ability_name, mixed $input, mixed $ability = null ): mixed {
 		unset( $input, $ability );
-		if ( true !== $permission ) {
-			$error = is_wp_error( $permission ) ? self::first_error_code( $permission ) : 'ability_permission_denied';
-			self::finish( $ability_name, 'denied', 'permission-checked', [ 'permission_result' => Privacy::summarize( $permission ) ], $error );
-			return $permission;
-		}
-		self::touch( $ability_name, 'authorized', [ 'permission_result' => [ 'type' => 'granted' ] ] );
+		self::observe( static function () use ( $permission, $ability_name ): void {
+			if ( true !== $permission ) {
+				$error = is_wp_error( $permission ) ? self::first_error_code( $permission ) : 'ability_permission_denied';
+				self::finish( $ability_name, 'denied', 'permission-checked', [ 'permission_result' => Privacy::summarize( $permission ) ], $error );
+				return;
+			}
+			self::touch( $ability_name, 'authorized', [ 'permission_result' => [ 'type' => 'granted' ] ] );
+		} );
 		return $permission;
 	}
 
 	public static function on_execute_result( mixed $result, string $ability_name, mixed $input, mixed $ability = null ): mixed {
 		unset( $input, $ability );
-		if ( is_wp_error( $result ) ) {
-			self::finish( $ability_name, 'failed', 'callback-result', [ 'result_shape' => Privacy::summarize( $result ) ], self::first_error_code( $result ) );
-			return $result;
-		}
-		self::touch( $ability_name, 'callback-result', [ 'result_shape' => Privacy::summarize( $result ) ] );
+		self::observe( static function () use ( $result, $ability_name ): void {
+			if ( is_wp_error( $result ) ) {
+				self::finish( $ability_name, 'failed', 'callback-result', [ 'result_shape' => Privacy::summarize( $result ) ], self::first_error_code( $result ) );
+				return;
+			}
+			self::touch( $ability_name, 'callback-result', [ 'result_shape' => Privacy::summarize( $result ) ] );
+		} );
 		return $result;
 	}
 
 	public static function on_validate_output( mixed $valid, mixed $output, string $ability_name ): mixed {
 		unset( $output );
-		if ( false === $valid || is_wp_error( $valid ) ) {
-			$error = is_wp_error( $valid ) ? self::first_error_code( $valid ) : 'ability_invalid_output';
-			self::finish( $ability_name, 'invalid', 'output-validation', [ 'output_validation' => Privacy::summarize( $valid ) ], $error );
-			return $valid;
-		}
-		self::touch( $ability_name, 'output-validated', [ 'output_validation' => [ 'type' => 'passed' ] ] );
+		self::observe( static function () use ( $valid, $ability_name ): void {
+			if ( false === $valid || is_wp_error( $valid ) ) {
+				$error = is_wp_error( $valid ) ? self::first_error_code( $valid ) : 'ability_invalid_output';
+				self::finish( $ability_name, 'invalid', 'output-validation', [ 'result_validation' => Privacy::summarize( $valid ) ], $error );
+				return;
+			}
+			self::touch( $ability_name, 'output-validated', [ 'result_validation' => [ 'type' => 'passed' ] ] );
+		} );
 		return $valid;
 	}
 
 	public static function flush_open(): void {
-		foreach ( self::$stacks as $ability_name => $frames ) {
-			foreach ( $frames as $frame ) {
-				Repository::update( $frame['id'], [
-					'capture_state' => $frame['capture_state'],
-					'evidence'      => $frame['evidence'],
-					'error_code'    => $frame['error_code'],
-				] );
+		self::observe( static function (): void {
+			foreach ( self::$stacks as $ability_name => $frames ) {
+				foreach ( $frames as $frame ) {
+					Repository::update( $frame['id'], [
+						'capture_state' => $frame['capture_state'],
+						'evidence'      => $frame['evidence'],
+						'error_code'    => $frame['error_code'],
+					] );
+				}
+				unset( self::$stacks[ $ability_name ] );
 			}
-			unset( self::$stacks[ $ability_name ] );
-		}
+		} );
 	}
 
 	/** @param array<string,mixed> $evidence */
@@ -221,6 +244,14 @@ final class AbilityObserver {
 	private static function first_error_code( \WP_Error $error ): ?string {
 		$codes = $error->get_error_codes();
 		return isset( $codes[0] ) ? substr( sanitize_key( (string) $codes[0] ), 0, 100 ) : null;
+	}
+
+	private static function observe( callable $callback ): void {
+		try {
+			$callback();
+		} catch ( \Throwable $e ) {
+			unset( $e );
+		}
 	}
 
 	/** @internal */
