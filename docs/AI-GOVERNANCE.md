@@ -1,0 +1,234 @@
+# AI Governance
+
+Core Blueprint Base owns the canonical governance evidence boundary for WordPress abilities, agents and machine integrations.
+
+AI Governance is **not** an AI provider, chat interface, agent runtime or policy engine. Its v1 responsibility is evidence, observability, retention and audit export.
+
+## Governing principles
+
+### Evidence over inference
+
+Unknown attribution is valid evidence.
+
+Core Blueprint does not infer that:
+
+- an Ability invocation came from AI;
+- a REST request came from MCP;
+- an MCP request came from a specific provider, model or client;
+- an operation was approved unless an integration supplies reliable approval evidence.
+
+The automatic WordPress Abilities observer records the execution facts WordPress exposes. Source identity is populated only when a concrete integration/request boundary supports it.
+
+### Metadata first
+
+Automatic Ability capture does not retain raw Ability inputs or outputs.
+
+It records bounded metadata such as:
+
+- value type;
+- string byte length;
+- array item count;
+- object class;
+- `WP_Error` codes;
+- operation/Ability identity;
+- actor identity where WordPress provides one;
+- source/transport evidence where reliably known;
+- outcome and capture state;
+- duration;
+- bounded structured evidence/context.
+
+Raw prompts, responses, request bodies, authorization material, cookies and secret-bearing fields are not part of the automatic evidence model.
+
+Consumer-reported context passes through the AI Governance privacy boundary and Base's canonical governance sanitizer/redactor before storage.
+
+## Canonical datastore
+
+Base owns the dedicated table:
+
+`{$wpdb->prefix}cb_core_ai_activity`
+
+The store has its own schema marker:
+
+`cb_core_ai_activity_db_version`
+
+This schema is intentionally independent from `CB_CORE_DB_VERSION`. The existing global Base DB marker remains the audit-log schema marker and is not bumped merely because AI Activity adds a dedicated governed store.
+
+AI Activity is registered with Base's `RetentionStoreRegistry` and is pruned by the canonical daily retention runner.
+
+Default retention is 365 days. `0` means retain indefinitely.
+
+## Evidence model
+
+Each activity has a stable opaque UUID plus these first-class dimensions:
+
+| Field | Meaning |
+| --- | --- |
+| `actor_user_id`, `actor_user_login` | Current WordPress actor where available. Base resolves this itself. |
+| `operation_type` | `ability` for automatic WordPress Ability evidence, `operation` for consumer-reported activity. |
+| `operation` | Stable Ability/operation identifier. |
+| `transport` | Observed execution boundary such as `php`, `rest`, `cli`, `mcp-http`, `mcp-stdio`, or `reported`. |
+| `source_id`, `source_label` | Integration/source only when reliably attributed; otherwise null. |
+| `outcome` | What is known about the terminal result: `unknown`, `succeeded`, `failed`, `denied`, `invalid`, `short-circuited`. |
+| `capture_state` | Strongest lifecycle evidence observed for that record. |
+| `target_*` | Optional target metadata supplied by a trusted consumer/integration. |
+| `duration_ms` | Measured duration where a start and terminal boundary are both observable. |
+| `error_code` | Bounded machine-readable error code when available. |
+| `evidence` | Bounded structured capture evidence. |
+| `context` | Bounded structured consumer context. |
+| `created_at`, `completed_at` | Observation and terminal timestamps. |
+
+`outcome` and `capture_state` are intentionally separate. A record can therefore truthfully say that execution passed authorization on WordPress 7.0 while the final outcome remains unknown because that WordPress version exposes no common callback-result hook for a failed execution.
+
+## WordPress Abilities capture matrix
+
+### WordPress 7.0
+
+The common platform actions available to Base are:
+
+- `wp_before_execute_ability` — after input validation and permission checks pass;
+- `wp_after_execute_ability` — after successful execution and output validation.
+
+Base can therefore prove:
+
+- authorized execution start;
+- successful completion;
+- actor/source/transport evidence available at those boundaries;
+- elapsed duration for successful calls.
+
+Through the common 7.0 actions alone Base cannot globally prove:
+
+- raw invocation attempts that fail before authorization;
+- permission denials;
+- input-validation failures;
+- callback `WP_Error` outcomes;
+- output-validation failures;
+- pre-execution short-circuits (the common short-circuit filter is a WordPress 7.1 addition).
+
+A 7.0 Ability that passed authorization but returned before the success action therefore remains `outcome=unknown` with its strongest observed `capture_state` rather than being guessed as failed.
+
+### WordPress 7.1
+
+Base additionally observes the official 7.1 lifecycle surface:
+
+- `wp_ability_invoked`;
+- `wp_pre_execute_ability`;
+- `wp_ability_normalize_input`;
+- `wp_ability_validate_input`;
+- `wp_ability_permission_result`;
+- `wp_ability_execute_result`;
+- `wp_ability_validate_output`;
+- plus the existing before/after actions.
+
+This permits broader evidence for:
+
+- every Ability invocation attempt;
+- invalid/normalization failures;
+- permission denial;
+- short-circuit results;
+- execute-callback failures including `WP_Error`;
+- output-validation failures;
+- successful completion.
+
+The observer uses the common argument subset for the 6.9/7.0 before/after actions so its callbacks remain valid on both supported WordPress versions even though WordPress 7.1 adds the Ability instance as an extra action argument.
+
+## Source and transport attribution
+
+Direct PHP Ability execution is recorded as `transport=php` and source unknown unless another reliable integration boundary reports source metadata.
+
+Generic REST Ability execution is `transport=rest`; REST alone is not AI or MCP evidence.
+
+Generic WP-CLI execution is `transport=cli`; CLI alone is not AI or MCP evidence.
+
+The official WordPress MCP Adapter is attributed automatically only when both of these are true:
+
+1. the official `WP\MCP\Core\McpAdapter` runtime is loaded; and
+2. the request is on its canonical default-server boundary:
+   - HTTP endpoint `/wp-json/mcp/mcp-adapter-default-server`, or
+   - WP-CLI command `mcp-adapter serve`.
+
+That supports source attribution to the **WordPress MCP Adapter**. It still does not identify a provider/model/client such as ChatGPT, Claude or another agent unless a future adapter supplies reliable evidence for that identity.
+
+## Public consumer API
+
+The public v1 reporting boundary is:
+
+`CB\Core\AIGovernance\Activity::record( array $activity ): string|false`
+
+Use this only when a Core Blueprint extension or integration has governance evidence that is not already captured adequately by the WordPress Abilities observer.
+
+Required keys:
+
+- `operation` — stable operation identifier;
+- `outcome` — one of `unknown`, `succeeded`, `failed`, `denied`, `invalid`, `short-circuited`.
+
+Optional keys:
+
+- `transport` — one of `unknown`, `php`, `rest`, `cli`, `mcp-http`, `mcp-stdio`, `reported`;
+- `source_id`;
+- `source_label`;
+- `target_type`;
+- `target_id`;
+- `target_label`;
+- `duration_ms`;
+- `error_code`;
+- `evidence` — bounded associative metadata;
+- `context` — bounded associative metadata.
+
+Example:
+
+```php
+use CB\Core\AIGovernance\Activity;
+
+$activity_id = Activity::record( [
+    'operation'    => 'my-plugin/content-operation',
+    'outcome'      => 'succeeded',
+    'transport'    => 'reported',
+    'source_id'    => 'my-plugin-agent-adapter',
+    'source_label' => 'My Plugin Agent Adapter',
+    'target_type'  => 'post',
+    'target_id'    => (string) $post_id,
+    'evidence'     => [
+        'approval_id' => $approval_id,
+    ],
+] );
+```
+
+The return value is the opaque activity UUID, or `false` when the report is rejected or cannot be stored.
+
+### Public API rules
+
+Consumers must not:
+
+- reach into `Repository` or Base table internals;
+- supply or spoof a WordPress actor/user ID — Base resolves the current actor;
+- send raw prompts/responses/request bodies merely because they are available;
+- label an unknown source as AI/provider/client based on heuristics;
+- use the reporting API to replace domain authorization.
+
+Consumer business authorization and permission checks remain owned by the consumer/domain operation.
+
+## Admin surface and export
+
+The Base-owned **Core Blueprint → AI Governance** page provides:
+
+- an empty state when nothing has been recorded;
+- date, actor, source, operation and outcome filters;
+- activity list;
+- per-record detail view;
+- CSV export;
+- structured JSON export;
+- retention configuration.
+
+The page and export actions require `manage_options` in v1.
+
+Exporting activity and changing retention also emit normal Base Audit Log governance events so those administrator actions remain visible outside the dedicated AI Activity store.
+
+## Failure behavior
+
+AI Governance is an observability layer, not an execution policy engine.
+
+An activity logging/storage failure must not be used to grant, deny or replace an Ability's permission callback. The reporting boundary is fail-safe/non-fatal and automatic observation treats storage as best-effort evidence capture.
+
+## Out of scope for v1
+
+AI Governance v1 does not include provider configuration, prompt/response archives, token/cost tracking, autonomous agents, approval workflow orchestration, policy enforcement, anomaly detection, Hub aggregation or heuristic AI detection.

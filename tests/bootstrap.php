@@ -45,6 +45,83 @@ tests_add_filter(
     static function () use ( $plugin_file ): void {
         require_once $plugin_file;
 
+        // Register deterministic test-only Abilities through WordPress' real
+        // lifecycle. They let the integration suite exercise the same execute()
+        // path used by PHP, REST and MCP consumers without installing an AI
+        // provider or teaching production code about the test harness.
+        add_action(
+            'wp_abilities_api_categories_init',
+            static function (): void {
+                wp_register_ability_category(
+                    'core-blueprint-test',
+                    [
+                        'label'       => 'Core Blueprint test',
+                        'description' => 'Integration-test Abilities for Core Blueprint governance.',
+                    ]
+                );
+            }
+        );
+        add_action(
+            'wp_abilities_api_init',
+            static function (): void {
+                $common = [
+                    'category'      => 'core-blueprint-test',
+                    'input_schema'  => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'secret' => [ 'type' => 'string' ],
+                        ],
+                    ],
+                    'output_schema' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'ok' => [ 'type' => 'boolean' ],
+                        ],
+                    ],
+                    'meta'          => [ 'public' => false ],
+                ];
+
+                wp_register_ability(
+                    'core-blueprint-test/success',
+                    array_merge(
+                        $common,
+                        [
+                            'label'               => 'Governance success fixture',
+                            'description'         => 'Returns a successful bounded result.',
+                            'execute_callback'    => static fn( array $input ): array => [ 'ok' => true ],
+                            'permission_callback' => '__return_true',
+                        ]
+                    )
+                );
+
+                wp_register_ability(
+                    'core-blueprint-test/denied',
+                    array_merge(
+                        $common,
+                        [
+                            'label'               => 'Governance denied fixture',
+                            'description'         => 'Always fails its permission check.',
+                            'execute_callback'    => static fn( array $input ): array => [ 'ok' => true ],
+                            'permission_callback' => '__return_false',
+                        ]
+                    )
+                );
+
+                wp_register_ability(
+                    'core-blueprint-test/failed',
+                    array_merge(
+                        $common,
+                        [
+                            'label'               => 'Governance failure fixture',
+                            'description'         => 'Returns a deterministic WP_Error.',
+                            'execute_callback'    => static fn( array $input ): WP_Error => new WP_Error( 'cb_ai_fixture_failed', 'Fixture failure.' ),
+                            'permission_callback' => '__return_true',
+                        ]
+                    )
+                );
+            }
+        );
+
         // The WordPress test database starts without plugin activation state.
         // Establish Base through its real activation lifecycle before its normal
         // plugins_loaded migrations and policy checks execute. This keeps smoke

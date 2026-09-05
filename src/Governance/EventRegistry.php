@@ -14,7 +14,7 @@ final class EventRegistry {
 	private const ID_PATTERN = '/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/';
 	private const STORAGE_MAX_LENGTH = 50;
 	private const RESERVED_NAMESPACES = [
-		'audit', 'console', 'content', 'diagnostic', 'failsafe', 'integrity', 'login',
+		'ai', 'audit', 'console', 'content', 'diagnostic', 'failsafe', 'integrity', 'login',
 		'mail', 'media', 'module', 'note', 'notes', 'package', 'permissions', 'plugin',
 		'reports', 'security', 'settings', 'snippet', 'snippets', 'system', 'ui', 'user', 'core',
 	];

@@ -8,7 +8,6 @@
  *
  * @package Core_Blueprint
  */
-
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 
@@ -71,6 +70,8 @@ remove_role( 'cb_operator' );
 $foundation_options = [
 	'cb_core_settings',
 	'cb_core_db_version',
+	'cb_core_ai_activity_db_version',
+	'cb_core_ai_activity_retention_days',
 	'cb_core_db_health_checked_at',
 	'cb_core_option_policy_version',
 	'cb_core_theme_default',
@@ -224,6 +225,7 @@ if ( ! empty( $cb_uploads['basedir'] ) ) {
 
 $cb_base_tables = [
 	$wpdb->prefix . 'cb_core_audit_log',
+	$wpdb->prefix . 'cb_core_ai_activity',
 	$wpdb->prefix . 'cb_core_mail_log',
 	$wpdb->prefix . 'cb_core_notes',
 	$wpdb->prefix . 'cb_maintenance_reports',
