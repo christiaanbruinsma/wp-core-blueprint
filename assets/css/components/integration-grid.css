@@ -77,16 +77,6 @@
 	padding-top: var(--cb-space-4);
 }
 
-.cb-core-integration-card__footer--note {
-	min-height: var(--cb-button-height-compact);
-}
-
-.cb-core-integration-card__note {
-	color: var(--cb-text-faint);
-	font-size: var(--cb-fs-sm);
-	line-height: var(--cb-lh-normal);
-}
-
 @media (max-width: 782px) {
 	.cb-core-integration-grid {
 		grid-template-columns: minmax(0, 1fr);
