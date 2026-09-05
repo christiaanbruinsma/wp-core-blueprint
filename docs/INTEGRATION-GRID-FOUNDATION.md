@@ -19,7 +19,6 @@ Base owns:
 - title/status placement;
 - description presentation;
 - CTA/footer presentation;
-- the Ready-without-CTA note;
 - spacing, borders, hover/focus treatment and dark/light presentation;
 - mapping Integration Grid states onto the existing `CB\Core\UI\Status` primitive.
 
@@ -29,7 +28,7 @@ Consumers own:
 - detection and readiness logic;
 - integration name and description;
 - status meaning selected from the four public Integration Grid states;
-- visible status label;
+- visible, caller-localised status label;
 - optional configure/action URL and label;
 - all domain rules and dependencies.
 
@@ -63,13 +62,13 @@ Each item accepts:
 | `name` | yes | Human-readable integration name. Empty names invalidate the item. |
 | `description` | no | Explanatory copy owned by the consumer. |
 | `status` | yes | One of `ready`, `needs-setup`, `optional`, `unavailable`. |
-| `status_label` | no | Caller-localised visible status text. Base supplies its translated default when omitted. |
+| `status_label` | yes | Caller-localised visible status text. Empty labels invalidate the item. |
 | `action_url` | no | Configure/action destination. |
 | `action_label` | no | Visible CTA label. |
 
 A CTA is rendered only when both `action_url` and `action_label` are non-empty. A partial CTA fails closed to no action.
 
-Items with an empty name, an unknown status or a non-array shape are omitted. Unknown states are never coerced into a different business meaning. If no valid items remain, `render()` returns an empty string.
+Items with an empty name, empty status label, unknown status or a non-array shape are omitted. Unknown states are never coerced into a different business meaning. If no valid items remain, `render()` returns an empty string.
 
 ## Status semantics
 
@@ -88,11 +87,9 @@ The existing `Status::ready` semantic is not changed by this Foundation.
 
 ## No-action behavior
 
-A `ready` item without a CTA renders the Base-owned secondary note:
+When an item has no complete CTA, Base renders no footer. The card remains structurally complete and its status/description communicate the current state without inventing generic business copy.
 
-`No configuration required`
-
-For `needs-setup`, `optional` and `unavailable`, absence of a complete CTA simply means no footer action is rendered. Consumers should express the reason and next-step meaning in their description/status label rather than inventing local footer presentation.
+Consumers should express any reason, next step or "no configuration required" meaning in their own localised description/status text rather than introducing local footer presentation.
 
 ## Asset contract
 
