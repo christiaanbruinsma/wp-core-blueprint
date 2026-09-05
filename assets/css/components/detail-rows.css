@@ -1,0 +1,80 @@
+/**
+ * components/detail-rows.css - Core Blueprint Suite
+ *
+ * Shared Core Admin presentation for compact object/resource rows composed
+ * inside an extension-owned card or section context.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.cb-core-detail-rows {
+	border-top: 1px solid var(--cb-border);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-detail-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: var(--cb-space-4);
+	min-width: 0;
+	padding: var(--cb-space-3) 0;
+	border-bottom: 1px solid var(--cb-border);
+	transition:
+		background var(--cb-interactive-transition),
+		box-shadow var(--cb-interactive-transition);
+}
+
+.cb-core-detail-row:last-child {
+	border-bottom: 0;
+}
+
+.cb-core-detail-row:hover {
+	background: color-mix(in srgb, var(--cb-surface-1) 96%, var(--cb-accent));
+}
+
+.cb-core-detail-row:focus-within {
+	box-shadow: inset 2px 0 0 var(--cb-interactive-focus);
+}
+
+.cb-core-detail-row__content {
+	min-width: 0;
+}
+
+.cb-core-detail-row__name {
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-md);
+	font-weight: var(--cb-fw-semibold);
+	line-height: var(--cb-lh-tight);
+}
+
+.cb-core-detail-row__description {
+	margin-top: var(--cb-space-1);
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+	line-height: var(--cb-lh-relaxed);
+	overflow-wrap: anywhere;
+}
+
+.cb-core-detail-row__status,
+.cb-core-detail-row__action {
+	justify-self: end;
+}
+
+.cb-core-detail-row__status .cb-core-status {
+	white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+	.cb-core-detail-row {
+		grid-template-columns: minmax(0, 1fr);
+		align-items: start;
+		gap: var(--cb-space-2);
+	}
+
+	.cb-core-detail-row__status,
+	.cb-core-detail-row__action {
+		justify-self: start;
+	}
+}
