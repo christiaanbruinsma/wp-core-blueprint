@@ -59,8 +59,10 @@ run_ai_stage() {
 # Every transition runs in a fresh PHP process against one persistent site.
 run_stage install
 run_stage activate-base
-run_ai_stage seed
+# The first normal request after activation runs the canonical plugins_loaded
+# schema registration/reconciliation lifecycle for Base-owned dedicated stores.
 run_stage seed
+run_ai_stage seed
 run_stage deactivate-base
 run_stage delete-base
 run_stage verify
