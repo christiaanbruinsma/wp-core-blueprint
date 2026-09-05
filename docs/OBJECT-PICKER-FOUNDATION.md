@@ -21,7 +21,7 @@ Consumers own:
 - object semantics and labels;
 - persistence and validation.
 
-This boundary deliberately prevents Foundation from knowing about Content Models, posts, users, terms, CRM entities, Certificates, Backups, or any other product domain.
+This boundary deliberately prevents Foundation from knowing about Content Models, posts, users, terms, Certificates, Backups, or any other product domain.
 
 ## Identifier contract
 
@@ -42,8 +42,8 @@ Numeric identifiers remain fully supported. An item returned as `13` is transpor
 Opaque identifiers such as these are valid and remain distinct even when they share the same numeric suffix:
 
 ```text
-crm:contact:42
-crm:organization:42
+vendor:record:42
+vendor:collection:42
 ```
 
 Selection, initial state, deduplication and removal all compare the complete normalized string identifier.
