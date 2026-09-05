@@ -33,7 +33,9 @@ The Modal Foundation includes the additive public `confirmCheck: { label }` opti
 
 ## Core Admin component contracts
 
-The frozen component layer includes Button, Badge, StateBadge, Status, Notice, Busy, Field, Form Controls, Stack, CheckRow, ChoiceGroup, ObjectPicker, SelectPicker, Toolbar, Disclosure, MasterSwitch, ChoiceCard/RadioCard, Empty State, Overview cards, metric tiles, KV Table and Scrollbar.
+The frozen component layer includes Button, Badge, StateBadge, Status, Notice, Busy, Field, Form Controls, Stack, CheckRow, ChoiceGroup, ObjectPicker, SelectPicker, Toolbar, Disclosure, MasterSwitch, ChoiceCard/RadioCard, Empty State, Overview cards, metric tiles, Integration Grid, KV Table and Scrollbar.
+
+`IntegrationGrid` is the Base-owned presentation primitive for integration/readiness cards on registered Core Admin pages. Consumers own detection/readiness semantics, labels and action destinations; Base owns card/grid presentation and maps the public `ready|needs-setup|optional|unavailable` states to the existing Status primitive. The normative contract is `INTEGRATION-GRID-FOUNDATION.md`.
 
 `StatusMenu` is a Base-owned Core Admin composition primitive for compact status + action popovers (currently used by Dashboard cards). It is intentionally not a public extension enqueue contract: sibling extensions contribute declarative Dashboard shortcuts through `CardRegistry`, while Base owns rendering and interaction.
 
@@ -41,7 +43,7 @@ Page CSS may own composition (grid, section rhythm, task-specific preview sizing
 
 ### Public Core Admin Design Foundation semantics
 
-Registered Core Admin extension pages consume shared visual primitives through `PageRegistry` component IDs, not asset handles. The public v1 semantic set is `nav-tabs`, `panels`, `cards`, `metric-tiles`, `notices`, `fields`, `radio-cards`, `master-switch`, `disclosure`, `badges`, `state-badges`, `status`, `empty-state`, `kv-table`, `form-controls` and `description-toggle`. Their minimal markup/behavior contracts are normative in `CORE-ADMIN-DESIGN-FOUNDATION.md`; Base remains free to change internal CSS filenames, handles, bundle boundaries and implementation details.
+Registered Core Admin extension pages consume shared visual primitives through `PageRegistry` component IDs, not asset handles. The public v1 semantic set is `nav-tabs`, `panels`, `cards`, `metric-tiles`, `integration-grid`, `notices`, `fields`, `radio-cards`, `master-switch`, `disclosure`, `badges`, `state-badges`, `status`, `empty-state`, `kv-table`, `form-controls` and `description-toggle`. The Integration Grid contract is normative in `INTEGRATION-GRID-FOUNDATION.md`; the remaining minimal markup/behavior contracts are normative in `CORE-ADMIN-DESIGN-FOUNDATION.md`. Base remains free to change internal CSS filenames, handles, bundle boundaries and implementation details.
 
 Base owns canonical appearance for these primitives. First-party extension styles may position or compose them, but may not duplicate their generic surfaces, colour, typography, borders, radii, spacing, shadows, focus, hover or state styling. A deliberately different product-specific component or variant remains extension-owned and should use Base tokens where practical.
 
