@@ -16,6 +16,7 @@
 - Module activation — `cb_core_module_activation_definitions`; state classes must implement `CB\Core\Modules\ModuleStateInterface`.
 - Module health/status — `cb_core_module_status_definitions`; providers return the canonical `ok|warn|err|off` status shape.
 - Extension registry — `CB\Core\ExtensionRegistry` via `cb_core_register_extensions`; canonical identity/inventory/compatibility boundary.
+- Settings Hub — `CB\Core\Admin\SettingsRegistry` via `cb_core_register_settings`; canonical extension-configuration directory and routing boundary; see `SETTINGS-HUB-FOUNDATION.md`.
 - Capability catalog — `cb_core_capability_catalog`.
 - Access Mode request bypass — prefer `CB\Core\Security\AccessMode::register_bypass()`; advanced policy may use `cb_core_access_mode_bypass_request`.
 - AI Governance activity reporting — `CB\Core\AIGovernance\Activity::record()`; see `AI-GOVERNANCE.md` for the stable v1 evidence, privacy and attribution contract.
@@ -102,6 +103,15 @@ $all = ExtensionRegistry::snapshot();
 $one = ExtensionRegistry::get( 'vendor-security' );
 ```
 
+Read display-safe developer/provenance metadata for a valid registered extension through:
+
+```php
+$identity       = ExtensionRegistry::identity( 'vendor-security' );
+$is_first_party = ExtensionRegistry::is_first_party( 'vendor-security' );
+```
+
+`identity()` reports the canonical plugin file, developer name, developer URL and Base-derived first-party classification. Developer identity comes from the registered WordPress plugin metadata. Callers cannot promote an extension into the reserved first-party namespace through display metadata.
+
 Each snapshot keeps these concerns separate:
 
 - `installed` — the WordPress plugin file exists;
@@ -114,6 +124,56 @@ Inactive first-party plugins may be auto-discovered for inventory display when t
 
 The `core-blueprint-*` ID namespace is reserved for first-party plugins. A registration using that namespace must point at the matching `core-blueprint-*` plugin folder and the Core Blueprint Author header. This is ownership hygiene for the platform registry, not a security-authentication mechanism.
 
+## Canonical Settings Hub registry
+
+`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. Configuration-only extension pages should use this registry instead of registering one flat extension submenu item below Core Blueprint.
+
+A provider must reference an extension that is already valid through `ExtensionRegistry`. Register during the explicit `cb_core_register_settings` lifecycle:
+
+```php
+use CB\Core\Admin\SettingsRegistry;
+
+add_action( 'cb_core_register_settings', static function (): void {
+    SettingsRegistry::register(
+        'vendor-security',
+        [
+            'label'       => __( 'Vendor Security', 'vendor-security' ),
+            'description' => __( 'Configure security policy and integrations.', 'vendor-security' ),
+            'group'       => SettingsRegistry::GROUP_INFRASTRUCTURE,
+            'capability'  => 'manage_options',
+            'renderer'    => [ Vendor\Security\Admin\Settings::class, 'render' ],
+            'icon'        => 'settings',
+            'support_url' => 'https://vendor.example/support',
+            'requirements' => [
+                'foundations' => [ 'toast' ],
+                'components'  => [ 'cards', 'panels', 'form-controls' ],
+            ],
+        ]
+    );
+} );
+```
+
+The accepted provider fields are deliberately limited to `label`, `description`, `group`, `capability`, `renderer`, optional `icon`, optional `support_url` and optional semantic `requirements`. Unknown keys fail closed.
+
+Developer identity and first-party provenance are **not** provider metadata. Base derives them from `ExtensionRegistry::identity()`. A provider cannot submit `first_party`, `official`, `developer_name` or `developer_url`. The Settings Hub always shows the developer for both first-party and third-party providers. Third-party detail routes explicitly state that the extension is developed and supported by that developer, not by Core Blueprint; an optional developer support link is shown when registered.
+
+The public group constants are `GROUP_INFRASTRUCTURE`, `GROUP_CONTENT_PUBLISHING`, `GROUP_COMMUNITY`, `GROUP_BUSINESS`, `GROUP_COMMERCE` and `GROUP_OTHER`. Groups are navigation metadata only; they do not grant trust, activation or capabilities.
+
+Capabilities are evaluated both for index visibility and direct provider access. Unknown/malformed providers and users without the provider capability fail closed.
+
+Build the canonical deep link through:
+
+```php
+$url = SettingsRegistry::url( 'vendor-security' );
+$tab = SettingsRegistry::url( 'vendor-security', [ 'tab' => 'integrations' ] );
+```
+
+Provider-owned query arguments such as `tab` may be preserved, but callers cannot replace the Base-owned `page` or `extension` route arguments.
+
+Provider UI requirements use the same semantic `foundations` / `components` vocabulary as `PageRegistry`. Only the selected provider's declared requirements are enqueued; private Base asset handles and filenames remain internal.
+
+The extension remains responsible for settings fields, validation/save authority, domain semantics and its inner renderer. Base owns the Settings Hub route/shell, provenance/developer presentation, support boundary, capability filtering, grouping and shared-UI asset resolution. See `SETTINGS-HUB-FOUNDATION.md` for the normative contract.
+
 ## Canonical HUD registry
 
 The HUD public contract is declarative and ordered: section types → sections → items. Base owns rendering, placement, escaping and interaction behavior. Built-in section types are `navigation`, `quick-actions` and `status`. Extensions may register namespaced custom types such as `vendor/metrics`, but only through the controlled Base presentation primitives documented in `HUD-MENU-API.md`; arbitrary renderer callbacks/markup are not a v1 contract.
@@ -122,15 +182,15 @@ HUD section and item IDs use strict lower-case kebab-case and duplicates are rej
 
 ## Core Admin page registration
 
-`CB\Core\Admin\Page` plus `CB\Core\Admin\PageRegistry` is the public v1 boundary for pages contributed beneath the Core Blueprint admin menu. `PageBase` is an internal convenience implementation for Base-owned pages and is not a supported inheritance contract.
+`CB\Core\Admin\Page` plus `CB\Core\Admin\PageRegistry` is the public v1 boundary for genuine pages contributed beneath the Core Blueprint admin menu. Configuration-only extension surfaces should use `SettingsRegistry` so adding extensions does not expand the WordPress submenu indefinitely. `PageBase` is an internal convenience implementation for Base-owned pages and is not a supported inheritance contract.
 
-Extensions register pages during `cb_core_register_pages`:
+Extensions register genuine Core Admin pages during `cb_core_register_pages`:
 
 ```php
 use CB\Core\Admin\PageRegistry;
 
 PageRegistry::register(
-    new Vendor\Admin\SettingsPage(),
+    new Vendor\Admin\OperationsPage(),
     [
         'foundations' => [ 'modal', 'toast' ],
         'components'  => [ 'nav-tabs', 'panels', 'form-controls' ],
@@ -145,6 +205,8 @@ A registered Core Admin page receives the semantic minimal Core Admin shell: Cor
 Additional shared UI is declared through semantic requirement identifiers. `foundations` currently supports `toast`, `modal`, `token-input`, `clipboard`, `time-picker`, `choice-group`, `icon-picker`, `capability-picker`, `object-picker`, `select-picker` and `icons`. `components` currently supports `nav-tabs`, `panels`, `cards`, `integration-grid`, `detail-rows`, `notices`, `fields`, `radio-cards`, `master-switch`, `disclosure`, `metric-tiles`, `badges`, `state-badges`, `status`, `empty-state`, `kv-table`, `form-controls` and `description-toggle`. Every component ID represents a documented Core Admin Design Foundation markup/behavior contract, not a stylesheet name; see `CORE-ADMIN-DESIGN-FOUNDATION.md`. `integration-grid` is the provider/integration-level readiness surface documented in `INTEGRATION-GRID-FOUNDATION.md`; `detail-rows` is the concrete object/target/resource-level surface documented in `DETAIL-ROWS-FOUNDATION.md`. `metric-tiles` exposes only the current generic KPI/value-card contract; `Tile::quick`, navigation tiles and status-navigation tiles are not part of that semantic requirement. Unknown requirement identifiers or groups reject the page registration safely, and raw asset handles are never interpreted as requirements. Additive requirement identifiers may be introduced during Base 1.x.
 
 `PageRegistry::hook_suffix( $slug )` is the supported way for an extension to scope its own CSS/JavaScript to its registered page after WordPress menu registration. Extensions remain free to enqueue their own assets. The current internal hook-suffix pattern fallback for unregistered sibling pages is transitional implementation behavior and **not** a public v1 guarantee; pages that want the Core Admin shell must register through `PageRegistry`.
+
+A settings surface migrated to `SettingsRegistry` must remove its old flat `PageRegistry` settings registration rather than keeping a duplicate compatibility route. Operational extension menus are unaffected.
 
 Base owns the canonical appearance of every declared Design Foundation primitive. First-party extension CSS may position or compose those primitives but must not locally redefine their generic colours, typography, spacing, borders, radii, surfaces, shadows or interaction states. Feature-specific extension components remain extension-owned and should consume `--cb-*` tokens where practical.
 
