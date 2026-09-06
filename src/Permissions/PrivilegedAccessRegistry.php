@@ -190,6 +190,7 @@ final class PrivilegedAccessRegistry {
 			if ( $user instanceof \WP_User && PrivilegedAccessPolicy::is_privileged( $user ) && self::is_approved( $user ) ) {
 				$count++;
 			}
+		}
 		return $count;
 	}
 
