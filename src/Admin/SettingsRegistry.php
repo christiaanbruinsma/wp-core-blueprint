@@ -85,6 +85,10 @@ final class SettingsRegistry {
 			self::diagnostic( sprintf( 'Settings provider %s has no trusted extension identity or developer metadata.', $extension_id ) );
 			return false;
 		}
+		if ( true !== $identity['first_party'] && 0 === strcasecmp( 'Core Blueprint', (string) $identity['developer_name'] ) ) {
+			self::diagnostic( sprintf( 'Settings provider %s cannot claim the reserved Core Blueprint developer identity.', $extension_id ) );
+			return false;
+		}
 
 		$allowed_keys = [ 'label', 'description', 'group', 'capability', 'renderer', 'icon', 'support_url', 'requirements' ];
 		if ( [] !== array_diff( array_keys( $definition ), $allowed_keys ) ) {
