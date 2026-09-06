@@ -17,19 +17,19 @@ declare(strict_types=1);
 
 namespace CB\Core\Admin;
 
-use CB\Core\ExtensionRegistry;
 use CB\Core\Admin\Pages\Settings as SettingsPage;
-
+use CB\Core\ExtensionRegistry;
+use CB\Core\UI\Icon;
 defined( 'ABSPATH' ) || exit;
 
 final class SettingsRegistry {
 
-	public const GROUP_INFRASTRUCTURE    = 'infrastructure';
+	public const GROUP_INFRASTRUCTURE     = 'infrastructure';
 	public const GROUP_CONTENT_PUBLISHING = 'content-publishing';
-	public const GROUP_COMMUNITY         = 'community';
-	public const GROUP_BUSINESS          = 'business';
-	public const GROUP_COMMERCE          = 'commerce';
-	public const GROUP_OTHER             = 'other';
+	public const GROUP_COMMUNITY          = 'community';
+	public const GROUP_BUSINESS           = 'business';
+	public const GROUP_COMMERCE           = 'commerce';
+	public const GROUP_OTHER              = 'other';
 
 	private const GROUPS = [
 		self::GROUP_INFRASTRUCTURE,
@@ -64,7 +64,7 @@ final class SettingsRegistry {
 	 * - group          one SettingsRegistry::GROUP_* value
 	 * - capability     WordPress capability required to open the provider
 	 * - renderer       callable that outputs the provider-owned settings body
-	 * - icon           optional Base Icon/Dashicon-compatible semantic key
+	 * - icon           optional Base Icon semantic key
 	 * - support_url    optional developer support URL
 	 * - requirements   optional semantic `foundations` / `components` arrays
 	 *
@@ -133,6 +133,10 @@ final class SettingsRegistry {
 		}
 
 		$icon = isset( $definition['icon'] ) && is_string( $definition['icon'] ) ? sanitize_key( $definition['icon'] ) : '';
+		if ( '' !== $icon && ! Icon::has( $icon ) ) {
+			self::diagnostic( sprintf( 'Settings provider %s requested an unknown icon.', $extension_id ) );
+			return false;
+		}
 
 		$support_url = isset( $definition['support_url'] ) && is_string( $definition['support_url'] )
 			? esc_url_raw( trim( $definition['support_url'] ) )
