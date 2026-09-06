@@ -23,6 +23,8 @@ use CB\Core\Log\AuditLog;
 use CB\Core\Permissions\Roles;
 use CB\Core\Permissions\PrivilegedAccessGuard;
 use CB\Core\Permissions\PrivilegedAccessRegistry;
+use CB\Core\Permissions\RolePolicySchema;
+use CB\Core\Permissions\UserRoleAssignments;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,16 +40,33 @@ final class Add implements CommandInterface {
 			);
 		}
 
+		$role_policy = RolePolicySchema::inspect( false, 'operator_add' );
+		if ( ! $role_policy['canonical'] ) {
+			$lines = [ 'Role Policy is not canonical.' ];
+			foreach ( $role_policy['issues'] as $issue ) {
+				$lines[] = '  - ' . $issue;
+			}
+			$lines[] = 'Run `wp cb permissions repair-role-policy` before assigning a CB Operator.';
+			return Result::error( __( 'Cannot assign a CB Operator while the Core Blueprint Role Policy is non-canonical.', 'core-blueprint' ), $lines );
+		}
+
+		if ( '' === UserRoleAssignments::base_role( $user ) ) {
+			return Result::error( __( 'Cannot assign CB Operator to a user without a normal WordPress base role. Assign the intended WordPress role first.', 'core-blueprint' ) );
+		}
+
 		if ( in_array( Roles::OPERATOR_ROLE, (array) $user->roles, true ) ) {
+			$approved = PrivilegedAccessRegistry::is_approved( $user );
+			$lines    = [ sprintf( '%s (#%d) is already a CB Operator.', $user->user_login, $user->ID ) ];
+			if ( ! $approved ) {
+				$lines[] = sprintf( 'Inspect: wp cb operator status %d', (int) $user->ID );
+				$lines[] = sprintf( 'Trusted recovery: wp cb operator recover %d', (int) $user->ID );
+			}
 			return Result::warning(
-				sprintf(
-					/* translators: 1: login, 2: ID */
-					__( '%1$s (#%2$d) is already a CB Operator.', 'core-blueprint' ),
-					$user->user_login,
-					$user->ID
-				),
-				[ sprintf( '%s (#%d) is already a CB Operator.', $user->user_login, $user->ID ) ],
-				[ 'user_id' => (int) $user->ID, 'changed' => false ]
+				$approved
+					? sprintf( __( '%1$s (#%2$d) is already a CB Operator with a valid approval.', 'core-blueprint' ), $user->user_login, $user->ID )
+					: sprintf( __( '%1$s (#%2$d) is already a CB Operator but does not have a valid approval. Use the Operator recovery command.', 'core-blueprint' ), $user->user_login, $user->ID ),
+				$lines,
+				[ 'user_id' => (int) $user->ID, 'changed' => false, 'approved' => $approved ]
 			);
 		}
 

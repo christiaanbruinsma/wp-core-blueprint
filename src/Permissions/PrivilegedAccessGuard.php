@@ -59,17 +59,9 @@ final class PrivilegedAccessGuard {
 		}
 		self::$bootstrapped = true;
 
-		// Earliest capability policy in CB. The sibling Caps filter runs at 10;
-		// removing manage_options here also prevents later admin-toggle grants.
 		add_filter( 'user_has_cap', [ __CLASS__, 'filter_user_has_cap' ], 1, 4 );
 		add_filter( 'user_has_cap', [ __CLASS__, 'enforce_trust_authority_boundary' ], PHP_INT_MAX, 4 );
-
-		// Persistent guard-marker recovery runs after role setup and alert bootstrap.
-		// A missing marker is repaired fail-closed: existing valid approvals remain
-		// valid and every other privileged identity remains subject to review.
 		add_action( 'plugins_loaded', [ __CLASS__, 'bootstrap_trust_root' ], 10 );
-
-		// Standard WordPress mutation paths.
 		add_action( 'user_register',    [ __CLASS__, 'on_user_register' ], 100, 1 );
 		add_action( 'set_user_role',    [ __CLASS__, 'on_set_user_role' ], 100, 3 );
 		add_action( 'add_user_role',    [ __CLASS__, 'on_add_user_role' ], 100, 2 );
@@ -78,18 +70,8 @@ final class PrivilegedAccessGuard {
 		add_action( 'updated_user_meta', [ __CLASS__, 'on_user_meta_changed' ], 100, 4 );
 		add_action( 'deleted_user_meta', [ __CLASS__, 'on_user_meta_changed' ], 100, 4 );
 		add_action( 'updated_option',    [ __CLASS__, 'on_option_changed' ], 100, 3 );
-
-		// Login/current-user reconciliation catches direct DB mutations while
-		// the capability gate blocks them even before persistence catches up.
-		// `init` is intentionally used instead of `admin_init`: wp-admin can
-		// reject a restricted identity during auth/capability checks before
-		// `admin_init` fires, which would leave the block invisible to operators.
 		add_action( 'wp_login',   [ __CLASS__, 'on_login' ], 10, 2 );
 		add_action( 'init',       [ __CLASS__, 'reconcile_current_user' ], 1 );
-
-		// Inactive identities must not depend on legitimate wp-admin traffic
-		// for discovery. The recurring event is self-healing while the plugin
-		// is active; admin_init keeps the existing opportunistic fallback.
 		add_filter( 'cron_schedules', [ __CLASS__, 'register_cron_schedule' ] );
 		add_action( self::CRON_HOOK, [ __CLASS__, 'cron_sweep' ] );
 		add_action( 'plugins_loaded', [ __CLASS__, 'ensure_schedule' ], 11 );
@@ -124,9 +106,6 @@ final class PrivilegedAccessGuard {
 		}
 
 		if ( ! PrivilegedAccessPolicy::enforces_approval() ) {
-			// Monitor only leaves native WordPress privileges intact, but an
-			// unapproved identity must never use Core Blueprint trust-authority
-			// controls to approve itself or redefine the approval boundary.
 			foreach ( self::TRUST_AUTHORITY_CAPS as $cap ) {
 				if ( array_key_exists( $cap, $allcaps ) ) {
 					$allcaps[ $cap ] = false;
@@ -145,20 +124,13 @@ final class PrivilegedAccessGuard {
 		return $allcaps;
 	}
 
-
 	/**
 	 * Final trust-authority gate.
-	 *
-	 * The primary filter runs first so Enforce mode can suppress native admin
-	 * capabilities before later policy mappers inspect them. This second pass
-	 * runs last and guarantees that no later capability mapper can accidentally
-	 * restore Core Blueprint trust-authority controls to an unapproved
-	 * privileged identity.
 	 *
 	 * @param array<string,bool> $allcaps
 	 * @param string[]           $caps
 	 * @param array              $args
-	 * @param \WP_User          $user
+	 * @param \WP_User           $user
 	 * @return array<string,bool>
 	 */
 	public static function enforce_trust_authority_boundary( array $allcaps, array $caps, array $args, $user ): array {
@@ -182,39 +154,20 @@ final class PrivilegedAccessGuard {
 		return $allcaps;
 	}
 
-	/**
-	 * Repair a missing persistent guard marker without creating trust.
-	 *
-	 * Existing signed approvals remain valid because their signatures and exact
-	 * privilege fingerprints are independently verified by the registry. Every
-	 * unapproved privileged identity is reconciled into Needs review. A missing
-	 * marker is never authority to auto-approve an operator.
-	 */
+	/** Repair a missing persistent guard marker without creating trust. */
 	public static function bootstrap_trust_root(): void {
 		if ( get_option( self::BOOTSTRAP_OPTION, false ) ) {
 			return;
 		}
-
-		// Flip the gate before reconciliation so every unapproved identity is
-		// already subject to the selected policy for the remainder of this request.
 		update_option( self::BOOTSTRAP_OPTION, time(), false );
-
-		$review_required = self::reconcile_all(
-			'guard_marker_recovered',
-			'fail_closed_recovery'
-		);
-
+		$review_required = self::reconcile_all( 'guard_marker_recovered', 'fail_closed_recovery' );
 		AuditLog::log( 'permissions.privileged_guard_bootstrapped', 'critical', [
 			'mode'            => 'fail_closed_recovery',
 			'review_required' => $review_required,
 		] );
 	}
 
-	/**
-	 * Complete a genuine first-install bootstrap after Core::activate() has
-	 * created and approved the initial operator. Existing other administrators
-	 * are deliberately flagged for review rather than grandfathered.
-	 */
+	/** Complete first-install trust-root bootstrap. */
 	public static function complete_first_activation(): int {
 		update_option( self::BOOTSTRAP_OPTION, time(), false );
 		return self::reconcile_all( 'guard_bootstrap', 'first_activation' );
@@ -266,53 +219,31 @@ final class PrivilegedAccessGuard {
 		}
 	}
 
-	/**
-	 * Register the dedicated ten-minute recurrence used by the unattended
-	 * privileged-identity sweep.
-	 *
-	 * @param array<string,array{interval:int,display:string}> $schedules
-	 * @return array<string,array{interval:int,display:string}>
-	 */
+	/** @param array<string,array{interval:int,display:string}> $schedules */
 	public static function register_cron_schedule( array $schedules ): array {
 		$schedules[ self::CRON_SCHEDULE ] = [
 			'interval' => self::SWEEP_INTERVAL,
 			'display'  => 'Core Blueprint privileged access guard (10 minutes)',
 		];
-
 		return $schedules;
 	}
 
-	/** Ensure the unattended sweep exists while Core Blueprint is active. */
 	public static function ensure_schedule(): void {
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
 			return;
 		}
-
 		wp_schedule_event( time() + self::SWEEP_INTERVAL, self::CRON_SCHEDULE, self::CRON_HOOK );
 	}
 
-	/** Remove all scheduled unattended sweep events. */
 	public static function clear_schedule(): void {
 		wp_clear_scheduled_hook( self::CRON_HOOK );
 	}
 
-	/**
-	 * Autonomous unattended sweep. The scheduled event must never be suppressed
-	 * by the opportunistic admin-traffic throttle: otherwise a recent admin page
-	 * load could postpone detection of an inactive identity until the next cron
-	 * interval. WP-Cron already provides the recurrence boundary.
-	 */
 	public static function cron_sweep(): void {
 		self::reconcile_all( 'runtime_reconciliation', 'cron_sweep' );
 		RolePolicySchema::inspect( true, 'cron_sweep' );
 	}
 
-	/**
-	 * Opportunistic admin-traffic fallback, throttled to at most once per ten
-	 * minutes. Normal writes remain immediate; this exists specifically for
-	 * changes that bypass WordPress APIs (manual SQL, broken plugins, or other
-	 * out-of-band capability mutations).
-	 */
 	public static function periodic_sweep(): void {
 		if ( get_transient( self::SWEEP_TRANSIENT ) ) {
 			return;
@@ -322,22 +253,13 @@ final class PrivilegedAccessGuard {
 		RolePolicySchema::inspect( true, 'periodic_sweep' );
 	}
 
-
 	/** Whether this exact current identity is a signed, approved CB Operator. */
 	public static function is_trusted_operator( \WP_User $user ): bool {
 		return in_array( Roles::OPERATOR_ROLE, (array) $user->roles, true )
 			&& PrivilegedAccessRegistry::is_approved( $user );
 	}
 
-	/**
-	 * Run a known-trusted role mutation without generating a transient
-	 * review event from the low-level WordPress meta hooks. The caller must
-	 * explicitly approve/reconcile the final state before returning.
-	 *
-	 * @template T
-	 * @param callable():T $callback
-	 * @return mixed
-	 */
+	/** Run a known-trusted role mutation; caller must approve/reconcile final state. */
 	public static function trusted_mutation( callable $callback ) {
 		self::$suspended++;
 		try {
@@ -347,19 +269,15 @@ final class PrivilegedAccessGuard {
 		}
 	}
 
-	/**
-	 * Reconcile one identity against the signed approval registry.
-	 */
+	/** Reconcile one identity against the signed approval registry. */
 	public static function reconcile_user( int $user_id, string $reason, string $source ): bool {
 		if ( self::$suspended > 0 || self::$reconciling || $user_id <= 0 || ! get_option( self::BOOTSTRAP_OPTION, false ) ) {
 			return false;
 		}
-
 		$user = get_userdata( $user_id );
 		if ( ! ( $user instanceof \WP_User ) ) {
 			return false;
 		}
-
 		self::$reconciling = true;
 		try {
 			if ( ! PrivilegedAccessPolicy::is_privileged( $user ) ) {
@@ -375,14 +293,11 @@ final class PrivilegedAccessGuard {
 		}
 	}
 
-	/**
-	 * @return int number of identities newly/updated into pending review
-	 */
+	/** @return int number of identities newly/updated into pending review */
 	public static function reconcile_all( string $reason, string $source ): int {
 		if ( self::$reconciling || ! get_option( self::BOOTSTRAP_OPTION, false ) ) {
 			return 0;
 		}
-
 		$count = 0;
 		foreach ( get_users() as $user ) {
 			if ( $user instanceof \WP_User && self::reconcile_user( (int) $user->ID, $reason, $source ) ) {
@@ -392,16 +307,34 @@ final class PrivilegedAccessGuard {
 		return $count;
 	}
 
-	/**
-	 * Explain the pending review to a legitimate account without exposing approval
-	 * controls. Operators manage privileged review in Core Shield.
-	 */
+	/** Explain pending review without exposing browser self-approval. */
 	public static function review_notice(): void {
 		$user = wp_get_current_user();
 		if ( ! ( $user instanceof \WP_User ) || ! $user->ID ) {
 			return;
 		}
 		if ( ! PrivilegedAccessPolicy::is_privileged( $user ) || PrivilegedAccessRegistry::is_approved( $user ) ) {
+			return;
+		}
+
+		$approved_operators = PrivilegedAccessRegistry::approved_operator_count();
+		if ( 0 === $approved_operators ) {
+			echo '<div class="notice notice-error"><p><strong>';
+			esc_html_e( 'Core Blueprint: privileged access recovery required.', 'core-blueprint' );
+			echo '</strong> ';
+			if ( PrivilegedAccessPolicy::enforces_approval() ) {
+				esc_html_e( 'This account is restricted and no approved CB Operator is currently available to approve it.', 'core-blueprint' );
+			} else {
+				esc_html_e( 'No approved CB Operator is currently available to review this privileged identity.', 'core-blueprint' );
+			}
+			echo ' ';
+			echo esc_html( sprintf(
+				/* translators: %d: WordPress user ID */
+				__( 'Use trusted server-side WP-CLI to verify and recover a known management identity: `wp cb operator status %d`, then `wp cb operator recover %d`.', 'core-blueprint' ),
+				(int) $user->ID,
+				(int) $user->ID
+			) );
+			echo '</p></div>';
 			return;
 		}
 

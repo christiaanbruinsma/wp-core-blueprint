@@ -168,6 +168,14 @@ final class Registry {
 				'group'       => 'observe',
 			],
 			[
+				'id'          => 'cb-operator-status',
+				'name'        => 'cb operator status',
+				'class'       => CLICommands\Operator\Status::class,
+				'description' => 'Inspect one user’s Operator role and signed trust state.',
+				'group'       => 'observe',
+				'capability'  => 'cb_manage_permissions',
+			],
+			[
 				'id'          => 'cb-failsafe-status',
 				'name'        => 'cb failsafe status',
 				'class'       => CLICommands\Failsafe\Status::class,

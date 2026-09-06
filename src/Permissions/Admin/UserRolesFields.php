@@ -43,20 +43,20 @@ final class UserRolesFields {
 	}
 
 	/**
-	 * Hide the protected CB Operator role from WordPress' native role selector
-	 * unless the current actor holds the operator-governance capability.
+	 * Keep the protected CB Operator role out of WordPress' native base-role
+	 * selector for every actor. CB Operator is an additive governance role,
+	 * never a replacement for the user's normal WordPress base role.
 	 *
-	 * This is a UX boundary only; validate_update() independently rejects a
-	 * crafted base-role assignment request that bypasses the selector.
+	 * Assignment remains available through Core Blueprint's Additional roles
+	 * controls and the canonical `cb operator add` / `cb operator recover` CLI
+	 * transactions. validate_update() independently rejects crafted base-role
+	 * requests so this invariant is not merely presentational.
 	 *
 	 * @param array<string,array<string,mixed>> $roles
 	 * @return array<string,array<string,mixed>>
 	 */
 	public static function filter_editable_roles( array $roles ): array {
-		if ( ! current_user_can( 'cb_manage_permissions' ) ) {
-			unset( $roles[ Roles::OPERATOR_ROLE ] );
-		}
-
+		unset( $roles[ Roles::OPERATOR_ROLE ] );
 		return $roles;
 	}
 
@@ -199,23 +199,20 @@ final class UserRolesFields {
 		$requested_base = property_exists( $user, 'role' ) ? sanitize_key( (string) $user->role ) : $old_base;
 		$has_ui_payload = isset( $_POST[ self::FORM_MARKER ] ) && '1' === (string) wp_unslash( $_POST[ self::FORM_MARKER ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		// The native WordPress Role dropdown is a separate assignment path from
-		// Core Blueprint's Additional roles controls. Protect cb_operator here as
-		// well so a crafted profile request cannot bypass the governance boundary.
-		if (
-			$requested_base !== $old_base
-			&& Roles::OPERATOR_ROLE === $requested_base
-			&& ! in_array( Roles::OPERATOR_ROLE, (array) $old->roles, true )
-		) {
-			try {
-				UserRoleAssignments::assert_can_assign_role( Roles::OPERATOR_ROLE, $user_id );
-			} catch ( \RuntimeException $exception ) {
-				$errors->add( 'cb_core_user_roles_operator_assignment', $exception->getMessage() );
-				if ( property_exists( $user, 'role' ) ) {
-					unset( $user->role );
-				}
-				return;
+		// CB Operator is never a WordPress base role. WordPress' native
+		// set_role() semantics replace every existing role, so accepting
+		// cb_operator here could silently remove Administrator or another normal
+		// base role. Operator assignment is additive and belongs exclusively to
+		// Core Blueprint's Additional roles / trusted Operator flows.
+		if ( $requested_base !== $old_base && Roles::OPERATOR_ROLE === $requested_base ) {
+			$errors->add(
+				'cb_core_user_roles_operator_base_role',
+				__( 'CB Operator is an additional governance role and cannot be used as the WordPress base role. Assign it through Core Blueprint Additional roles instead.', 'core-blueprint' )
+			);
+			if ( property_exists( $user, 'role' ) ) {
+				unset( $user->role );
 			}
+			return;
 		}
 
 		// A same-base update should never invoke WP_User::set_role(), because

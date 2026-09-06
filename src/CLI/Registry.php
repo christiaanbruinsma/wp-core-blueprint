@@ -184,6 +184,11 @@ final class Registry {
 				'description' => 'List all current Core Blueprint operators.',
 			],
 			[
+				'name'        => 'operator status',
+				'class'       => Commands\Operator\Status::class,
+				'description' => 'Inspect one user’s Operator role and signed trust state.',
+			],
+			[
 				'name'        => 'operator add',
 				'class'       => Commands\Operator\Add::class,
 				'description' => 'Promote a user to the cb_operator role.',
@@ -192,6 +197,11 @@ final class Registry {
 				'name'        => 'operator remove',
 				'class'       => Commands\Operator\Remove::class,
 				'description' => 'Demote a user from the cb_operator role.',
+			],
+			[
+				'name'        => 'operator recover',
+				'class'       => Commands\Operator\Recover::class,
+				'description' => 'Trusted server-side recovery for an Operator approval state.',
 			],
 			[
 				'name'        => 'permissions status',
