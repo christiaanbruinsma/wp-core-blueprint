@@ -1,8 +1,8 @@
 # Settings Hub Foundation — public v1 contract
 
-Core Blueprint Base owns the canonical configuration directory for Core Blueprint extensions at **Core Blueprint → Settings**.
+Core Blueprint Base owns the canonical configuration directory for Core Blueprint extensions at **Core Blueprint → Extensions**.
 
-The Settings Hub solves one information-architecture problem: extension configuration must remain easy to find without turning the Core Blueprint WordPress submenu into a flat directory of every installed extension.
+The Settings Hub solves one information-architecture problem: extension configuration must remain easy to find without turning the Core Blueprint WordPress submenu into a flat directory of every installed extension. Its user-facing menu and page label is **Extensions**, which keeps it distinct from Base's separate **Preferences** surface.
 
 This is a configuration surface only. Operational work remains in each extension's own appropriate WordPress admin workspace.
 
@@ -104,6 +104,8 @@ Base owns the Settings Hub route:
 admin.php?page=core-blueprint-settings&extension={extension-id}
 ```
 
+The internal route and public PHP contract remain `core-blueprint-settings` / `SettingsRegistry`; **Extensions** is the user-facing navigation label. This avoids an unnecessary API rename while keeping the WordPress menu unambiguous.
+
 Extensions should build links with:
 
 ```php
@@ -135,7 +137,8 @@ A user who cannot satisfy a provider's capability does not see that provider on 
 
 Base owns:
 
-- the WordPress submenu entry `Core Blueprint → Settings`;
+- the WordPress submenu entry `Core Blueprint → Extensions`;
+- placement of **Extensions** as the final Base-owned submenu item, after **Preferences**;
 - the Settings Hub shell and routing;
 - provenance grouping;
 - developer/support attribution presentation;
@@ -169,7 +172,7 @@ Pre-v1 migration rule:
 
 ```text
 old: extension settings → PageRegistry → flat Core Blueprint submenu
-new: extension settings → SettingsRegistry → Core Blueprint → Settings
+new: extension settings → SettingsRegistry → Core Blueprint → Extensions
 ```
 
 Operational extension menus remain independent. For example, an LMS may keep Courses, Enrollments or Assessment Attempts in its own LMS workspace while its configuration lives in the Settings Hub.
@@ -178,14 +181,14 @@ Operational extension menus remain independent. For example, an LMS may keep Cou
 
 Base's existing **Preferences** page is not the extension-settings directory. It currently owns Base/personal/site-wide configuration such as appearance, language, privacy, permissions, Notes defaults and reference surfaces.
 
-The pilot does not merge Preferences into Settings. Any later information-architecture consolidation requires a separate decision and field review.
+The pilot does not merge Preferences into the Extensions hub. Any later information-architecture consolidation requires a separate decision and field review.
 
 ## Pilot scope
 
 The first v1 pilot intentionally does **not** add:
 
-- an Extensions control-center page;
-- Settings search;
+- extension lifecycle/install/activation management to the Extensions hub;
+- Extensions search;
 - automatic migration of existing extension pages;
 - automatic hidden/disabled extension listings;
 - a mass rewrite of first-party plugins.
