@@ -79,7 +79,7 @@ Base recognizes an extension as first-party only through the existing reserved `
 2. the plugin folder exactly matches that ID; and
 3. the WordPress plugin `Author` header is exactly `Core Blueprint`.
 
-Everything else is presented as a **Third-party extension**.
+Everything else is presented as a **Third-party extension**. To avoid contradictory support attribution, the exact developer name `Core Blueprint` is reserved on the Settings Hub: a provider that is not recognized as first-party cannot register with that developer identity.
 
 This is a product/provenance indicator, not cryptographic verification or a security trust claim.
 
@@ -157,7 +157,7 @@ The extension owns:
 
 Provider requirements use the same semantic IDs documented for `PageRegistry`. Private Base asset handles, filenames and bundle boundaries are not public API.
 
-Only the currently selected provider's declared semantic requirements are enqueued by `SettingsRegistry`.
+Only the currently selected provider's declared semantic requirements are folded into the Settings page requirement set and resolved through Base's canonical admin asset resolver.
 
 ## Settings Hub vs PageRegistry
 
