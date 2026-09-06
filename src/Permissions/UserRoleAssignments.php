@@ -26,11 +26,13 @@ final class UserRoleAssignments {
 	public const BASE_ROLE_META = 'cb_core_base_role';
 
 	/**
-	 * Resolve the user's base role.
+	 * Resolve the user's normal WordPress base role.
 	 *
-	 * Existing sites have no Core Blueprint base-role metadata yet. In that
-	 * case WordPress' first assigned role is the migration-safe fallback; that
-	 * is also the role WordPress itself selects in the native Role dropdown.
+	 * CB Operator is an additive governance role and is never a valid base-role
+	 * candidate. Existing sites may not have Core Blueprint base-role metadata;
+	 * in that case choose the first assigned non-operator WordPress role. This
+	 * also safely recovers users whose capability map was historically ordered
+	 * with cb_operator before their Administrator role.
 	 */
 	public static function base_role( \WP_User $user ): string {
 		$roles = array_values( array_filter( array_map( 'sanitize_key', (array) $user->roles ) ) );
@@ -39,11 +41,22 @@ final class UserRoleAssignments {
 		}
 
 		$stored = sanitize_key( (string) get_user_meta( (int) $user->ID, self::BASE_ROLE_META, true ) );
-		if ( '' !== $stored && in_array( $stored, $roles, true ) && null !== get_role( $stored ) ) {
+		if (
+			'' !== $stored
+			&& Roles::OPERATOR_ROLE !== $stored
+			&& in_array( $stored, $roles, true )
+			&& null !== get_role( $stored )
+		) {
 			return $stored;
 		}
 
-		return (string) reset( $roles );
+		foreach ( $roles as $role ) {
+			if ( Roles::OPERATOR_ROLE !== $role && null !== get_role( $role ) ) {
+				return $role;
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -66,7 +79,7 @@ final class UserRoleAssignments {
 	 */
 	public static function set_base_role( int $user_id, string $role ): void {
 		$role = sanitize_key( $role );
-		if ( '' === $role ) {
+		if ( '' === $role || Roles::OPERATOR_ROLE === $role ) {
 			delete_user_meta( $user_id, self::BASE_ROLE_META );
 			return;
 		}
@@ -102,9 +115,11 @@ final class UserRoleAssignments {
 	/**
 	 * Whether a role may be newly assigned by the current actor.
 	 *
-	 * The role must be part of WordPress' editable-role set and the actor must
-	 * hold every primitive capability granted by it. This mirrors the existing
-	 * RolePolicy privilege-escalation boundary used by the role-definition UI.
+	 * Normal roles must be part of WordPress' editable-role set and the actor
+	 * must hold every primitive capability granted by them. CB Operator is
+	 * deliberately hidden from WordPress' base-role selector, so its additive
+	 * assignment bypasses that presentation check and is instead governed by
+	 * the dedicated cb_manage_permissions + Administrator-target boundary below.
 	 */
 	public static function can_assign_role( string $role_slug, int $user_id ): bool {
 		$role_slug = sanitize_key( $role_slug );
@@ -117,16 +132,19 @@ final class UserRoleAssignments {
 			return false;
 		}
 
-		$editable = function_exists( 'get_editable_roles' ) ? get_editable_roles() : wp_roles()->roles;
-		if ( ! isset( $editable[ $role_slug ] ) ) {
-			return false;
+		if ( Roles::OPERATOR_ROLE !== $role_slug ) {
+			$editable = function_exists( 'get_editable_roles' ) ? get_editable_roles() : wp_roles()->roles;
+			if ( ! isset( $editable[ $role_slug ] ) ) {
+				return false;
+			}
 		}
 
 		// CB Operator assignment is meta-governance and remains behind the
 		// existing cb_manage_permissions boundary, not cb_manage_roles alone.
 		// Match the existing Permissions screen: new operator assignments are
-		// only offered to Administrator accounts. Existing operator-only users
-		// remain valid and can be preserved/removed without forced migration.
+		// only offered to Administrator-base accounts. Existing operator-only
+		// legacy users remain observable but must gain a normal base role before
+		// any new trusted assignment or recovery transaction can be completed.
 		if ( Roles::OPERATOR_ROLE === $role_slug ) {
 			if ( ! current_user_can( 'cb_manage_permissions' ) ) {
 				return false;
@@ -149,7 +167,6 @@ final class UserRoleAssignments {
 				if ( $granted && ! current_user_can( (string) $cap ) ) {
 					return false;
 				}
-			}
 		}
 
 		return true;
@@ -208,7 +225,7 @@ final class UserRoleAssignments {
 	public static function change_base_role( int $user_id, string $old_base, string $new_base, array $desired_additional ): void {
 		$old_base = sanitize_key( $old_base );
 		$new_base = sanitize_key( $new_base );
-		if ( '' === $new_base || null === get_role( $new_base ) ) {
+		if ( '' === $new_base || Roles::OPERATOR_ROLE === $new_base || null === get_role( $new_base ) ) {
 			return;
 		}
 
@@ -263,6 +280,9 @@ final class UserRoleAssignments {
 		}
 
 		$base_role = sanitize_key( $base_role );
+		if ( Roles::OPERATOR_ROLE === $base_role ) {
+			return;
+		}
 		$desired   = array_values( array_unique( array_filter( array_map( 'sanitize_key', $desired_additional ) ) ) );
 		$desired   = array_values( array_filter(
 			$desired,
