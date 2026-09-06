@@ -152,6 +152,13 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 		self::assertSame( 'integrations', $query['tab'] ?? '' );
 	}
 
+	public function test_extensions_is_the_final_base_owned_menu_item(): void {
+		$page = new SettingsPage();
+		self::assertSame( 'Extensions', $page->title() );
+		self::assertSame( 'Extensions', $page->menu_title() );
+		self::assertSame( 99, $page->position() );
+	}
+
 	public function test_overview_always_shows_provenance_and_developer_identity(): void {
 		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_id );
@@ -160,6 +167,7 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 		( new SettingsPage() )->render();
 		$html = (string) ob_get_clean();
 
+		self::assertStringContainsString( '>Extensions<', $html );
 		self::assertStringContainsString( 'Official Core Blueprint Extensions', $html );
 		self::assertStringContainsString( 'Third-Party Extensions', $html );
 		self::assertStringContainsString( 'Developer: Core Blueprint', $html );
