@@ -55,10 +55,12 @@ final class CB_Base_Config_Operator_Recovery_Contract_Test extends WP_UnitTestCa
         self::assertTrue( PrivilegedAccessRegistry::is_approved( $user ) );
         self::assertSame( [], PrivilegedAccessRegistry::review_state( $user ) );
 
-        // The server authorization is identity-bound; another signed-in user
-        // cannot consume the configured recovery authority.
+        // The server authorization is identity-bound. Another unapproved
+        // Administrator stays restricted and cannot consume the configured
+        // recovery authority.
         $other_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
         wp_set_current_user( $other_id );
+        self::assertFalse( current_user_can( 'manage_options' ), 'Config recovery leaked a capability bypass to another privileged identity.' );
         $other_result = ConfigOperatorRecovery::recover_current_user();
         self::assertWPError( $other_result );
         self::assertSame( 'cb_core_config_recovery_identity', $other_result->get_error_code() );
