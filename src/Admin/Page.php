@@ -52,8 +52,8 @@ interface Page {
 	 *   22  Notes
 	 *   25  Reports
 	 *   30  Safeguards
-	 *   80  Settings
 	 *   90  Preferences
+	 *   99  Extensions
 	 */
 	public function position(): ?int;
 
