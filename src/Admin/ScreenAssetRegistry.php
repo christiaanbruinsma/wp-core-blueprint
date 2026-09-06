@@ -50,7 +50,7 @@ final class ScreenAssetRegistry {
 		}
 
 		if ( 'core-blueprint-logs' === $context->page()
-			&& ! in_array( $context->tab(), [ 'overview', 'audit', 'system', 'maintenance', 'retention', 'mail' ], true ) ) {
+			&& ! in_array( $context->tab(), [ 'overview', 'audit', 'system', 'maintenance', 'ai-activity', 'retention', 'mail' ], true ) ) {
 			return true;
 		}
 
@@ -137,6 +137,11 @@ final class ScreenAssetRegistry {
 				if ( 'maintenance' === $tab ) {
 					$items[] = 'component.tile-grid';
 					$items[] = 'component.maintenance-summary';
+				}
+				if ( 'ai-activity' === $tab ) {
+					$items[] = 'component.filter-bar';
+					$items[] = 'component.log-table';
+					$items[] = 'component.kv-tables';
 				}
 				if ( 'retention' === $tab ) {
 					$items[] = 'component.policy-table';
