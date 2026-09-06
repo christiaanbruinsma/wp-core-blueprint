@@ -11,7 +11,6 @@ declare(strict_types=1);
  */
 
 namespace CB\Core\Admin;
-
 defined( 'ABSPATH' ) || exit;
 
 interface Page {
@@ -53,6 +52,7 @@ interface Page {
 	 *   22  Notes
 	 *   25  Reports
 	 *   30  Safeguards
+	 *   80  Settings
 	 *   90  Preferences
 	 */
 	public function position(): ?int;
