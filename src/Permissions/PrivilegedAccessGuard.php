@@ -95,6 +95,9 @@ final class PrivilegedAccessGuard {
 		if ( ! ( $user instanceof \WP_User ) || ! $user->ID ) {
 			return $allcaps;
 		}
+		if ( ConfigOperatorRecovery::allows_temporary_operator_access( $user ) ) {
+			return $allcaps;
+		}
 		if ( class_exists( Failsafe::class ) && Failsafe::is_bypassed() ) {
 			return $allcaps;
 		}
@@ -138,6 +141,9 @@ final class PrivilegedAccessGuard {
 			return $allcaps;
 		}
 		if ( ! ( $user instanceof \WP_User ) || ! $user->ID ) {
+			return $allcaps;
+		}
+		if ( ConfigOperatorRecovery::allows_temporary_operator_access( $user ) ) {
 			return $allcaps;
 		}
 		if ( class_exists( Failsafe::class ) && Failsafe::is_bypassed() ) {
@@ -313,6 +319,9 @@ final class PrivilegedAccessGuard {
 		if ( ! ( $user instanceof \WP_User ) || ! $user->ID ) {
 			return;
 		}
+		if ( ConfigOperatorRecovery::matches_configured_user( $user ) ) {
+			return;
+		}
 		if ( ! PrivilegedAccessPolicy::is_privileged( $user ) || PrivilegedAccessRegistry::is_approved( $user ) ) {
 			return;
 		}
@@ -330,7 +339,7 @@ final class PrivilegedAccessGuard {
 			echo ' ';
 			echo esc_html( sprintf(
 				/* translators: %d: WordPress user ID */
-				__( 'Use trusted server-side WP-CLI to verify and recover a known management identity: `wp cb operator status %d`, then `wp cb operator recover %d`.', 'core-blueprint' ),
+				__( 'Use trusted server-side WP-CLI to verify and recover a known management identity: `wp cb operator status %d`, then `wp cb operator recover %d`. If WP-CLI is unavailable, use the documented wp-config.php Operator recovery mode.', 'core-blueprint' ),
 				(int) $user->ID,
 				(int) $user->ID
 			) );
