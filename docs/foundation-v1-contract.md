@@ -51,6 +51,20 @@ Base owns canonical appearance for these primitives. First-party extension style
 
 Design ownership does not imply universal loading. The minimal Core Admin shell remains narrow; a page receives an optional primitive only when it declares that semantic requirement (or when a Base-owned screen manifest selects it).
 
+## Settings Hub Foundation
+
+`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. The Settings Hub keeps extension configuration centralized without adding one flat Core Blueprint submenu item per extension. Operational extension administration remains in the extension's own appropriate workspace.
+
+A provider registers during `cb_core_register_settings` and refers to an existing `ExtensionRegistry` ID. Base owns routing, capability filtering, developer/provenance attribution, grouping, shell presentation and semantic shared-UI requirements. The extension owns its settings fields, save/validation logic, domain semantics and inner renderer.
+
+Developer identity is always visible. Base derives it from the registered plugin identity; providers cannot submit their own developer identity or first-party/official flag. First-party provenance uses the reserved `core-blueprint-*` ExtensionRegistry invariant. Every other provider is presented as third-party, and the individual settings surface explicitly states that support belongs to that developer rather than Core Blueprint.
+
+Provider assets remain declarative: `requirements` uses the same public Foundation/component vocabulary as `PageRegistry`, and only the selected provider's requirements are loaded. Private Base handles, filenames and bundle boundaries remain internal.
+
+The canonical routing helper is `SettingsRegistry::url()`. Provider-owned query arguments such as `tab` may be added, while Base-owned `page` and `extension` routing remain authoritative.
+
+The normative contract is `SETTINGS-HUB-FOUNDATION.md`.
+
 ## Compatibility
 
 - Historical Toolbar aliases (`cb-core-filter-bar*`) remain supported for backwards compatibility, but Base itself uses `cb-core-toolbar*`.
