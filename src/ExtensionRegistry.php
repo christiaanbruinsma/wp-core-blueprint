@@ -55,7 +55,7 @@ final class ExtensionRegistry {
 			return false;
 		}
 
-		self::$definitions[ $id ]          = $normalized;
+		self::$definitions[ $id ]            = $normalized;
 		self::$plugin_owners[ $plugin_file ] = $id;
 		return true;
 	}
@@ -95,6 +95,50 @@ final class ExtensionRegistry {
 		return $definitions[ $id ] ?? null;
 	}
 
+	/**
+	 * Return display-safe developer and provenance metadata for one registered extension.
+	 *
+	 * `first_party` is derived from the same reserved identity invariant enforced
+	 * during registration. Callers cannot promote themselves to first-party by
+	 * supplying settings metadata.
+	 *
+	 * @return array{id:string,plugin_file:string,developer_name:string,developer_url:string,first_party:bool}|null
+	 */
+	public static function identity( string $id ): ?array {
+		$definition = self::definition( $id );
+		if ( null === $definition ) {
+			return null;
+		}
+
+		$plugin_data = self::plugin_data( $definition['plugin_file'] );
+		if ( null === $plugin_data ) {
+			return null;
+		}
+
+		$developer_name = trim( wp_strip_all_tags( (string) ( $plugin_data['Author'] ?? '' ) ) );
+		if ( '' === $developer_name ) {
+			return null;
+		}
+
+		$developer_url = isset( $plugin_data['AuthorURI'] ) && is_string( $plugin_data['AuthorURI'] )
+			? esc_url_raw( $plugin_data['AuthorURI'] )
+			: '';
+
+		return [
+			'id'             => $id,
+			'plugin_file'    => $definition['plugin_file'],
+			'developer_name' => $developer_name,
+			'developer_url'  => $developer_url,
+			'first_party'    => self::is_first_party_definition( $id, $definition['plugin_file'], $plugin_data ),
+		];
+	}
+
+	/** Whether Base recognizes this registered extension as official first-party software. */
+	public static function is_first_party( string $id ): bool {
+		$identity = self::identity( $id );
+		return null !== $identity && true === $identity['first_party'];
+	}
+
 	public static function collect(): void {
 		if ( self::$collected ) {
 			return;
@@ -109,9 +153,9 @@ final class ExtensionRegistry {
 
 	/** Reset request-local state for tests and explicit inventory invalidation. */
 	public static function reset(): void {
-		self::$definitions  = [];
+		self::$definitions   = [];
 		self::$plugin_owners = [];
-		self::$collected    = false;
+		self::$collected     = false;
 	}
 
 	/** @param array<string,mixed> $definition
@@ -132,23 +176,15 @@ final class ExtensionRegistry {
 			return null;
 		}
 
-		if ( ! function_exists( 'get_plugins' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		$plugins = get_plugins();
-		if ( ! isset( $plugins[ $plugin_file ] ) || ! is_array( $plugins[ $plugin_file ] ) ) {
+		$plugin_data = self::plugin_data( $plugin_file );
+		if ( null === $plugin_data ) {
 			self::diagnostic( sprintf( 'Unknown plugin_file for extension %s.', $id ) );
 			return null;
 		}
 
-		$plugin_data = $plugins[ $plugin_file ];
-		if ( str_starts_with( $id, 'core-blueprint-' ) ) {
-			$folder = dirname( $plugin_file );
-			$author = trim( wp_strip_all_tags( (string) ( $plugin_data['Author'] ?? '' ) ) );
-			if ( $folder !== $id || 'Core Blueprint' !== $author ) {
-				self::diagnostic( sprintf( 'Reserved Core Blueprint extension id refused: %s.', $id ) );
-				return null;
-			}
+		if ( str_starts_with( $id, 'core-blueprint-' ) && ! self::is_first_party_definition( $id, $plugin_file, $plugin_data ) ) {
+			self::diagnostic( sprintf( 'Reserved Core Blueprint extension id refused: %s.', $id ) );
+			return null;
 		}
 
 		$requires_api = isset( $definition['requires_api'] ) && is_string( $definition['requires_api'] )
@@ -190,6 +226,27 @@ final class ExtensionRegistry {
 			'menu_url'      => $menu_url,
 			'status_id'     => $status_id,
 		];
+	}
+
+	/** @return array<string,mixed>|null */
+	private static function plugin_data( string $plugin_file ): ?array {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$plugins = get_plugins();
+		return isset( $plugins[ $plugin_file ] ) && is_array( $plugins[ $plugin_file ] )
+			? $plugins[ $plugin_file ]
+			: null;
+	}
+
+	/** @param array<string,mixed> $plugin_data */
+	private static function is_first_party_definition( string $id, string $plugin_file, array $plugin_data ): bool {
+		if ( ! str_starts_with( $id, 'core-blueprint-' ) ) {
+			return false;
+		}
+		$folder = dirname( $plugin_file );
+		$author = trim( wp_strip_all_tags( (string) ( $plugin_data['Author'] ?? '' ) ) );
+		return $folder === $id && 'Core Blueprint' === $author;
 	}
 
 	private static function diagnostic( string $message ): void {
