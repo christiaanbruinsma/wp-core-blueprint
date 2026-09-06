@@ -117,6 +117,7 @@ The `core-blueprint-*` ID namespace is reserved for first-party plugins. A regis
 ## Canonical HUD registry
 
 The HUD public contract is declarative and ordered: section types → sections → items. Base owns rendering, placement, escaping and interaction behavior. Built-in section types are `navigation`, `quick-actions` and `status`. Extensions may register namespaced custom types such as `vendor/metrics`, but only through the controlled Base presentation primitives documented in `HUD-MENU-API.md`; arbitrary renderer callbacks/markup are not a v1 contract.
+
 HUD section and item IDs use strict lower-case kebab-case and duplicates are rejected rather than overwritten. Orphan items and item shapes that do not match the target section type fail closed.
 
 ## Core Admin page registration
