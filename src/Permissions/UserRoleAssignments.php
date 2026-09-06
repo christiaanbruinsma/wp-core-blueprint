@@ -167,6 +167,7 @@ final class UserRoleAssignments {
 				if ( $granted && ! current_user_can( (string) $cap ) ) {
 					return false;
 				}
+			}
 		}
 
 		return true;
