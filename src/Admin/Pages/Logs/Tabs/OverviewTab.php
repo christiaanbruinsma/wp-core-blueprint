@@ -57,7 +57,7 @@ final class OverviewTab {
 		AuditTab::SLUG       => 'shield',
 		SystemTab::SLUG      => 'code',
 		MaintenanceTab::SLUG => 'file',
-		AIActivityTab::SLUG  => 'activity',
+		AIActivityTab::SLUG  => 'eye',
 		RetentionTab::SLUG   => 'clock',
 		'mail'               => 'mail',
 		'connection'         => 'arrow-right',
