@@ -43,17 +43,7 @@ final class SettingsRegistry {
 	/** @var array<string,array<string,mixed>> */
 	private static array $providers = [];
 
-	private static bool $collected   = false;
-	private static bool $initialized = false;
-
-	/** Register Settings Hub lifecycle hooks once. */
-	public static function init(): void {
-		if ( self::$initialized ) {
-			return;
-		}
-		self::$initialized = true;
-		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_selected_requirements' ], 30 );
-	}
+	private static bool $collected = false;
 
 	/**
 	 * Register one extension settings provider during `cb_core_register_settings`.
@@ -229,34 +219,38 @@ final class SettingsRegistry {
 		return add_query_arg( $args, admin_url( 'admin.php' ) );
 	}
 
-	/** Enqueue only the selected provider's semantic requirements. */
-	public static function enqueue_selected_requirements( string $hook ): void {
-		$page = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin routing.
+	/**
+	 * Return semantic requirements for the selected provider on a Settings Hub request.
+	 *
+	 * @internal Base folds these into the registered Settings page requirement set
+	 *           before the canonical AdminAssetResolver runs, preserving cascade order.
+	 *
+	 * @return array{foundations:string[],components:string[]}
+	 */
+	public static function selected_requirements(): array {
+		$empty = [ 'foundations' => [], 'components' => [] ];
+		$page  = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin routing.
 		if ( SettingsPage::SLUG !== $page ) {
-			return;
+			return $empty;
 		}
 
 		$extension_id = isset( $_GET['extension'] ) ? sanitize_key( (string) wp_unslash( $_GET['extension'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin routing.
 		if ( '' === $extension_id ) {
-			return;
+			return $empty;
 		}
 
 		$provider = self::get( $extension_id );
 		if ( null === $provider || ! current_user_can( (string) $provider['capability'] ) ) {
-			return;
+			return $empty;
 		}
 
-		PageRegistry::enqueue_semantic_requirements( $provider['requirements'], $hook );
+		return $provider['requirements'];
 	}
 
 	/** Reset request-local registry state for tests. */
 	public static function _reset_for_testing(): void {
-		if ( self::$initialized ) {
-			remove_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_selected_requirements' ], 30 );
-		}
-		self::$providers   = [];
-		self::$collected   = false;
-		self::$initialized = false;
+		self::$providers = [];
+		self::$collected = false;
 	}
 
 	private static function valid_http_url( string $url ): bool {
