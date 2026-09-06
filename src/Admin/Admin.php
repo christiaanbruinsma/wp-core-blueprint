@@ -15,6 +15,7 @@ use CB\Core\Admin\Pages\Dashboard;
 use CB\Core\Admin\Pages\Logs;
 use CB\Core\Admin\Pages\Preferences;
 use CB\Core\Admin\Pages\Safeguards;
+use CB\Core\Admin\Pages\Settings as SettingsPage;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +24,7 @@ final class Admin {
 	const MENU_SLUG        = 'core-blueprint';
 	const LOGS_SLUG        = 'core-blueprint-logs';
 	const SAFEGUARDS_SLUG  = 'core-blueprint-safeguards';
+	const SETTINGS_SLUG    = 'core-blueprint-settings';
 	const PREFERENCES_SLUG = 'core-blueprint-preferences';
 	const CONSOLE_SLUG     = 'core-blueprint-console';
 
@@ -84,6 +86,19 @@ final class Admin {
 	public static function register_foundation_pages(): void {
 		PageRegistry::register_base( new Logs() );
 		PageRegistry::register_base( new Safeguards() );
+
+		$provider_requirements = SettingsRegistry::selected_requirements();
+		PageRegistry::register_base(
+			new SettingsPage(),
+			[
+				'foundations' => $provider_requirements['foundations'],
+				'components'  => array_values( array_unique( array_merge(
+					[ 'overview', 'cards', 'badges', 'empty-state' ],
+					$provider_requirements['components']
+				) ) ),
+			]
+		);
+
 		PageRegistry::register_base( new Preferences() );
 	}
 

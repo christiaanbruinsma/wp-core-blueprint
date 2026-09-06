@@ -5,10 +5,11 @@ final class CB_Base_Public_API_Smoke_Test extends WP_UnitTestCase {
 
     public function test_documented_v1_facades_exist(): void {
         $contracts = [
-            \CB\Core\ExtensionRegistry::class => [ 'register', 'snapshot', 'get' ],
+            \CB\Core\ExtensionRegistry::class => [ 'register', 'snapshot', 'get', 'identity', 'is_first_party' ],
             \CB\Core\Modules\ActivationRegistry::class => [ 'definitions', 'is_enabled', 'slugs' ],
             \CB\Core\Modules\Status::class => [ 'get' ],
             \CB\Core\Admin\PageRegistry::class => [ 'register', 'hook_suffix' ],
+            \CB\Core\Admin\SettingsRegistry::class => [ 'register', 'all', 'get', 'url' ],
             \CB\Core\UI\IntegrationGrid::class => [ 'render' ],
             \CB\Core\UI\DetailRows::class => [ 'render' ],
             \CB\Core\Governance\Audit::class => [ 'record' ],
