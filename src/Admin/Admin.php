@@ -45,6 +45,7 @@ final class Admin {
 					$parent_exists = true;
 					break;
 				}
+			}
 		}
 
 		if ( $parent_exists ) {
@@ -101,7 +102,7 @@ final class Admin {
 		PageRegistry::register_base( new Preferences() );
 	}
 
-	/** Normalize the Core Blueprint submenu and keep Extensions as its final item. */
+	/** Normalize the auto-generated parent submenu and remove obsolete theme UI. */
 	public static function remove_duplicate_submenu(): void {
 		global $submenu;
 
@@ -114,26 +115,10 @@ final class Admin {
 					}
 					break;
 				}
-		}
+			}
 		}
 
 		remove_submenu_page( CB_CORE_PARENT_MENU, 'core-blueprint-site-mode' );
-
-		// This cleanup runs at admin_menu priority 999, after normal Core Blueprint
-		// and extension submenu registration. Move the configuration directory to
-		// the end so Extensions remains the stable final navigation item even while
-		// older extension pages are still being migrated off the flat submenu.
-		if ( ! isset( $submenu[ CB_CORE_PARENT_MENU ] ) || ! is_array( $submenu[ CB_CORE_PARENT_MENU ] ) ) {
-			return;
-		}
-		foreach ( $submenu[ CB_CORE_PARENT_MENU ] as $i => $item ) {
-			if ( isset( $item[2] ) && self::SETTINGS_SLUG === $item[2] ) {
-				$extensions_item = $item;
-				unset( $submenu[ CB_CORE_PARENT_MENU ][ $i] );
-				$submenu[ CB_CORE_PARENT_MENU ][] = $extensions_item;
-				break;
-			}
-		}
 	}
 
 	private static function get_menu_icon(): string {
