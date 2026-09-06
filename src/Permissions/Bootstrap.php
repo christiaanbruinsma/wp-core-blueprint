@@ -100,6 +100,9 @@ final class Bootstrap {
 		$labels['permissions.role.policy.drift.detected'] = __( 'Permissions: role policy drift detected', 'core-blueprint' );
 		$labels['permissions.role.policy.drift.resolved'] = __( 'Permissions: role policy drift resolved', 'core-blueprint' );
 		$labels['permissions.role.policy.repaired'] = __( 'Permissions: role policy repaired', 'core-blueprint' );
+		$labels['permissions.operator.recovered'] = __( 'Permissions: operator recovered', 'core-blueprint' );
+		$labels['permissions.role.policy.trust.continuity.restored'] = __( 'Permissions: role policy trust continuity restored', 'core-blueprint' );
+		$labels['permissions.role.policy.trust.continuity.skipped'] = __( 'Permissions: role policy trust continuity not restored', 'core-blueprint' );
 		return $labels;
 	}
 
