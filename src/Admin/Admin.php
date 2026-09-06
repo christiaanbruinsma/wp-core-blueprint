@@ -29,7 +29,6 @@ final class Admin {
 	const CONSOLE_SLUG     = 'core-blueprint-console';
 
 	public static function init(): void {
-		SettingsRegistry::init();
 		add_action( 'admin_menu', [ __CLASS__, 'register_parent_menu' ], 5 );
 		add_action( 'admin_menu', [ __CLASS__, 'remove_duplicate_submenu' ], 999 );
 		add_action( 'cb_core_register_pages', [ __CLASS__, 'register_foundation_pages' ] );
@@ -87,12 +86,19 @@ final class Admin {
 	public static function register_foundation_pages(): void {
 		PageRegistry::register_base( new Logs() );
 		PageRegistry::register_base( new Safeguards() );
+
+		$provider_requirements = SettingsRegistry::selected_requirements();
 		PageRegistry::register_base(
 			new SettingsPage(),
 			[
-				'components' => [ 'overview', 'cards', 'badges', 'empty-state' ],
+				'foundations' => $provider_requirements['foundations'],
+				'components'  => array_values( array_unique( array_merge(
+					[ 'overview', 'cards', 'badges', 'empty-state' ],
+					$provider_requirements['components']
+				) ) ),
 			]
 		);
+
 		PageRegistry::register_base( new Preferences() );
 	}
 
