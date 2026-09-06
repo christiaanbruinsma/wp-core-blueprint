@@ -79,9 +79,7 @@ final class PrivilegedAccessRegistry {
 		return $record;
 	}
 
-	/**
-	 * Whether the stored approval is valid for the user's exact current state.
-	 */
+	/** Whether the stored approval is valid for the user's exact current state. */
 	public static function is_approved( \WP_User $user ): bool {
 		return [] !== self::valid_approval_record( $user );
 	}
@@ -134,19 +132,13 @@ final class PrivilegedAccessRegistry {
 		return true;
 	}
 
-	/**
-	 * Clear all guard state when an identity is no longer privileged.
-	 */
+	/** Clear all guard state when an identity is no longer privileged. */
 	public static function clear( \WP_User $user ): void {
 		delete_user_meta( (int) $user->ID, self::META_APPROVAL );
 		delete_user_meta( (int) $user->ID, self::META_REVIEW );
 	}
 
-	/**
-	 * Return the pending-review record, or an empty array.
-	 *
-	 * @return array<string,mixed>
-	 */
+	/** @return array<string,mixed> */
 	public static function review_state( \WP_User $user ): array {
 		$state = get_user_meta( (int) $user->ID, self::META_REVIEW, true );
 		return is_array( $state ) ? $state : [];
@@ -169,21 +161,14 @@ final class PrivilegedAccessRegistry {
 			if ( ! ( $user instanceof \WP_User ) ) {
 				continue;
 			}
-
-			// Clean up stale rows if privileges were removed outside the normal
-			// mutation hooks since the review was recorded.
 			if ( ! PrivilegedAccessPolicy::is_privileged( $user ) ) {
 				self::clear( $user );
 				continue;
 			}
-
-			// A valid approval always wins; stale review metadata must not
-			// present an already-approved user as needing review.
 			if ( self::is_approved( $user ) ) {
 				delete_user_meta( (int) $user->ID, self::META_REVIEW );
 				continue;
 			}
-
 			$state = self::review_state( $user );
 			$rows[] = [
 				'user'          => $user,
@@ -195,21 +180,35 @@ final class PrivilegedAccessRegistry {
 				'critical_caps' => array_values( (array) ( $state['critical_caps'] ?? PrivilegedAccessPolicy::critical_capabilities_for_user( $user ) ) ),
 			];
 		}
-
 		return $rows;
 	}
 
-	/**
-	 * Number of currently valid approved privileged users.
-	 */
+	/** Number of currently valid approved privileged users. */
 	public static function approved_count(): int {
 		$count = 0;
 		foreach ( get_users() as $user ) {
 			if ( $user instanceof \WP_User && PrivilegedAccessPolicy::is_privileged( $user ) && self::is_approved( $user ) ) {
 				$count++;
 			}
-		}
 		return $count;
+	}
+
+	/** @return int[] IDs of CB Operators with a valid approval for their exact current state. */
+	public static function approved_operator_ids(): array {
+		$approved = [];
+		foreach ( Roles::operator_ids() as $user_id ) {
+			$user = get_userdata( $user_id );
+			if ( $user instanceof \WP_User && self::is_approved( $user ) ) {
+				$approved[] = (int) $user->ID;
+			}
+		}
+		sort( $approved, SORT_NUMERIC );
+		return $approved;
+	}
+
+	/** Number of CB Operators currently able to act as browser trust authority. */
+	public static function approved_operator_count(): int {
+		return count( self::approved_operator_ids() );
 	}
 
 	/** @param array<string,mixed> $record */
@@ -219,7 +218,6 @@ final class PrivilegedAccessRegistry {
 		if ( '' === $fingerprint || '' === $signature ) {
 			return false;
 		}
-
 		$expected = self::signature( $user_id, $record );
 		return '' !== $expected && hash_equals( $expected, $signature );
 	}
@@ -230,7 +228,6 @@ final class PrivilegedAccessRegistry {
 		if ( '' === $key ) {
 			return '';
 		}
-
 		$message = implode( '|', [
 			(string) $user_id,
 			(string) ( $record['fingerprint'] ?? '' ),
@@ -238,7 +235,6 @@ final class PrivilegedAccessRegistry {
 			(string) (int) ( $record['approved_by'] ?? 0 ),
 			(string) ( $record['source'] ?? '' ),
 		] );
-
 		return hash_hmac( 'sha256', $message, $key );
 	}
 }
