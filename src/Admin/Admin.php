@@ -15,6 +15,7 @@ use CB\Core\Admin\Pages\Dashboard;
 use CB\Core\Admin\Pages\Logs;
 use CB\Core\Admin\Pages\Preferences;
 use CB\Core\Admin\Pages\Safeguards;
+use CB\Core\Admin\Pages\Settings as SettingsPage;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +24,7 @@ final class Admin {
 	const MENU_SLUG        = 'core-blueprint';
 	const LOGS_SLUG        = 'core-blueprint-logs';
 	const SAFEGUARDS_SLUG  = 'core-blueprint-safeguards';
+	const SETTINGS_SLUG    = 'core-blueprint-settings';
 	const PREFERENCES_SLUG = 'core-blueprint-preferences';
 	const CONSOLE_SLUG     = 'core-blueprint-console';
 
@@ -43,7 +45,7 @@ final class Admin {
 					$parent_exists = true;
 					break;
 				}
-			}
+		}
 		}
 
 		if ( $parent_exists ) {
@@ -84,6 +86,12 @@ final class Admin {
 	public static function register_foundation_pages(): void {
 		PageRegistry::register_base( new Logs() );
 		PageRegistry::register_base( new Safeguards() );
+		PageRegistry::register_base(
+			new SettingsPage(),
+			[
+				'components' => [ 'overview', 'cards', 'badges', 'empty-state' ],
+			]
+		);
 		PageRegistry::register_base( new Preferences() );
 	}
 
@@ -100,7 +108,7 @@ final class Admin {
 					}
 					break;
 				}
-			}
+		}
 		}
 
 		remove_submenu_page( CB_CORE_PARENT_MENU, 'core-blueprint-site-mode' );
