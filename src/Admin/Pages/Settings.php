@@ -29,15 +29,15 @@ final class Settings extends PageBase {
 	}
 
 	public function title(): string {
-		return __( 'Settings', 'core-blueprint' );
+		return __( 'Extensions', 'core-blueprint' );
 	}
 
 	public function menu_title(): string {
-		return __( 'Settings', 'core-blueprint' );
+		return __( 'Extensions', 'core-blueprint' );
 	}
 
 	public function position(): ?int {
-		return 80;
+		return 99;
 	}
 
 	public function render(): void {
@@ -58,8 +58,8 @@ final class Settings extends PageBase {
 		$third_party = array_filter( $providers, static fn( array $provider ): bool => true !== $provider['first_party'] );
 		?>
 		<div class="wrap cb-core-wrap cb-core-overview cb-core-settings-hub">
-			<h1 class="cb-core-title"><?php esc_html_e( 'Settings', 'core-blueprint' ); ?></h1>
-			<p class="cb-core-intro"><?php esc_html_e( 'Configure Core Blueprint extensions from one place. Operational work stays in each extension workspace; this hub contains configuration only.', 'core-blueprint' ); ?></p>
+			<h1 class="cb-core-title"><?php esc_html_e( 'Extensions', 'core-blueprint' ); ?></h1>
+			<p class="cb-core-intro"><?php esc_html_e( 'Configure Core Blueprint extension settings from one place. Operational work stays in each extension workspace; this hub contains configuration only.', 'core-blueprint' ); ?></p>
 
 			<?php if ( [] === $providers ) : ?>
 				<?php
@@ -174,7 +174,7 @@ final class Settings extends PageBase {
 		$identity_html = (string) ob_get_clean();
 		?>
 		<div class="wrap cb-core-wrap cb-core-settings-hub">
-			<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::SLUG ) ); ?>">← <?php esc_html_e( 'All settings', 'core-blueprint' ); ?></a></p>
+			<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::SLUG ) ); ?>">← <?php esc_html_e( 'All extensions', 'core-blueprint' ); ?></a></p>
 			<h1 class="cb-core-title"><?php echo esc_html( (string) $provider['label'] ); ?></h1>
 			<p class="cb-core-intro"><?php echo esc_html( (string) $provider['description'] ); ?></p>
 			<?php echo Card::render( [ // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- identity_html is escaped above.
