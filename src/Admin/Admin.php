@@ -29,6 +29,7 @@ final class Admin {
 	const CONSOLE_SLUG     = 'core-blueprint-console';
 
 	public static function init(): void {
+		SettingsRegistry::init();
 		add_action( 'admin_menu', [ __CLASS__, 'register_parent_menu' ], 5 );
 		add_action( 'admin_menu', [ __CLASS__, 'remove_duplicate_submenu' ], 999 );
 		add_action( 'cb_core_register_pages', [ __CLASS__, 'register_foundation_pages' ] );
