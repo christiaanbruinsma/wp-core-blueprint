@@ -40,6 +40,7 @@ final class Bootstrap {
 	 */
 	public static function boot(): void {
 		Caps::init();
+		ConfigOperatorRecovery::init();
 		PrivilegedAccessGuard::init();
 		OperatorGuard::init();
 		DriftMonitor::init();
@@ -101,6 +102,7 @@ final class Bootstrap {
 		$labels['permissions.role.policy.drift.resolved'] = __( 'Permissions: role policy drift resolved', 'core-blueprint' );
 		$labels['permissions.role.policy.repaired'] = __( 'Permissions: role policy repaired', 'core-blueprint' );
 		$labels['permissions.operator.recovered'] = __( 'Permissions: operator recovered', 'core-blueprint' );
+		$labels['permissions.operator.config.recovered'] = __( 'Permissions: operator recovered through wp-config.php authorization', 'core-blueprint' );
 		$labels['permissions.role.policy.trust.continuity.restored'] = __( 'Permissions: role policy trust continuity restored', 'core-blueprint' );
 		$labels['permissions.role.policy.trust.continuity.skipped'] = __( 'Permissions: role policy trust continuity not restored', 'core-blueprint' );
 		return $labels;
