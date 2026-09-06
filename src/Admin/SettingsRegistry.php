@@ -251,6 +251,9 @@ final class SettingsRegistry {
 
 	/** Reset request-local registry state for tests. */
 	public static function _reset_for_testing(): void {
+		if ( self::$initialized ) {
+			remove_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_selected_requirements' ], 30 );
+		}
 		self::$providers   = [];
 		self::$collected   = false;
 		self::$initialized = false;
