@@ -39,6 +39,7 @@ final class PageRegistry {
 		'core-blueprint-preferences',
 		'core-blueprint-reports',
 		'core-blueprint-safeguards',
+		'core-blueprint-settings',
 		'core-blueprint-snippets',
 		'core-blueprint-user-roles',
 	];
@@ -188,13 +189,29 @@ final class PageRegistry {
 			return;
 		}
 
-		$context = ScreenContext::from_request( $hook );
-		foreach ( self::$requirements[ $slug ]['foundations'] as $foundation ) {
-			self::enqueue_foundation( $foundation );
-		}
-		foreach ( self::$requirements[ $slug ]['components'] as $component ) {
-			self::enqueue_component( $component, $context );
-		}
+		self::enqueue_normalized_requirements( self::$requirements[ $slug ], $hook );
+	}
+
+	/**
+	 * Validate a semantic requirement set for another Base-owned public registry.
+	 *
+	 * @internal SettingsRegistry reuses the PageRegistry vocabulary so extensions
+	 *           never learn private asset handles or filenames.
+	 *
+	 * @return array{foundations:string[],components:string[]}|null
+	 */
+	public static function normalize_semantic_requirements( array $requirements, string $consumer ): ?array {
+		return self::normalize_requirements( $requirements, $consumer );
+	}
+
+	/**
+	 * Enqueue an already-normalized semantic requirement set for the current screen.
+	 *
+	 * @internal
+	 * @param array{foundations:string[],components:string[]} $requirements
+	 */
+	public static function enqueue_semantic_requirements( array $requirements, string $hook ): void {
+		self::enqueue_normalized_requirements( $requirements, $hook );
 	}
 
 	/** admin_menu handler. */
@@ -276,10 +293,11 @@ final class PageRegistry {
 		return true;
 	}
 
-	private static function normalize_requirements( array $requirements, string $slug ): ?array {
+	/** @return array{foundations:string[],components:string[]}|null */
+	private static function normalize_requirements( array $requirements, string $consumer ): ?array {
 		$unknown_keys = array_diff( array_keys( $requirements ), [ 'foundations', 'components' ] );
 		if ( [] !== $unknown_keys ) {
-			self::diagnostic( "Core Admin page '{$slug}' contains unknown requirement groups." );
+			self::diagnostic( "Core Admin consumer '{$consumer}' contains unknown requirement groups." );
 			return null;
 		}
 
@@ -287,13 +305,13 @@ final class PageRegistry {
 		foreach ( $normalized as $group => $_ ) {
 			$items = $requirements[ $group ] ?? [];
 			if ( ! is_array( $items ) ) {
-				self::diagnostic( "Core Admin page '{$slug}' requirement group '{$group}' must be an array." );
+				self::diagnostic( "Core Admin consumer '{$consumer}' requirement group '{$group}' must be an array." );
 				return null;
 			}
 			$allowed = 'foundations' === $group ? self::FOUNDATION_REQUIREMENTS : self::COMPONENT_REQUIREMENTS;
 			foreach ( $items as $item ) {
 				if ( ! is_string( $item ) || ! in_array( $item, $allowed, true ) ) {
-					self::diagnostic( "Core Admin page '{$slug}' requested an unknown {$group} identifier." );
+					self::diagnostic( "Core Admin consumer '{$consumer}' requested an unknown {$group} identifier." );
 					return null;
 				}
 				$normalized[ $group ][] = $item;
@@ -301,6 +319,17 @@ final class PageRegistry {
 			$normalized[ $group ] = array_values( array_unique( $normalized[ $group ] ) );
 		}
 		return $normalized;
+	}
+
+	/** @param array{foundations:string[],components:string[]} $requirements */
+	private static function enqueue_normalized_requirements( array $requirements, string $hook ): void {
+		$context = ScreenContext::from_request( $hook );
+		foreach ( $requirements['foundations'] as $foundation ) {
+			self::enqueue_foundation( $foundation );
+		}
+		foreach ( $requirements['components'] as $component ) {
+			self::enqueue_component( $component, $context );
+		}
 	}
 
 	private static function is_base_page_implementation( Page $page ): bool {
