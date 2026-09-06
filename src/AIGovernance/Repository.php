@@ -8,6 +8,8 @@ declare(strict_types=1);
  */
 namespace CB\Core\AIGovernance;
 
+use CB\Core\Admin\Admin;
+use CB\Core\Admin\Pages\Logs\Tabs\AIActivityTab;
 use CB\Core\Database\SchemaRegistry;
 use CB\Core\Governance\RetentionStoreRegistry;
 
@@ -34,7 +36,10 @@ final class Repository {
 			'label'        => __( 'AI activity', 'core-blueprint' ),
 			'days'         => Settings::retention_days(),
 			'prune'        => [ __CLASS__, 'prune' ],
-			'settings_url' => admin_url( 'admin.php?page=core-blueprint-ai-governance#retention' ),
+			'settings_url' => add_query_arg(
+				[ 'page' => Admin::LOGS_SLUG, 'tab' => AIActivityTab::SLUG ],
+				admin_url( 'admin.php' )
+			) . '#retention',
 		] );
 	}
 

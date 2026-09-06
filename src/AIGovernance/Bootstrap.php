@@ -8,8 +8,8 @@ declare(strict_types=1);
  */
 namespace CB\Core\AIGovernance;
 
-use CB\Core\Admin\PageRegistry;
-use CB\Core\Admin\Pages\AIGovernance as AIGovernancePage;
+use CB\Core\Admin\Pages\Logs\TabRegistry;
+use CB\Core\Admin\Pages\Logs\Tabs\AIActivityTab;
 use CB\Core\AIGovernance\Admin\Actions;
 use CB\Core\Governance\EventRegistry;
 use CB\Core\RequestContext;
@@ -27,7 +27,7 @@ final class Bootstrap {
 		add_action( 'plugins_loaded', [ Repository::class, 'register_schema' ], 4 );
 		add_action( 'init', [ Repository::class, 'register_retention_store' ], 2 );
 		add_action( 'init', [ __CLASS__, 'register_event_metadata' ], 5 );
-		add_action( 'cb_core_register_pages', [ __CLASS__, 'register_page' ] );
+		add_action( 'cb_core_logs_register_tabs', [ __CLASS__, 'register_log_tab' ] );
 
 		AbilityObserver::boot();
 
@@ -36,13 +36,12 @@ final class Bootstrap {
 		}
 	}
 
-	public static function register_page(): void {
-		PageRegistry::register_base(
-			new AIGovernancePage(),
-			[
-				'components' => [ 'empty-state', 'form-controls', 'kv-table', 'badges' ],
-			]
-		);
+	public static function register_log_tab(): void {
+		TabRegistry::register( AIActivityTab::SLUG, [
+			'label'    => __( 'AI Activity', 'core-blueprint' ),
+			'priority' => 50,
+			'renderer' => [ AIActivityTab::class, 'render' ],
+		] );
 	}
 
 	public static function register_event_metadata(): void {

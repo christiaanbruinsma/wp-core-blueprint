@@ -1,12 +1,17 @@
 <?php
 declare(strict_types=1);
 
+use CB\Core\Admin\Admin;
+use CB\Core\Admin\Pages\Logs\TabRegistry;
+use CB\Core\Admin\Pages\Logs\Tabs\AIActivityTab;
 use CB\Core\AIGovernance\AbilityObserver;
 use CB\Core\AIGovernance\Activity;
+use CB\Core\AIGovernance\Bootstrap as AIGovernanceBootstrap;
 use CB\Core\AIGovernance\Exporter;
 use CB\Core\AIGovernance\Privacy;
 use CB\Core\AIGovernance\Repository;
 use CB\Core\AIGovernance\Settings;
+use CB\Core\Governance\RetentionStoreRegistry;
 
 final class CB_Base_AI_Governance_Contract_Test extends WP_UnitTestCase {
 
@@ -29,6 +34,38 @@ final class CB_Base_AI_Governance_Contract_Test extends WP_UnitTestCase {
 		$this->assertSame( 'cb_core_ai_activity_db_version', Repository::SCHEMA_OPTION );
 		$this->assertSame( Repository::DB_VERSION, get_option( Repository::SCHEMA_OPTION ) );
 		$this->assertSame( Repository::table(), $GLOBALS['wpdb']->prefix . 'cb_core_ai_activity' );
+	}
+
+	public function test_ai_activity_is_registered_as_logs_tab_without_standalone_page(): void {
+		AIGovernanceBootstrap::register_log_tab();
+		$tab = TabRegistry::get( AIActivityTab::SLUG );
+
+		$this->assertIsArray( $tab );
+		$this->assertSame( 'AI Activity', $tab['label'] );
+		$this->assertSame( 50, $tab['priority'] );
+		$this->assertSame( [ AIActivityTab::class, 'render' ], $tab['renderer'] );
+		$this->assertFalse( class_exists( '\CB\Core\Admin\Pages\AIGovernance' ) );
+	}
+
+	public function test_ai_retention_store_points_to_ai_activity_logs_tab(): void {
+		$existing = RetentionStoreRegistry::all();
+		RetentionStoreRegistry::reset_for_tests();
+
+		try {
+			Repository::register_retention_store();
+			$stores = RetentionStoreRegistry::snapshot();
+			$this->assertArrayHasKey( 'core-ai-activity', $stores );
+			$url = $stores['core-ai-activity']['settings_url'];
+			$this->assertStringContainsString( 'page=' . Admin::LOGS_SLUG, $url );
+			$this->assertStringContainsString( 'tab=' . AIActivityTab::SLUG, $url );
+			$this->assertStringContainsString( '#retention', $url );
+			$this->assertStringNotContainsString( 'core-blueprint-ai-governance', $url );
+		} finally {
+			RetentionStoreRegistry::reset_for_tests();
+			foreach ( $existing as $definition ) {
+				RetentionStoreRegistry::register( $definition );
+			}
+		}
 	}
 
 	public function test_public_activity_facade_is_metadata_first_and_resolves_actor_itself(): void {

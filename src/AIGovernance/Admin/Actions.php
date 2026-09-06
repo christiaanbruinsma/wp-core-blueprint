@@ -8,6 +8,8 @@ declare(strict_types=1);
  */
 namespace CB\Core\AIGovernance\Admin;
 
+use CB\Core\Admin\Admin;
+use CB\Core\Admin\Pages\Logs\Tabs\AIActivityTab;
 use CB\Core\AIGovernance\Exporter;
 use CB\Core\AIGovernance\Settings;
 use CB\Core\Log\AuditLog;
@@ -58,7 +60,14 @@ final class Actions {
 		$previous = Settings::retention_days();
 		Settings::update_retention_days( $days );
 		AuditLog::log( 'ai.retention.updated', 'notice', [ 'from' => $previous, 'to' => $days ] );
-		wp_safe_redirect( admin_url( 'admin.php?page=core-blueprint-ai-governance&retention=updated#retention' ) );
+		wp_safe_redirect( add_query_arg(
+			[
+				'page'      => Admin::LOGS_SLUG,
+				'tab'       => AIActivityTab::SLUG,
+				'retention' => 'updated',
+			],
+			admin_url( 'admin.php' )
+		) . '#retention' );
 		exit;
 	}
 

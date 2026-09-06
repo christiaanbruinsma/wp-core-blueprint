@@ -47,6 +47,7 @@ final class OverviewTab {
 		AuditTab::SLUG       => 'Security and configuration events - who did what, when, and from where. The primary forensic trail for the site.',
 		SystemTab::SLUG      => 'Low-level system events from WordPress and the server - useful when something odd happens and the audit log alone does not explain it.',
 		MaintenanceTab::SLUG => 'Maintenance activity for client reporting - updates, backups, and scheduled housekeeping. Shareable with clients who want to see what has been done.',
+		AIActivityTab::SLUG  => 'Metadata-first activity for WordPress abilities, agents and machine integrations without capturing raw prompts or responses by default.',
 		RetentionTab::SLUG   => 'How long events are kept and which severities trigger email alerts. The retention cron runs daily.',
 		// Beacon's Connection tab registers itself as 'connection'.
 		'connection'         => 'Beacon black-box recorder - request trail for Hub-paired sites showing what the Hub asked for and how this site answered.',
@@ -56,6 +57,7 @@ final class OverviewTab {
 		AuditTab::SLUG       => 'shield',
 		SystemTab::SLUG      => 'code',
 		MaintenanceTab::SLUG => 'file',
+		AIActivityTab::SLUG  => 'eye',
 		RetentionTab::SLUG   => 'clock',
 		'mail'               => 'mail',
 		'connection'         => 'arrow-right',
@@ -128,11 +130,12 @@ final class OverviewTab {
 	 */
 	private static function description_for( string $slug ): string {
 		$map = [
-			AuditTab::SLUG         => __( 'Security and configuration events - who did what, when, and from where. The primary forensic trail for the site.', 'core-blueprint' ),
-			SystemTab::SLUG        => __( 'Low-level system events from WordPress and the server - useful when something odd happens and the audit log alone does not explain it.', 'core-blueprint' ),
-			MaintenanceTab::SLUG   => __( 'Maintenance activity for client reporting - updates, backups, and scheduled housekeeping. Shareable with clients who want to see what has been done.', 'core-blueprint' ),
-			RetentionTab::SLUG     => __( 'Read-only view of how long each event category is kept. Retention rules are configured in Preferences › Privacy.', 'core-blueprint' ),
-			'connection'           => __( 'Beacon black-box recorder - request trail for Hub-paired sites showing what the Hub asked for and how this site answered.', 'core-blueprint' ),
+			AuditTab::SLUG       => __( 'Security and configuration events - who did what, when, and from where. The primary forensic trail for the site.', 'core-blueprint' ),
+			SystemTab::SLUG      => __( 'Low-level system events from WordPress and the server - useful when something odd happens and the audit log alone does not explain it.', 'core-blueprint' ),
+			MaintenanceTab::SLUG => __( 'Maintenance activity for client reporting - updates, backups, and scheduled housekeeping. Shareable with clients who want to see what has been done.', 'core-blueprint' ),
+			AIActivityTab::SLUG  => __( 'Metadata-first activity for WordPress abilities, agents and machine integrations without capturing raw prompts or responses by default.', 'core-blueprint' ),
+			RetentionTab::SLUG   => __( 'Read-only view of how long each event category is kept. Retention rules are configured in Preferences › Privacy.', 'core-blueprint' ),
+			'connection'         => __( 'Beacon black-box recorder - request trail for Hub-paired sites showing what the Hub asked for and how this site answered.', 'core-blueprint' ),
 		];
 		return $map[ $slug ] ?? '';
 	}
