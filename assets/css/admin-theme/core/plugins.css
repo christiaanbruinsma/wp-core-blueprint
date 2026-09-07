@@ -1,0 +1,123 @@
+/**
+ * WordPress Core Plugins list-table dark presentation.
+ *
+ * WordPress Core applies several plugin-specific hardcoded light surfaces after
+ * the generic widefat styles. This adapter normalizes those Core-owned states
+ * while preserving active, update and paused semantics.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+.plugins,
+.plugins td,
+.plugins th {
+	color: var(--cb-text);
+}
+
+.plugins tr,
+.plugins .inactive td,
+.plugins .inactive th {
+	background: var(--cb-surface-1);
+}
+
+.plugins .active td,
+.plugins .active th {
+	background: var(--cb-tint-accent);
+}
+
+.plugins .plugin-title,
+.plugins .plugin-title strong,
+.plugins .theme-title,
+.plugins .theme-title strong {
+	color: var(--cb-text-strong);
+}
+
+.plugins .plugin-description,
+.plugins .plugin-version-author-uri,
+.plugins .second,
+.plugins .inactive .plugin-title strong {
+	color: var(--cb-text-muted);
+}
+
+.plugins .inactive td,
+.plugins .inactive th,
+.plugins .active td,
+.plugins .active th,
+.plugin-install #the-list td,
+.upgrade .plugins td,
+.upgrade .plugins th {
+	box-shadow: inset 0 -1px 0 var(--cb-border);
+}
+
+.plugins tr.active.plugin-update-tr + tr.inactive th,
+.plugins tr.active.plugin-update-tr + tr.inactive td,
+.plugins tr.active + tr.inactive th,
+.plugins tr.active + tr.inactive td {
+	border-top-color: var(--cb-border);
+	box-shadow: inset 0 1px 0 var(--cb-border), inset 0 -1px 0 var(--cb-border);
+}
+
+.plugins .active th.check-column,
+.plugins .active td.check-column,
+.plugin-update-tr.active td {
+	border-left-color: var(--cb-accent);
+}
+
+.plugins .plugin-title .dashicons::before {
+	background-color: var(--cb-surface-2);
+	box-shadow: inset 0 0 10px color-mix(in srgb, var(--cb-border) 45%, transparent);
+	color: var(--cb-text-muted);
+}
+
+.plugins .plugin-update-tr .plugin-update {
+	background: var(--cb-surface-2);
+	box-shadow: inset 0 -1px 0 var(--cb-border);
+	color: var(--cb-text);
+}
+
+.plugins .plugin-update-tr .notice,
+.plugins .plugin-update-tr .update-message {
+	color: var(--cb-text);
+}
+
+.plugins tr.paused th,
+.plugins tr.paused td {
+	background-color: var(--cb-tint-danger);
+}
+
+.plugins tr.paused th.check-column,
+.plugins tr.paused td.check-column {
+	border-left-color: var(--cb-danger);
+}
+
+.plugins tr.paused .plugin-title,
+.plugins .paused .dashicons-warning,
+.plugins .resume-link {
+	color: var(--cb-danger);
+}
+
+.plugins .paused .error-display p,
+.plugins .paused .error-display code {
+	color: var(--cb-text);
+}
+
+.plugins-php .widefat tfoot th,
+.plugins-php .widefat tfoot td {
+	border-top-color: var(--cb-border);
+}
+
+@media screen and (max-width: 782px) {
+	.plugins tr {
+		box-shadow: inset 0 -1px 0 var(--cb-border);
+	}
+
+	.plugins tr.active,
+	.plugin-update-tr.active {
+		border-left-color: var(--cb-accent);
+	}
+
+	.plugins tr.active.paused {
+		border-left-color: var(--cb-danger);
+	}
+}
