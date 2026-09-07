@@ -1,0 +1,23 @@
+/**
+ * Core Blueprint Admin Theme — dark typography adapter.
+ *
+ * WordPress is light-first and several core / third-party admin styles still
+ * hardcode dark heading colours such as #1d2327. In Dark mode that can leave
+ * otherwise-correct screens with unreadable headings. This adapter changes
+ * colour only: WordPress and extensions keep ownership of font family, size,
+ * weight, line-height and spacing.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+body.cb-admin-theme :where(h1, h2, h3, h4, h5, h6) {
+	color: var(--cb-text-strong);
+}
+
+/* WordPress uses heading-like labels in a few places without a semantic
+ * heading element. Keep this list limited to stable core presentation hooks;
+ * custom plugin typography should normally inherit or consume CB tokens. */
+body.cb-admin-theme :where(.wp-heading-inline, .postbox-header .hndle, .health-check-title-section) {
+	color: var(--cb-text-strong);
+}
