@@ -1,0 +1,26 @@
+/**
+ * WordPress Core dashboard presentation fixes.
+ *
+ * Keep this file limited to selectors owned by WordPress Core. Generic
+ * third-party widget normalization belongs in compat/dashboard-widgets.css.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+#dashboard-widgets h3,
+#dashboard-widgets h4,
+#dashboard_quick_press .drafts h2 {
+	color: var(--cb-text-strong);
+}
+
+#dashboard-widgets .postbox .inside,
+#dashboard-widgets .postbox .inside p {
+	color: var(--cb-text);
+}
+
+#dashboard-widgets .postbox .inside .description,
+#dashboard-widgets .postbox .inside .comment-meta,
+#dashboard-widgets .postbox .inside time {
+	color: var(--cb-text-muted);
+}
