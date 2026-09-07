@@ -17,6 +17,7 @@ use CB\Core\Admin\Pages\Preferences;
 use CB\Core\Admin\Pages\Safeguards;
 use CB\Core\Admin\Pages\Settings as SettingsPage;
 use CB\Core\UI\AdminTheme;
+use CB\Core\UI\AdminThemeAdapters;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,6 +32,7 @@ final class Admin {
 
 	public static function init(): void {
 		AdminTheme::init();
+		AdminThemeAdapters::init();
 		add_action( 'admin_menu', [ __CLASS__, 'register_parent_menu' ], 5 );
 		add_action( 'admin_menu', [ __CLASS__, 'remove_duplicate_submenu' ], 999 );
 		add_action( 'cb_core_register_pages', [ __CLASS__, 'register_foundation_pages' ] );
