@@ -79,7 +79,7 @@
 }
 
 .cb-core-wrap.cb-core-dashboard .cb-core-tile--managed:focus-within {
-	box-shadow: var(--cb-interactive-focus);
+	box-shadow: 0 0 0 2px var(--cb-interactive-focus);
 }
 
 .cb-core-wrap.cb-core-dashboard .cb-core-tile--managed .cb-core-tile__bodylink {
@@ -106,7 +106,7 @@
 
 .cb-core-wrap.cb-core-dashboard .cb-core-tile--managed[data-state="off"],
 .cb-core-wrap.cb-core-dashboard .cb-core-tile--managed[data-state="inactive"] {
-	background: color-mix(in srgb, var(--cb-surface-1) 88%, var(--cb-canvas));
+	background: color-mix(in srgb, var(--cb-surface-1) 88%, var(--cb-surface-0));
 }
 
 @media (max-width: 600px) {

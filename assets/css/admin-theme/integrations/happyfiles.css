@@ -1,0 +1,30 @@
+/**
+ * HappyFiles compatibility bridge.
+ *
+ * HappyFiles remains owner of its layout and interaction design. This adapter
+ * only maps confirmed HappyFiles presentation variables to Core Blueprint
+ * semantic tokens and corrects a small hardcoded light search surface.
+ *
+ * Loaded only when HappyFiles\Init exists and the resolved admin mode is Dark.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+#happyfiles-sidebar {
+	--hf-bg-light: var(--cb-surface-2);
+	--hf-color-border: var(--cb-border);
+	color: var(--cb-text);
+	border-color: var(--cb-border);
+}
+
+#happyfiles-search-folders {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+#happyfiles-sidebar .folder.open,
+#happyfiles-sidebar .folder:hover {
+	color: var(--cb-text-strong);
+}
