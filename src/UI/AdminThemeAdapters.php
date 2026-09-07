@@ -67,9 +67,10 @@ final class AdminThemeAdapters {
 		);
 
 		// HappyFiles is a deliberate first curated bridge: it is frequently used
-		// alongside Bricks and exposes useful --hf-* presentation variables. Do
-		// not guess plugin paths; the public namespaced bootstrap class is enough.
-		if ( class_exists( '\\HappyFiles\\Init' ) ) {
+		// alongside Bricks and exposes useful --hf-* presentation variables. Use
+		// either its public bootstrap class or its registered taxonomy as a stable
+		// runtime signal instead of guessing a plugin install path.
+		if ( class_exists( '\\HappyFiles\\Init' ) || taxonomy_exists( 'happyfiles_category' ) ) {
 			wp_enqueue_style(
 				self::HAPPYFILES_HANDLE,
 				CB_CORE_URL . 'assets/css/admin-theme/integrations/happyfiles.css',
