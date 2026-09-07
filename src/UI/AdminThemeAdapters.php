@@ -25,12 +25,14 @@ defined( 'ABSPATH' ) || exit;
 
 final class AdminThemeAdapters {
 
+	private const TYPOGRAPHY_HANDLE = 'cb-core-css-admin-theme-typography';
 	private const CORE_HANDLE = 'cb-core-css-admin-theme-core-screens';
 	private const HAPPYFILES_HANDLE = 'cb-core-css-admin-theme-integration-happyfiles';
 
 	/** @var array<string, true> */
 	private const DARK_ADAPTER_HANDLES = [
 		'cb-core-css-admin-theme' => true,
+		self::TYPOGRAPHY_HANDLE => true,
 		self::CORE_HANDLE => true,
 		self::HAPPYFILES_HANDLE => true,
 	];
@@ -60,9 +62,16 @@ final class AdminThemeAdapters {
 		}
 
 		wp_enqueue_style(
+			self::TYPOGRAPHY_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/typography.css',
+			[ 'cb-core-css-admin-theme' ],
+			CB_CORE_VERSION
+		);
+
+		wp_enqueue_style(
 			self::CORE_HANDLE,
 			CB_CORE_URL . 'assets/css/admin-theme/core-screens.css',
-			[ 'cb-core-css-admin-theme' ],
+			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE ],
 			CB_CORE_VERSION
 		);
 
@@ -74,7 +83,7 @@ final class AdminThemeAdapters {
 			wp_enqueue_style(
 				self::HAPPYFILES_HANDLE,
 				CB_CORE_URL . 'assets/css/admin-theme/integrations/happyfiles.css',
-				[ 'cb-core-css-admin-theme' ],
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE ],
 				CB_CORE_VERSION
 			);
 		}
