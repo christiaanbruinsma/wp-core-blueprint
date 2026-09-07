@@ -93,26 +93,30 @@ final class AdminThemeAdapters {
 			CB_CORE_VERSION
 		);
 
-		wp_enqueue_style(
-			self::CORE_DASHBOARD_HANDLE,
-			CB_CORE_URL . 'assets/css/admin-theme/core/dashboard.css',
-			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
-			CB_CORE_VERSION
-		);
+		if ( 'index.php' === $hook_suffix ) {
+			wp_enqueue_style(
+				self::CORE_DASHBOARD_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/core/dashboard.css',
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
+				CB_CORE_VERSION
+			);
 
-		wp_enqueue_style(
-			self::CORE_PLUGINS_HANDLE,
-			CB_CORE_URL . 'assets/css/admin-theme/core/plugins.css',
-			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
-			CB_CORE_VERSION
-		);
+			wp_enqueue_style(
+				self::DASHBOARD_COMPAT_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/compat/dashboard-widgets.css',
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_DASHBOARD_HANDLE ],
+				CB_CORE_VERSION
+			);
+		}
 
-		wp_enqueue_style(
-			self::DASHBOARD_COMPAT_HANDLE,
-			CB_CORE_URL . 'assets/css/admin-theme/compat/dashboard-widgets.css',
-			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_DASHBOARD_HANDLE ],
-			CB_CORE_VERSION
-		);
+		if ( 'plugins.php' === $hook_suffix ) {
+			wp_enqueue_style(
+				self::CORE_PLUGINS_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/core/plugins.css',
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
+				CB_CORE_VERSION
+			);
+		}
 
 		// HappyFiles is a deliberate curated bridge. It exposes useful --hf-*
 		// presentation variables but also ships a few hardcoded light surfaces.
