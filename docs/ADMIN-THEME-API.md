@@ -8,6 +8,17 @@ The theme engine has three integration layers:
 2. **PHP API and hooks** for WordPress admin integrations.
 3. **Browser API and events** for interfaces that must redraw non-CSS surfaces after a live theme switch.
 
+## Presentation policy
+
+WordPress Core is light-first. Base therefore treats its WordPress presentation adapter as **Dark-only**:
+
+- **Dark:** Base adapts WordPress-native admin chrome and Core surfaces to Core Blueprint semantic tokens.
+- **Light:** WordPress Core stays as close to native WordPress presentation as possible.
+- **Core Blueprint components:** always use semantic tokens and therefore remain intentionally compatible with both Light and Dark.
+- **Third-party custom applications:** keep ownership of their bespoke presentation unless they use WordPress-native primitives, consume the public token contract, or have a deliberately curated compatibility bridge.
+
+This avoids maintaining a duplicate Light skin for an interface that is already light by default and reduces the risk of unnecessary WordPress Core overrides.
+
 ## CSS is the primary contract
 
 Do not detect a built-in theme slug in extension CSS. Use semantic tokens instead:
@@ -56,7 +67,7 @@ The existing `cb_admin_themes` filter remains the canonical registry. Partner th
 
 ### Safety valve for self-contained admin applications
 
-The theme applies to all normal `wp-admin` screens by default. A developer that owns a self-contained application and knows it is incompatible may opt that screen out:
+The theme state applies to all normal `wp-admin` screens by default. A developer that owns a self-contained application and knows the Base WordPress presentation adapter is incompatible may opt that screen out:
 
 ```php
 add_filter('cb_admin_theme_apply', function (bool $apply, $screen): bool {
@@ -88,6 +99,14 @@ Additional hooks:
 - `cb_admin_theme_screen_registered`
 - `cb_admin_theme_body_classes`
 
+## Curated third-party bridges
+
+Base does **not** maintain a skin for every WordPress plugin. A curated bridge is only appropriate when it is intentionally supported, small, and primarily maps the third party's own presentation variables to Core Blueprint semantic tokens.
+
+HappyFiles is the first built-in example. Its adapter maps confirmed `--hf-*` presentation variables and corrects only a minimal hardcoded light surface. HappyFiles keeps ownership of layout, interactions, and business UI.
+
+Plugin developers should normally ship their own compatibility layer through the public token and enqueue contracts instead of asking Base to own their UI.
+
 ## Browser API
 
 For charts, canvas renderers, code editors, or similar JavaScript interfaces:
@@ -107,7 +126,7 @@ document.addEventListener('cb:admin-theme-change', (event) => {
 });
 ```
 
-The runtime also emits `cb:admin-theme-ready` after the browser API becomes available.
+The runtime also emits `cb:admin-theme-ready` after the browser API becomes available. Base automatically enables or disables its WordPress Core and curated compatibility adapter stylesheets when the resolved mode changes, so a HUD switch does not require a page reload.
 
 ## Ownership rule
 
@@ -116,9 +135,10 @@ Base owns:
 - theme state and persistence;
 - HUD Light/Dark switching;
 - semantic tokens;
-- WordPress Core admin adaptation;
+- WordPress Core Dark adaptation;
 - shared Foundation component presentation;
-- public theme integration contracts.
+- public theme integration contracts;
+- a deliberately small set of curated compatibility bridges.
 
 Extensions own their domain composition and must not implement their own theme state, theme toggle, or duplicated shared presentation layer.
 
