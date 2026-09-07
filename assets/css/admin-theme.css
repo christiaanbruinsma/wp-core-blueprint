@@ -1,0 +1,533 @@
+/**
+ * Core Blueprint Admin Theme
+ *
+ * One global Light/Dark presentation layer for wp-admin. The stylesheet adapts
+ * WordPress-native primitives and chrome to Base semantic tokens. It avoids
+ * generic descendant resets so custom third-party admin applications keep
+ * ownership of their bespoke composition unless they opt into the token API.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+html[data-cb-mode="dark"] { color-scheme: dark; }
+html[data-cb-mode="light"] { color-scheme: light; }
+
+/* ─── Canvas + base text ─────────────────────────────────────────────── */
+body.cb-admin-theme,
+body.cb-admin-theme #wpwrap,
+body.cb-admin-theme #wpcontent,
+body.cb-admin-theme #wpbody,
+body.cb-admin-theme #wpbody-content {
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #wpfooter {
+	background: var(--cb-surface-0);
+	color: var(--cb-text-faint);
+	border-top: 1px solid var(--cb-border);
+}
+
+body.cb-admin-theme #wpfooter a,
+body.cb-admin-theme .wrap a:not(.button):not(.page-title-action) {
+	color: var(--cb-accent);
+}
+
+body.cb-admin-theme #wpfooter a:hover,
+body.cb-admin-theme #wpfooter a:focus,
+body.cb-admin-theme .wrap a:not(.button):not(.page-title-action):hover,
+body.cb-admin-theme .wrap a:not(.button):not(.page-title-action):focus {
+	color: var(--cb-accent-strong);
+}
+
+body.cb-admin-theme .wrap > h1,
+body.cb-admin-theme .wrap > h2,
+body.cb-admin-theme .wrap h1.wp-heading-inline,
+body.cb-admin-theme .wrap .wp-heading-inline,
+body.cb-admin-theme .postbox .hndle,
+body.cb-admin-theme .postbox-header h2,
+body.cb-admin-theme .stuffbox h3,
+body.cb-admin-theme .card h2,
+body.cb-admin-theme .card h3 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .description,
+body.cb-admin-theme .form-wrap p,
+body.cb-admin-theme .form-table td p.description,
+body.cb-admin-theme .row-actions,
+body.cb-admin-theme .subsubsub,
+body.cb-admin-theme .tablenav .displaying-num {
+	color: var(--cb-text-muted);
+}
+
+/* ─── WordPress admin chrome ─────────────────────────────────────────── */
+body.cb-admin-theme #adminmenuback,
+body.cb-admin-theme #adminmenuwrap,
+body.cb-admin-theme #adminmenu {
+	background: var(--cb-surface-1);
+}
+
+body.cb-admin-theme #adminmenu {
+	border-right: 1px solid var(--cb-border);
+}
+
+body.cb-admin-theme #adminmenu a,
+body.cb-admin-theme #adminmenu .wp-menu-image::before,
+body.cb-admin-theme #collapse-button {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme #adminmenu a:hover,
+body.cb-admin-theme #adminmenu a:focus,
+body.cb-admin-theme #adminmenu li.menu-top:hover > a,
+body.cb-admin-theme #adminmenu li.opensub > a.menu-top,
+body.cb-admin-theme #adminmenu li > a.menu-top:focus,
+body.cb-admin-theme #collapse-button:hover,
+body.cb-admin-theme #collapse-button:focus {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #adminmenu .wp-has-current-submenu > a.wp-has-current-submenu,
+body.cb-admin-theme #adminmenu .current a.menu-top,
+body.cb-admin-theme #adminmenu .wp-menu-arrow,
+body.cb-admin-theme #adminmenu .wp-menu-arrow div {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #adminmenu .wp-submenu,
+body.cb-admin-theme #adminmenu .wp-has-current-submenu .wp-submenu,
+body.cb-admin-theme #adminmenu .wp-has-current-submenu.opensub .wp-submenu,
+body.cb-admin-theme .no-js li.wp-has-current-submenu:hover .wp-submenu {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme #adminmenu .wp-submenu a {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme #adminmenu .wp-submenu a:hover,
+body.cb-admin-theme #adminmenu .wp-submenu a:focus,
+body.cb-admin-theme #adminmenu .wp-submenu li.current a {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #adminmenu .update-plugins,
+body.cb-admin-theme #adminmenu .awaiting-mod {
+	background: var(--cb-accent);
+	color: var(--cb-on-accent);
+}
+
+body.cb-admin-theme #wpadminbar {
+	background: var(--cb-surface-1);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+body.cb-admin-theme #wpadminbar .ab-item,
+body.cb-admin-theme #wpadminbar .ab-label,
+body.cb-admin-theme #wpadminbar .ab-icon::before,
+body.cb-admin-theme #wpadminbar .ab-item::before {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme #wpadminbar .ab-top-menu > li:hover > .ab-item,
+body.cb-admin-theme #wpadminbar .ab-top-menu > li.hover > .ab-item,
+body.cb-admin-theme #wpadminbar .ab-top-menu > li > .ab-item:focus,
+body.cb-admin-theme #wpadminbar.nojq .quicklinks .ab-top-menu > li > .ab-item:focus {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #wpadminbar .menupop .ab-sub-wrapper,
+body.cb-admin-theme #wpadminbar .shortlink-input {
+	background: var(--cb-surface-2);
+	border: 1px solid var(--cb-border);
+	box-shadow: var(--cb-shadow-md);
+}
+
+body.cb-admin-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary,
+body.cb-admin-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary .ab-submenu {
+	background: var(--cb-surface-3);
+}
+
+/* ─── Buttons + title actions ────────────────────────────────────────── */
+body.cb-admin-theme.wp-core-ui .button,
+body.cb-admin-theme.wp-core-ui .button-secondary,
+body.cb-admin-theme .page-title-action {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+	box-shadow: none;
+}
+
+body.cb-admin-theme.wp-core-ui .button:hover,
+body.cb-admin-theme.wp-core-ui .button:focus,
+body.cb-admin-theme.wp-core-ui .button-secondary:hover,
+body.cb-admin-theme.wp-core-ui .button-secondary:focus,
+body.cb-admin-theme .page-title-action:hover,
+body.cb-admin-theme .page-title-action:focus {
+	background: var(--cb-surface-3);
+	border-color: var(--cb-interactive-border-hover);
+	color: var(--cb-text-strong);
+	box-shadow: 0 0 0 1px var(--cb-interactive-focus);
+}
+
+body.cb-admin-theme.wp-core-ui .button-primary {
+	background: var(--cb-accent);
+	border-color: var(--cb-accent);
+	color: var(--cb-on-accent);
+	box-shadow: none;
+}
+
+body.cb-admin-theme.wp-core-ui .button-primary:hover,
+body.cb-admin-theme.wp-core-ui .button-primary:focus {
+	background: var(--cb-accent-strong);
+	border-color: var(--cb-accent-strong);
+	color: var(--cb-on-accent);
+	box-shadow: 0 0 0 1px var(--cb-interactive-focus);
+}
+
+body.cb-admin-theme.wp-core-ui .button-link-delete {
+	color: var(--cb-danger);
+}
+
+/* ─── Form controls ──────────────────────────────────────────────────── */
+body.cb-admin-theme.wp-core-ui input[type="text"],
+body.cb-admin-theme.wp-core-ui input[type="password"],
+body.cb-admin-theme.wp-core-ui input[type="email"],
+body.cb-admin-theme.wp-core-ui input[type="url"],
+body.cb-admin-theme.wp-core-ui input[type="number"],
+body.cb-admin-theme.wp-core-ui input[type="search"],
+body.cb-admin-theme.wp-core-ui input[type="tel"],
+body.cb-admin-theme.wp-core-ui input[type="date"],
+body.cb-admin-theme.wp-core-ui input[type="datetime-local"],
+body.cb-admin-theme.wp-core-ui input[type="time"],
+body.cb-admin-theme.wp-core-ui textarea,
+body.cb-admin-theme.wp-core-ui select {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+	box-shadow: none;
+}
+
+body.cb-admin-theme.wp-core-ui input[type="text"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="password"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="email"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="url"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="number"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="search"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="tel"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="date"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="datetime-local"]:focus,
+body.cb-admin-theme.wp-core-ui input[type="time"]:focus,
+body.cb-admin-theme.wp-core-ui textarea:focus,
+body.cb-admin-theme.wp-core-ui select:focus {
+	border-color: var(--cb-accent);
+	box-shadow: 0 0 0 1px var(--cb-accent);
+	outline: none;
+}
+
+body.cb-admin-theme.wp-core-ui input[type="checkbox"],
+body.cb-admin-theme.wp-core-ui input[type="radio"] {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-accent);
+	accent-color: var(--cb-accent);
+}
+
+body.cb-admin-theme.wp-core-ui input::placeholder,
+body.cb-admin-theme.wp-core-ui textarea::placeholder {
+	color: var(--cb-text-faint);
+}
+
+body.cb-admin-theme .form-table th,
+body.cb-admin-theme .form-table td,
+body.cb-admin-theme label {
+	color: var(--cb-text);
+}
+
+/* ─── Tables, filters, pagination ────────────────────────────────────── */
+body.cb-admin-theme .widefat,
+body.cb-admin-theme .wp-list-table {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .widefat thead td,
+body.cb-admin-theme .widefat thead th,
+body.cb-admin-theme .widefat tfoot td,
+body.cb-admin-theme .widefat tfoot th {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .widefat td,
+body.cb-admin-theme .widefat th,
+body.cb-admin-theme .wp-list-table td,
+body.cb-admin-theme .wp-list-table th {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .striped > tbody > :nth-child(odd),
+body.cb-admin-theme ul.striped > :nth-child(odd),
+body.cb-admin-theme .alternate {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme .wp-list-table tbody tr:hover,
+body.cb-admin-theme .wp-list-table tbody tr:focus-within {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .widefat a,
+body.cb-admin-theme .wp-list-table a,
+body.cb-admin-theme .subsubsub a,
+body.cb-admin-theme .row-actions a {
+	color: var(--cb-accent);
+}
+
+body.cb-admin-theme .tablenav-pages .button,
+body.cb-admin-theme .tablenav-pages .tablenav-pages-navspan,
+body.cb-admin-theme .tablenav-pages .current-page {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* ─── Cards, postboxes, dashboard widgets ───────────────────────────── */
+body.cb-admin-theme .postbox,
+body.cb-admin-theme .stuffbox,
+body.cb-admin-theme .card,
+body.cb-admin-theme .plugin-card,
+body.cb-admin-theme .health-check-accordion,
+body.cb-admin-theme .welcome-panel {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+	box-shadow: none;
+}
+
+body.cb-admin-theme .postbox-header,
+body.cb-admin-theme .postbox .inside,
+body.cb-admin-theme .stuffbox .inside,
+body.cb-admin-theme .card,
+body.cb-admin-theme .plugin-card-top,
+body.cb-admin-theme .plugin-card-bottom,
+body.cb-admin-theme .health-check-accordion-heading,
+body.cb-admin-theme .health-check-accordion-panel {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .postbox-header,
+body.cb-admin-theme .plugin-card-bottom,
+body.cb-admin-theme .health-check-accordion-heading {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside,
+body.cb-admin-theme .postbox .inside,
+body.cb-admin-theme .stuffbox .inside {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .postbox .handle-order-higher,
+body.cb-admin-theme .postbox .handle-order-lower,
+body.cb-admin-theme .postbox .handlediv,
+body.cb-admin-theme .postbox .toggle-indicator {
+	color: var(--cb-text-muted);
+}
+
+/* ─── Notices ────────────────────────────────────────────────────────── */
+body.cb-admin-theme .notice,
+body.cb-admin-theme div.updated,
+body.cb-admin-theme div.error {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	border-left-width: 4px;
+	color: var(--cb-text);
+	box-shadow: none;
+}
+
+body.cb-admin-theme .notice-success,
+body.cb-admin-theme div.updated {
+	background: var(--cb-tint-success);
+	border-left-color: var(--cb-success);
+}
+
+body.cb-admin-theme .notice-warning {
+	background: var(--cb-tint-warning);
+	border-left-color: var(--cb-warning);
+}
+
+body.cb-admin-theme .notice-error,
+body.cb-admin-theme div.error {
+	background: var(--cb-tint-danger);
+	border-left-color: var(--cb-danger);
+}
+
+body.cb-admin-theme .notice-info,
+body.cb-admin-theme .notice:not(.notice-success):not(.notice-warning):not(.notice-error) {
+	background: var(--cb-tint-accent);
+	border-left-color: var(--cb-accent);
+}
+
+body.cb-admin-theme .notice p,
+body.cb-admin-theme .notice strong,
+body.cb-admin-theme div.updated p,
+body.cb-admin-theme div.error p {
+	color: inherit;
+}
+
+body.cb-admin-theme .notice-dismiss::before {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .notice-dismiss:hover::before,
+body.cb-admin-theme .notice-dismiss:focus::before {
+	color: var(--cb-text-strong);
+}
+
+/* ─── Native nav tabs + screen meta ─────────────────────────────────── */
+body.cb-admin-theme .nav-tab-wrapper,
+body.cb-admin-theme .wrap h2.nav-tab-wrapper,
+body.cb-admin-theme .wrap h1.nav-tab-wrapper {
+	border-bottom-color: var(--cb-border);
+}
+
+body.cb-admin-theme .nav-tab {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .nav-tab:hover,
+body.cb-admin-theme .nav-tab:focus {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-interactive-border-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .nav-tab-active,
+body.cb-admin-theme .nav-tab-active:hover,
+body.cb-admin-theme .nav-tab-active:focus {
+	background: var(--cb-surface-0);
+	border-bottom-color: var(--cb-surface-0);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #screen-meta,
+body.cb-admin-theme #contextual-help-wrap,
+body.cb-admin-theme #screen-options-wrap {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #screen-meta-links .show-settings {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-muted);
+}
+
+/* ─── Media Library / core overlays ─────────────────────────────────── */
+body.cb-admin-theme .media-modal,
+body.cb-admin-theme .media-frame,
+body.cb-admin-theme .media-frame-content,
+body.cb-admin-theme .media-frame-title,
+body.cb-admin-theme .media-frame-router,
+body.cb-admin-theme .media-frame-toolbar,
+body.cb-admin-theme .media-sidebar,
+body.cb-admin-theme .media-menu,
+body.cb-admin-theme .attachments-browser .media-toolbar {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .media-menu > a,
+body.cb-admin-theme .media-router .media-menu-item,
+body.cb-admin-theme .media-frame a {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .media-menu > a:hover,
+body.cb-admin-theme .media-menu > a:focus,
+body.cb-admin-theme .media-menu > a.active,
+body.cb-admin-theme .media-router .media-menu-item:hover,
+body.cb-admin-theme .media-router .media-menu-item:focus,
+body.cb-admin-theme .media-router .media-menu-item.active {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .attachment .thumbnail,
+body.cb-admin-theme .attachment-preview,
+body.cb-admin-theme .media-modal-content {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .attachment.details,
+body.cb-admin-theme .attachment.selected {
+	box-shadow: inset 0 0 0 3px var(--cb-accent);
+}
+
+/* ─── Themes / plugins core screens ─────────────────────────────────── */
+body.cb-admin-theme .theme-browser .theme,
+body.cb-admin-theme .theme-overlay .theme-wrap,
+body.cb-admin-theme .theme-overlay .theme-about,
+body.cb-admin-theme .theme-overlay .theme-actions {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .theme-browser .theme .theme-name,
+body.cb-admin-theme .theme-overlay .theme-name {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+/* ─── Block Editor chrome ───────────────────────────────────────────── */
+body.cb-admin-theme.block-editor-page {
+	--wp-admin-theme-color: var(--cb-accent);
+	--wp-admin-theme-color-darker-10: var(--cb-accent);
+	--wp-admin-theme-color-darker-20: var(--cb-accent-strong);
+}
+
+body.cb-admin-theme.block-editor-page .interface-interface-skeleton__header,
+body.cb-admin-theme.block-editor-page .interface-interface-skeleton__sidebar,
+body.cb-admin-theme.block-editor-page .interface-complementary-area,
+body.cb-admin-theme.block-editor-page .components-panel,
+body.cb-admin-theme.block-editor-page .components-panel__body,
+body.cb-admin-theme.block-editor-page .components-popover__content,
+body.cb-admin-theme.block-editor-page .components-dropdown-menu__menu,
+body.cb-admin-theme.block-editor-page .components-modal__frame {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.block-editor-page .interface-interface-skeleton__header,
+body.cb-admin-theme.block-editor-page .components-panel__body-title,
+body.cb-admin-theme.block-editor-page .components-panel__body-toggle {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.block-editor-page .components-button:not(.is-primary):not(.is-destructive) {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.block-editor-page .components-button:not(.is-primary):not(.is-destructive):hover,
+body.cb-admin-theme.block-editor-page .components-button:not(.is-primary):not(.is-destructive):focus {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+/* The actual editor content canvas is intentionally not themed here. It must
+ * continue to represent the content/site styling rather than the admin chrome. */

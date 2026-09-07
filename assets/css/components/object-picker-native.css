@@ -16,14 +16,15 @@
 	min-height: 36px;
 	box-sizing: border-box;
 	padding: 6px;
-	background: #fff;
-	border: 1px solid #8c8f94;
+	background: var(--cb-surface-1, #fff);
+	border: 1px solid var(--cb-border, #8c8f94);
 	border-radius: 4px;
+	color: var(--cb-text, #1d2327);
 }
 
 .cb-core-object-picker__selected-empty {
 	align-self: center;
-	color: #646970;
+	color: var(--cb-text-muted, #646970);
 	font-size: 12px;
 }
 
@@ -33,9 +34,10 @@
 	gap: 6px;
 	max-width: 100%;
 	padding: 3px 7px;
-	background: #f6f7f7;
-	border: 1px solid #c3c4c7;
+	background: var(--cb-surface-2, #f6f7f7);
+	border: 1px solid var(--cb-border, #c3c4c7);
 	border-radius: 3px;
+	color: var(--cb-text, #1d2327);
 }
 
 .cb-core-object-picker__chip-copy {
@@ -49,11 +51,12 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	color: var(--cb-text-strong, #1d2327);
 }
 
 .cb-core-object-picker__chip-meta,
 .cb-core-object-picker__result-meta {
-	color: #646970;
+	color: var(--cb-text-muted, #646970);
 	font-size: 12px;
 }
 
@@ -61,6 +64,7 @@
 	font-size: 18px;
 	line-height: 1;
 	text-decoration: none;
+	color: var(--cb-accent, #2271b1);
 }
 
 .cb-core-object-picker__search {
@@ -79,10 +83,11 @@
 	box-sizing: border-box;
 	margin-top: 4px;
 	padding: 4px;
-	background: #fff;
-	border: 1px solid #8c8f94;
+	background: var(--cb-surface-1, #fff);
+	border: 1px solid var(--cb-border, #8c8f94);
 	border-radius: 4px;
-	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+	box-shadow: var(--cb-shadow-md, 0 3px 8px rgba(0, 0, 0, 0.12));
+	color: var(--cb-text, #1d2327);
 }
 
 .cb-core-object-picker__result {
@@ -96,24 +101,26 @@
 	background: transparent;
 	border: 0;
 	border-radius: 2px;
+	color: var(--cb-text, #1d2327);
 	text-align: left;
 	white-space: normal;
 }
 
 .cb-core-object-picker__result:hover,
 .cb-core-object-picker__result:focus-visible {
-	background: #f0f0f1;
-	outline: 2px solid #2271b1;
+	background: var(--cb-interactive-hover, #f0f0f1);
+	outline: 2px solid var(--cb-interactive-focus, #2271b1);
 	outline-offset: -2px;
 }
 
 .cb-core-object-picker__result-label {
 	font-weight: 600;
+	color: var(--cb-text-strong, #1d2327);
 }
 
 .cb-core-object-picker__empty {
 	padding: 10px;
-	color: #646970;
+	color: var(--cb-text-muted, #646970);
 	text-align: center;
 }
 

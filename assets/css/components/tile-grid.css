@@ -117,7 +117,7 @@
 
 .cb-core-tile--navigation:focus-visible,
 .cb-core-tile--status-nav:focus-visible {
-	box-shadow: var(--cb-interactive-focus);
+	box-shadow: 0 0 0 2px var(--cb-interactive-focus);
 }
 
 .cb-core-tile--navigation .cb-core-tile__kicker,
