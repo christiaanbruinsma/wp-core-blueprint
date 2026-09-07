@@ -160,7 +160,20 @@
 	});
 
 	if (document.body) {
-		const frameObserver = new MutationObserver(scheduleFrameSync);
+		const frameObserver = new MutationObserver(function (mutations) {
+			for (const mutation of mutations) {
+				for (const node of mutation.addedNodes) {
+					if (!(node instanceof Element)) {
+						continue;
+					}
+
+					if ((node instanceof HTMLIFrameElement && node.matches(editorFrameSelector)) || node.querySelector(editorFrameSelector)) {
+						scheduleFrameSync();
+						return;
+					}
+				}
+			}
+		});
 		frameObserver.observe(document.body, { childList: true, subtree: true });
 	}
 
