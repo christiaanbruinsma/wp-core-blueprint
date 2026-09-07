@@ -1,13 +1,9 @@
 /**
  * Core Blueprint Admin Theme browser API.
  *
- * CSS tokens remain the primary integration contract. This small runtime exists
- * for interfaces that must redraw non-CSS surfaces (charts, canvases, editors)
- * when the HUD changes theme without a page reload.
- *
- * WordPress Core presentation adapters are Dark-only. Light intentionally falls
- * back to native WordPress presentation while Core Blueprint components keep
- * using the shared semantic token contract in both modes.
+ * CSS tokens remain the primary integration contract. This runtime exists for
+ * interfaces that must redraw non-CSS surfaces and for synchronising theme state
+ * into Gutenberg's same-origin editor iframe during live HUD changes.
  *
  * Public API:
  *   window.cbAdminTheme.theme()
@@ -28,12 +24,16 @@
 	const root = document.documentElement;
 	const adapterLinkSelector = [
 		'link#cb-core-css-admin-theme-css',
-		'link[id^="cb-core-css-admin-theme-core-"]',
-		'link[id^="cb-core-css-admin-theme-integration-"]',
+		'link[id^="cb-core-css-admin-theme-"]',
+	].join(',');
+	const editorFrameSelector = [
+		'iframe[name="editor-canvas"]',
+		'.block-editor-iframe__container iframe',
 	].join(',');
 
 	let lastState = readState();
 	let pending = false;
+	let frameSyncPending = false;
 
 	function readState() {
 		return {
@@ -47,15 +47,70 @@
 		return { theme: current.theme, mode: current.mode };
 	}
 
-	function syncAdapterMedia(mode) {
+	function setState(target, nextState) {
+		if (!target) {
+			return;
+		}
+
+		if (nextState.theme) {
+			target.setAttribute('data-cb-theme', nextState.theme);
+		} else {
+			target.removeAttribute('data-cb-theme');
+		}
+
+		if (nextState.mode) {
+			target.setAttribute('data-cb-mode', nextState.mode);
+		} else {
+			target.removeAttribute('data-cb-mode');
+		}
+	}
+
+	function syncAdapterMediaInDocument(doc, mode) {
 		const targetMedia = mode === 'dark' ? 'all' : 'not all';
-		const links = document.querySelectorAll(adapterLinkSelector);
+		const links = doc.querySelectorAll(adapterLinkSelector);
 
 		for (const link of links) {
-			if (link instanceof HTMLLinkElement) {
+			if (link instanceof HTMLLinkElement || link.tagName === 'LINK') {
 				link.media = targetMedia;
 			}
 		}
+	}
+
+	function syncEditorFrame(frame, nextState) {
+		try {
+			const doc = frame.contentDocument;
+			if (!doc || !doc.documentElement) {
+				return;
+			}
+
+			setState(doc.documentElement, nextState);
+			setState(doc.body, nextState);
+			syncAdapterMediaInDocument(doc, nextState.mode);
+		} catch (error) {
+			// Gutenberg's editor iframe is same-origin. Ignore unrelated/cross-origin
+			// frames defensively rather than treating them as theme integration bugs.
+		}
+	}
+
+	function syncEditorFrames(nextState) {
+		const frames = document.querySelectorAll(editorFrameSelector);
+		for (const frame of frames) {
+			if (frame instanceof HTMLIFrameElement) {
+				syncEditorFrame(frame, nextState);
+			}
+		}
+	}
+
+	function scheduleFrameSync() {
+		if (frameSyncPending) {
+			return;
+		}
+
+		frameSyncPending = true;
+		requestAnimationFrame(function () {
+			frameSyncPending = false;
+			syncEditorFrames(readState());
+		});
 	}
 
 	window.cbAdminTheme = Object.freeze({
@@ -77,7 +132,8 @@
 
 		const previous = lastState;
 		lastState = nextState;
-		syncAdapterMedia(nextState.mode);
+		syncAdapterMediaInDocument(document, nextState.mode);
+		syncEditorFrames(nextState);
 		dispatch('cb:admin-theme-change', {
 			theme: nextState.theme,
 			mode: nextState.mode,
@@ -86,7 +142,7 @@
 		});
 	}
 
-	const observer = new MutationObserver(function (mutations) {
+	const themeObserver = new MutationObserver(function (mutations) {
 		for (const mutation of mutations) {
 			if (mutation.type === 'attributes' && (mutation.attributeName === 'data-cb-theme' || mutation.attributeName === 'data-cb-mode')) {
 				if (!pending) {
@@ -98,14 +154,26 @@
 		}
 	});
 
-	observer.observe(root, {
+	themeObserver.observe(root, {
 		attributes: true,
 		attributeFilter: ['data-cb-theme', 'data-cb-mode'],
 	});
 
-	// Align server-rendered media attributes with the browser-resolved mode.
-	// This is especially important for Auto, where PHP intentionally emits a
-	// prefers-color-scheme media query before the browser resolves final state.
-	syncAdapterMedia(lastState.mode);
+	if (document.body) {
+		const frameObserver = new MutationObserver(scheduleFrameSync);
+		frameObserver.observe(document.body, { childList: true, subtree: true });
+	}
+
+	document.addEventListener('load', function (event) {
+		const target = event.target;
+		if (target instanceof HTMLIFrameElement && target.matches(editorFrameSelector)) {
+			syncEditorFrame(target, readState());
+		}
+	}, true);
+
+	// Align server-rendered media attributes with the browser-resolved mode and
+	// mirror the resolved state into Gutenberg's iframe on initial load.
+	syncAdapterMediaInDocument(document, lastState.mode);
+	syncEditorFrames(lastState);
 	dispatch('cb:admin-theme-ready', state());
 })();
