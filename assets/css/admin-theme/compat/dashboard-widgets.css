@@ -1,0 +1,52 @@
+/**
+ * Generic WordPress dashboard-widget compatibility normalization.
+ *
+ * This layer is intentionally constrained to ordinary presentation primitives
+ * inside WordPress postbox widgets. It does not own plugin layouts, charts,
+ * brand colors, status indicators or application-specific composition.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* Some dashboard plugins ship high-specificity `!important` heading colors. */
+body.cb-admin-theme #dashboard-widgets .postbox .inside h1,
+body.cb-admin-theme #dashboard-widgets .postbox .inside h2,
+body.cb-admin-theme #dashboard-widgets .postbox .inside h3,
+body.cb-admin-theme #dashboard-widgets .postbox .inside h4,
+body.cb-admin-theme #dashboard-widgets .postbox .inside h5,
+body.cb-admin-theme #dashboard-widgets .postbox .inside h6 {
+	color: var(--cb-text-strong) !important;
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside strong {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) th,
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) td {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) thead th,
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) thead td {
+	background-color: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) tbody tr:nth-child(odd) > th,
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) tbody tr:nth-child(odd) > td {
+	background-color: var(--cb-surface-1);
+}
+
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) tbody tr:nth-child(even) > th,
+body.cb-admin-theme #dashboard-widgets .postbox .inside table:not([role="presentation"]) tbody tr:nth-child(even) > td {
+	background-color: var(--cb-surface-2);
+}
