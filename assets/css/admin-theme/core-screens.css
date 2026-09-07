@@ -1,0 +1,160 @@
+/**
+ * WordPress Core screen adapters for the Core Blueprint Admin Theme.
+ *
+ * Loaded only while the resolved admin mode is Dark. Keep this file limited to
+ * WordPress-owned screen surfaces that are not already covered by the generic
+ * admin-theme.css primitive layer.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+/* ─── Plugin / theme discovery filter bar ───────────────────────────── */
+.wp-filter {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+	box-shadow: none;
+}
+
+.wp-filter .filter-links a,
+.wp-filter .filter-links .current,
+.wp-filter .search-form label,
+.wp-filter .favorites-form label {
+	color: var(--cb-text-muted);
+}
+
+.wp-filter .filter-links a:hover,
+.wp-filter .filter-links a:focus,
+.wp-filter .filter-links .current {
+	color: var(--cb-text-strong);
+}
+
+.wp-filter .filter-count .count {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* ─── Site Health ───────────────────────────────────────────────────── */
+.health-check-header,
+.privacy-settings-header {
+	background: var(--cb-surface-1);
+	border-bottom-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.health-check-header h1,
+.health-check-header h2,
+.privacy-settings-header h1,
+.privacy-settings-header h2 {
+	color: var(--cb-text-strong);
+}
+
+.health-check-header .health-check-title-section,
+.health-check-header .site-health-progress-label,
+.health-check-header .site-health-progress-count,
+.health-check-tabs-wrapper .health-check-tab,
+.privacy-settings-tabs-wrapper .privacy-settings-tab {
+	color: var(--cb-text-muted);
+}
+
+.health-check-tabs-wrapper .health-check-tab.active,
+.health-check-tabs-wrapper .health-check-tab:focus,
+.health-check-tabs-wrapper .health-check-tab:hover,
+.privacy-settings-tabs-wrapper .privacy-settings-tab.active,
+.privacy-settings-tabs-wrapper .privacy-settings-tab:focus,
+.privacy-settings-tabs-wrapper .privacy-settings-tab:hover {
+	color: var(--cb-text-strong);
+}
+
+.health-check-accordion,
+.privacy-settings-accordion {
+	border-color: var(--cb-border);
+}
+
+.health-check-accordion-heading,
+.privacy-settings-accordion-heading {
+	border-color: var(--cb-border);
+}
+
+.health-check-accordion-trigger,
+.privacy-settings-accordion-trigger,
+.site-health-view-passed,
+.privacy-settings-view-passed {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+.health-check-accordion-trigger:hover,
+.health-check-accordion-trigger:focus,
+.privacy-settings-accordion-trigger:hover,
+.privacy-settings-accordion-trigger:focus,
+.site-health-view-passed:hover,
+.site-health-view-passed:focus,
+.privacy-settings-view-passed:hover,
+.privacy-settings-view-passed:focus {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+.health-check-accordion-panel,
+.privacy-settings-accordion-panel {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.health-check-accordion-trigger .icon,
+.site-health-view-passed .icon,
+.privacy-settings-accordion-trigger .icon,
+.privacy-settings-view-passed .icon {
+	border-color: var(--cb-text-muted);
+}
+
+/* ─── Dashboard Activity / Events ───────────────────────────────────── */
+#dashboard_right_now .sub,
+#future-posts li:nth-child(odd),
+#published-posts li:nth-child(odd),
+#activity-widget #the-comment-list .comment-item {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+}
+
+#dashboard_right_now .sub,
+#dashboard_activity .subsubsub,
+.activity-block,
+#activity-widget #the-comment-list .comment-item:first-child,
+.community-events li:first-child,
+.community-events li ~ li,
+.community-events .activity-block.last,
+.community-events-footer,
+.js #dashboard_quick_press .drafts,
+.js #dashboard_quick_press .no-drafts {
+	border-color: var(--cb-border);
+}
+
+#dashboard_right_now .sub,
+#dashboard_right_now .sub h3,
+#future-posts li,
+#published-posts li,
+#dashboard_activity .no-activity p,
+#dashboard_activity .subsubsub a .count,
+#dashboard_activity .subsubsub a.current .count,
+.activity-block .subsubsub li,
+#dashboard_quick_press .drafts li time,
+#dashboard_primary .rss-widget span,
+#dashboard_primary .rss-widget span.rss-date,
+.community-events li,
+.community-events-footer {
+	color: var(--cb-text-muted);
+}
+
+.community-events ul {
+	background: var(--cb-surface-2);
+}
+
+#activity-widget #the-comment-list .unapproved {
+	background: var(--cb-tint-warning);
+}
