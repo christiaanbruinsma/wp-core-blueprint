@@ -36,6 +36,24 @@
 	color: var(--cb-text);
 }
 
+/* ─── Plugin / theme upload form ────────────────────────────────────── */
+.upload-plugin .wp-upload-form,
+.upload-theme .wp-upload-form {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+.upload-plugin .wp-upload-form label,
+.upload-theme .wp-upload-form label {
+	color: var(--cb-text-strong);
+}
+
+.upload-plugin .wp-upload-form input[type="file"],
+.upload-theme .wp-upload-form input[type="file"] {
+	color: var(--cb-text);
+}
+
 /* ─── Site Health ───────────────────────────────────────────────────── */
 .health-check-header,
 .privacy-settings-header {
