@@ -68,7 +68,7 @@ body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive) {
 
 body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive):hover,
 body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive):focus,
-body.cb-admin-theme .components-button.is-pressed {
+body.cb-admin-theme .components-button.is-pressed:not(.is-primary):not(.is-destructive) {
 	background: var(--cb-interactive-hover);
 	color: var(--cb-text-strong);
 }
