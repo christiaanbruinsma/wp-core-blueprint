@@ -27,14 +27,26 @@ final class AdminThemeAdapters {
 
 	private const TYPOGRAPHY_HANDLE = 'cb-core-css-admin-theme-typography';
 	private const CORE_HANDLE = 'cb-core-css-admin-theme-core-screens';
+	private const CORE_DASHBOARD_HANDLE = 'cb-core-css-admin-theme-core-dashboard';
+	private const CORE_PLUGINS_HANDLE = 'cb-core-css-admin-theme-core-plugins';
+	private const DASHBOARD_COMPAT_HANDLE = 'cb-core-css-admin-theme-compat-dashboard-widgets';
+	private const GUTENBERG_HANDLE = 'cb-core-css-admin-theme-gutenberg';
+	private const GUTENBERG_TOKENS_HANDLE = 'cb-core-css-admin-theme-gutenberg-tokens';
+	private const GUTENBERG_CANVAS_HANDLE = 'cb-core-css-admin-theme-gutenberg-canvas';
 	private const HAPPYFILES_HANDLE = 'cb-core-css-admin-theme-integration-happyfiles';
+	private const BRICKS_HANDLE = 'cb-core-css-admin-theme-integration-bricks';
 
 	/** @var array<string, true> */
 	private const DARK_ADAPTER_HANDLES = [
 		'cb-core-css-admin-theme' => true,
 		self::TYPOGRAPHY_HANDLE => true,
 		self::CORE_HANDLE => true,
+		self::CORE_DASHBOARD_HANDLE => true,
+		self::CORE_PLUGINS_HANDLE => true,
+		self::DASHBOARD_COMPAT_HANDLE => true,
+		self::GUTENBERG_HANDLE => true,
 		self::HAPPYFILES_HANDLE => true,
+		self::BRICKS_HANDLE => true,
 	];
 
 	private static bool $initialized = false;
@@ -46,13 +58,19 @@ final class AdminThemeAdapters {
 
 		self::$initialized = true;
 
-		// AdminTheme enqueues the canonical adapter at priority 0. Add modular
-		// WordPress Core / curated integration layers immediately afterwards.
-		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue' ], 1 );
+		// Base enqueues the canonical adapter at priority 0. Presentation adapters
+		// intentionally enqueue late so they can normalize Core/plugin hardcoded
+		// light colors without requiring vendor-specific specificity wars.
+		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue' ], 99 );
 
-		// The canonical adapter stylesheet is intentionally dark-only. Using the
-		// media attribute avoids duplicating hundreds of selectors just to scope
-		// every rule to data-cb-mode="dark", while remaining live-switchable.
+		// Gutenberg has a separate UI shell and (WordPress 7.1+) an always-iframed
+		// content canvas. Use the official editor hooks for both boundaries.
+		add_action( 'enqueue_block_editor_assets', [ self::class, 'enqueue_block_editor_assets' ] );
+		add_action( 'enqueue_block_assets', [ self::class, 'enqueue_block_content_assets' ] );
+
+		// The canonical WordPress/curated adapter stylesheets are dark-only. Using
+		// media attributes keeps Light close to native WordPress and remains
+		// live-switchable through the browser API.
 		add_filter( 'style_loader_tag', [ self::class, 'filter_style_loader_tag' ], 10, 4 );
 	}
 
@@ -75,10 +93,29 @@ final class AdminThemeAdapters {
 			CB_CORE_VERSION
 		);
 
-		// HappyFiles is a deliberate first curated bridge: it is frequently used
-		// alongside Bricks and exposes useful --hf-* presentation variables. Use
-		// either its public bootstrap class or its registered taxonomy as a stable
-		// runtime signal instead of guessing a plugin install path.
+		wp_enqueue_style(
+			self::CORE_DASHBOARD_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/core/dashboard.css',
+			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
+			CB_CORE_VERSION
+		);
+
+		wp_enqueue_style(
+			self::CORE_PLUGINS_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/core/plugins.css',
+			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_HANDLE ],
+			CB_CORE_VERSION
+		);
+
+		wp_enqueue_style(
+			self::DASHBOARD_COMPAT_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/compat/dashboard-widgets.css',
+			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE, self::CORE_DASHBOARD_HANDLE ],
+			CB_CORE_VERSION
+		);
+
+		// HappyFiles is a deliberate curated bridge. It exposes useful --hf-*
+		// presentation variables but also ships a few hardcoded light surfaces.
 		if ( class_exists( '\\HappyFiles\\Init' ) || taxonomy_exists( 'happyfiles_category' ) ) {
 			wp_enqueue_style(
 				self::HAPPYFILES_HANDLE,
@@ -87,6 +124,57 @@ final class AdminThemeAdapters {
 				CB_CORE_VERSION
 			);
 		}
+
+		// Bricks is a strategic curated integration for the suite. The adapter is
+		// scoped to Bricks-owned admin wrappers and preserves Bricks brand/layout.
+		if ( defined( 'BRICKS_VERSION' ) && BRICKS_VERSION ) {
+			wp_enqueue_style(
+				self::BRICKS_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/bricks.css',
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE ],
+				CB_CORE_VERSION
+			);
+		}
+	}
+
+	/** Enqueue Gutenberg UI chrome through the official editor UI hook. */
+	public static function enqueue_block_editor_assets(): void {
+		if ( ! AdminTheme::applies() || ! self::is_block_editor_screen() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			self::GUTENBERG_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/gutenberg.css',
+			[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE ],
+			CB_CORE_VERSION
+		);
+	}
+
+	/**
+	 * Enqueue editor-content assets through enqueue_block_assets so WordPress
+	 * includes them in the Gutenberg iframe. The canvas stylesheet is always
+	 * present in block-editor admin requests and self-scopes to data-cb-mode=dark;
+	 * this enables live HUD switching without a reload.
+	 */
+	public static function enqueue_block_content_assets(): void {
+		if ( ! is_admin() || ! AdminTheme::applies() || ! self::is_block_editor_screen() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			self::GUTENBERG_TOKENS_HANDLE,
+			CB_CORE_URL . 'assets/css/tokens.css',
+			[],
+			CB_CORE_VERSION
+		);
+
+		wp_enqueue_style(
+			self::GUTENBERG_CANVAS_HANDLE,
+			CB_CORE_URL . 'assets/css/admin-theme/gutenberg-canvas.css',
+			[ self::GUTENBERG_TOKENS_HANDLE ],
+			CB_CORE_VERSION
+		);
 	}
 
 	/**
@@ -119,5 +207,14 @@ final class AdminThemeAdapters {
 		}
 
 		return 'dark' === AdminTheme::mode() ? 'all' : 'not all';
+	}
+
+	private static function is_block_editor_screen(): bool {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		return $screen instanceof \WP_Screen && $screen->is_block_editor();
 	}
 }
