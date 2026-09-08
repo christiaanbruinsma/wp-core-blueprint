@@ -1,0 +1,88 @@
+/**
+ * WooCommerce Admin shared React component primitives.
+ *
+ * These selectors cover reusable Woo components across Home, Analytics,
+ * reports and settings without creating per-report skins.
+ */
+body.cb-admin-theme .woocommerce-chart,
+body.cb-admin-theme .woocommerce-summary,
+body.cb-admin-theme .woocommerce-table,
+body.cb-admin-theme .woocommerce-list,
+body.cb-admin-theme .woocommerce-search-list__list,
+body.cb-admin-theme .woocommerce-select-control .components-base-control,
+body.cb-admin-theme .woocommerce-tree-select-control .components-base-control,
+body.cb-admin-theme .woocommerce-tree-select-control__tree {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-chart .woocommerce-chart__header,
+body.cb-admin-theme .woocommerce-chart .woocommerce-chart__body,
+body.cb-admin-theme .woocommerce-table__header,
+body.cb-admin-theme .woocommerce-table__item,
+body.cb-admin-theme .woocommerce-list__item,
+body.cb-admin-theme .woocommerce-summary__item,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-table__header,
+body.cb-admin-theme .woocommerce-summary__item,
+body.cb-admin-theme .woocommerce-summary__item-container,
+body.cb-admin-theme .woocommerce-calendar__date-picker-title {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme .woocommerce-summary__item.is-selected,
+body.cb-admin-theme .woocommerce-table .woocommerce-pagination,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item,
+body.cb-admin-theme .woocommerce-select-control .components-base-control,
+body.cb-admin-theme .woocommerce-tree-select-control .components-base-control {
+	background: var(--cb-surface-1);
+}
+
+body.cb-admin-theme .woocommerce-table__table tr:hover,
+body.cb-admin-theme .woocommerce-table__table tr:focus-within,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item:hover,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item:active,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item:focus,
+body.cb-admin-theme .woocommerce-list__item:hover,
+body.cb-admin-theme .woocommerce-list__item:focus-within {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .woocommerce-chart__title,
+body.cb-admin-theme .woocommerce-summary__item-label,
+body.cb-admin-theme .woocommerce-summary__item-data,
+body.cb-admin-theme .woocommerce-table__header,
+body.cb-admin-theme .woocommerce-list__item-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-calendar__date-picker-title,
+body.cb-admin-theme .woocommerce-filters-advanced__add-button,
+body.cb-admin-theme .woocommerce-search-list__list .woocommerce-search-list__item,
+body.cb-admin-theme .woocommerce-tree-select-control__label,
+body.cb-admin-theme .woocommerce-tree-select-control__help,
+body.cb-admin-theme .woocommerce-select-control__label,
+body.cb-admin-theme .woocommerce-select-control__help {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-filters-advanced__fieldset,
+body.cb-admin-theme .woocommerce-filters-advanced__add-dropdown,
+body.cb-admin-theme .woocommerce-pagination,
+body.cb-admin-theme .woocommerce-timeline,
+body.cb-admin-theme .woocommerce-tag {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .woocommerce-summary .components-popover:not(.components-tooltip) .components-popover__content,
+body.cb-admin-theme .woocommerce-filters-advanced__add-dropdown,
+body.cb-admin-theme .woocommerce-search-list__list > [role="menu"] {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
