@@ -144,6 +144,30 @@ body.cb-admin-theme .woocommerce-admin-marketing-product-icon {
 	background: var(--cb-surface-2);
 }
 
+/* Shared promotional cards appear on Orders, Coupons and Marketplace. Preserve
+ * promo imagery/CTA semantics and normalize neutral card/text presentation. */
+body.cb-admin-theme .promo-card:not(.has-background),
+body.cb-admin-theme .woocommerce-marketplace-orders-promo .promo-card {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .promo-card:not(.has-background) .promo-card__body,
+body.cb-admin-theme .woocommerce-marketplace-orders-promo .promo-card .promo-card__body {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .promo-card .promo-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .promo-card .promo-text,
+body.cb-admin-theme .promo-card .promo-cta-link.woocommerce-admin-dismiss-notification {
+	color: var(--cb-text-muted);
+}
+
 /* Marketplace is a WooCommerce-owned mini application. Preserve product art,
  * ratings, Woo branding and commercial semantics; normalize neutral chrome. */
 body.cb-admin-theme.woocommerce-admin-page__extensions,
