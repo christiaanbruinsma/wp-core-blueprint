@@ -164,6 +164,11 @@ final class Failsafe {
 		$token = bin2hex( random_bytes( 32 ) ); // 64 chars
 		update_option( CB_CORE_BYPASS_TOK, wp_hash_password( $token ), false );
 
+		// A legitimate rotation starts a new token lifecycle. Reset only the
+		// fixed rejected-attempt bucket so the first rejection against the new
+		// lifecycle is visible while repeated anonymous rejects remain bounded.
+		delete_transient( self::REJECT_AUDIT_GATE );
+
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log( 'failsafe.token_rotated', 'notice', [
 				'hint' => substr( $token, 0, 4 ) . '…',
