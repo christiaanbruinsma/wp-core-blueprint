@@ -145,7 +145,7 @@ final class LogExporter {
 	 * @return int Rows written (excluding header).
 	 */
 	public static function to_csv( $handle, iterable $rows, array $columns ): int {
-		fputcsv( $handle, array_values( $columns ) );
+		fputcsv( $handle, array_values( $columns ), ',', '"', '\\' );
 
 		$written = 0;
 		foreach ( $rows as $row ) {
@@ -157,7 +157,7 @@ final class LogExporter {
 				}
 				$line[] = (string) $value;
 			}
-			fputcsv( $handle, $line );
+			fputcsv( $handle, $line, ',', '"', '\\' );
 			$written++;
 		}
 		return $written;

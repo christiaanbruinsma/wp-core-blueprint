@@ -1,5 +1,16 @@
 # Core Blueprint changelog
 
+> The public launch line was normalized back to `1.0.0-rc1` on 2026-09-06. Older RC entries below are retained as pre-launch development history; the public plugin version remains `1.0.0-rc1` throughout the current Golden Standard closure cycle.
+
+## 1.0.0-rc1 — 2026-09-08
+
+### Golden Standard Gate 1 — PHP 8.4 and CI baseline
+
+- Keep the public plugin version at `1.0.0-rc1`, with Core API and database schema versions unchanged at `1.0`.
+- Make CSV export explicit about the `fputcsv()` escape argument so Base remains clean on PHP 8.4+ without changing the existing CSV escaping behaviour.
+- Align Settings Hub integration fixtures with Privileged Access Protection by explicitly approving administrator identities created for tests rather than weakening the production quarantine boundary.
+- Re-pin the release-package update smoke to an earlier canonical `1.0.0-rc1` main baseline (`9786408510d51fa55ccc070ae3dc4aa5a1190856`) instead of the stale pre-normalization `1.0.0-rc2` baseline.
+
 ## 1.0.0-rc5 — 2026-09-05
 
 ### Modal Foundation confirmation checkbox gate

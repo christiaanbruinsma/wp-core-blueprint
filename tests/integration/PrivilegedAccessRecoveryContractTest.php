@@ -142,23 +142,24 @@ final class CB_Base_Privileged_Access_Recovery_Contract_Test extends WP_UnitTest
     }
 
     public function test_role_policy_repair_re_signs_only_verified_previously_approved_continuity(): void {
-        $actor_id = $this->create_approved_admin_operator();
-        wp_set_current_user( $actor_id );
+        $actor_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+        $actor = get_userdata( $actor_id );
+        self::assertInstanceOf( WP_User::class, $actor );
 
         $unapproved_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
         $unapproved = get_userdata( $unapproved_id );
         self::assertInstanceOf( WP_User::class, $unapproved );
         self::assertFalse( PrivilegedAccessRegistry::is_approved( $unapproved ) );
 
-        // Create known Base-owned role-policy drift without emitting an
-        // intermediate review event, then explicitly approve the actor on that
-        // exact pre-repair state. The repair is allowed to rotate only this
-        // proven signed trust continuity.
+        // Create privilege-bearing Base-owned role-policy drift without emitting
+        // an intermediate review event. cb_manage_roles is forbidden on the
+        // Administrator role and participates in the signed privilege fingerprint,
+        // so canonical repair must remove it and rotate only proven trust continuity.
         $administrator = get_role( 'administrator' );
         self::assertNotNull( $administrator );
         PrivilegedAccessGuard::trusted_mutation(
             static function () use ( $administrator ): void {
-                $administrator->remove_cap( 'cb_core_hud_use' );
+                $administrator->add_cap( 'cb_manage_roles' );
             }
         );
 
@@ -166,6 +167,7 @@ final class CB_Base_Privileged_Access_Recovery_Contract_Test extends WP_UnitTest
         self::assertInstanceOf( WP_User::class, $actor );
         self::assertTrue( PrivilegedAccessRegistry::approve( $actor, 0, 'test_pre_repair_state' ) );
         self::assertFalse( RolePolicySchema::inspect( false, 'test' )['canonical'] );
+        wp_set_current_user( $actor_id );
 
         $result = ( new RepairRolePolicy() )->execute( [] );
         self::assertSame( 'success', $result->status );

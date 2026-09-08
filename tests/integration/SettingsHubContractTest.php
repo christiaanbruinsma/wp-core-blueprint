@@ -4,6 +4,7 @@ declare(strict_types=1);
 use CB\Core\Admin\Pages\Settings as SettingsPage;
 use CB\Core\Admin\SettingsRegistry;
 use CB\Core\ExtensionRegistry;
+use CB\Core\Permissions\PrivilegedAccessRegistry;
 
 final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 
@@ -131,7 +132,7 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 		self::assertArrayNotHasKey( self::FIRST_ID, $visible );
 		self::assertArrayHasKey( self::THIRD_ID, $visible );
 
-		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$admin_id = $this->create_approved_administrator();
 		wp_set_current_user( $admin_id );
 		$visible = SettingsRegistry::visible();
 		self::assertArrayHasKey( self::FIRST_ID, $visible );
@@ -160,7 +161,7 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 	}
 
 	public function test_overview_always_shows_provenance_and_developer_identity(): void {
-		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$admin_id = $this->create_approved_administrator();
 		wp_set_current_user( $admin_id );
 
 		ob_start();
@@ -176,7 +177,7 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 	}
 
 	public function test_direct_third_party_route_keeps_support_boundary_visible(): void {
-		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$admin_id = $this->create_approved_administrator();
 		wp_set_current_user( $admin_id );
 		$_GET['extension'] = self::THIRD_ID;
 
@@ -190,6 +191,14 @@ final class CB_Base_Settings_Hub_Contract_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( 'not by Core Blueprint', $html );
 		self::assertStringContainsString( 'https://example.test/support', $html );
 		self::assertStringContainsString( 'agency-fixture-settings', $html );
+	}
+
+	private function create_approved_administrator(): int {
+		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$user    = get_userdata( $user_id );
+		self::assertInstanceOf( WP_User::class, $user );
+		self::assertTrue( PrivilegedAccessRegistry::approve( $user, 0, 'test_fixture' ) );
+		return $user_id;
 	}
 
 	private function create_fixtures(): void {
