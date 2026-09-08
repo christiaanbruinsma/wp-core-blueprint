@@ -77,20 +77,26 @@ body.cb-admin-theme .editor-document-bar__icon-layout svg {
 	fill: currentColor;
 }
 
-/* The Post / Block tabs header is a distinct Components panel surface. */
+/* The Post / Block tabs header is a distinct @wordpress/ui Tabs surface. Current
+ * Gutenberg renders these controls as role=tab rather than legacy Components
+ * buttons, so target the semantic tab contract as well as older button markup. */
 body.cb-admin-theme .components-panel__header.editor-sidebar__panel-tabs {
 	background: var(--cb-surface-1);
 	border-color: var(--cb-border);
 	color: var(--cb-text);
 }
 
-body.cb-admin-theme .editor-sidebar__panel-tabs .components-button {
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button,
+body.cb-admin-theme .editor-sidebar__panel-tabs [role="tab"] {
 	color: var(--cb-text);
 }
 
 body.cb-admin-theme .editor-sidebar__panel-tabs .components-button:hover,
 body.cb-admin-theme .editor-sidebar__panel-tabs .components-button:focus,
-body.cb-admin-theme .editor-sidebar__panel-tabs .components-button[aria-selected="true"] {
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button[aria-selected="true"],
+body.cb-admin-theme .editor-sidebar__panel-tabs [role="tab"]:hover,
+body.cb-admin-theme .editor-sidebar__panel-tabs [role="tab"]:focus-visible,
+body.cb-admin-theme .editor-sidebar__panel-tabs [role="tab"][aria-selected="true"] {
 	color: var(--cb-text-strong);
 }
 
@@ -128,6 +134,35 @@ body.cb-admin-theme .edit-post-visual-editor,
 body.cb-admin-theme .edit-post-visual-editor__content-area {
 	background: var(--cb-surface-0);
 	border-color: var(--cb-border);
+}
+
+/* Gutenberg's split meta-box view owns a separate white resizable presenter
+ * outside .edit-post-meta-boxes-area. Normalize only that Core-owned chrome;
+ * the resize interaction, dimensions and plugin meta-box layouts stay intact. */
+body.cb-admin-theme .edit-post-meta-boxes-main,
+body.cb-admin-theme .edit-post-meta-boxes-main__presenter {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-main {
+	filter: drop-shadow(0 -1px 0 var(--cb-border));
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-main__presenter {
+	box-shadow: 0 1px var(--cb-border);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-main__presenter > button[aria-expanded] {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-main__presenter > button[role="separator"]::before {
+	background-color: var(--cb-border);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-main__presenter > button[role="separator"]:is(:hover, :focus)::before {
+	background-color: var(--cb-accent);
 }
 
 /* Classic meta boxes remain a supported Gutenberg compatibility surface. Their
