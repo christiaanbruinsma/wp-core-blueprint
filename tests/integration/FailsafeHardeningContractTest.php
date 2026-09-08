@@ -55,4 +55,18 @@ final class CB_Base_Failsafe_Hardening_Contract_Test extends WP_UnitTestCase {
 		self::assertNotSame( $token, $stored, 'The plaintext bypass token was persisted as the stored option value.' );
 		self::assertTrue( wp_check_password( $token, $stored ), 'The persisted bypass token hash does not verify the returned one-time token.' );
 	}
+
+	public function test_admin_rotation_has_no_server_side_plaintext_flash_path(): void {
+		$handler    = (string) file_get_contents( CB_CORE_DIR . 'src/Ajax/Handlers/Failsafe.php' );
+		$page       = (string) file_get_contents( CB_CORE_DIR . 'src/Admin/Pages/Safeguards.php' );
+		$template   = (string) file_get_contents( CB_CORE_DIR . 'templates/failsafe.php' );
+		$client     = (string) file_get_contents( CB_CORE_DIR . 'assets/js/features/failsafe.js' );
+
+		self::assertStringNotContainsString( 'cb_core_new_token_', $handler );
+		self::assertStringNotContainsString( 'cb_core_new_token_', $page );
+		self::assertStringNotContainsString( '$new_token', $template );
+		self::assertStringNotContainsString( 'window.location.href', $client );
+		self::assertStringContainsString( "'bypass_url' => $bypass_url", $handler );
+		self::assertStringContainsString( 'revealBypassUrl( response.data )', $client );
+	}
 }
