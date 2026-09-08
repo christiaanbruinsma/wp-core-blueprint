@@ -18,6 +18,49 @@
 	const draftMaxAge = 5 * 60 * 1000;
 	let editor = null;
 
+	const modeForType = ( type ) => {
+		switch ( type ) {
+			case 'css': return 'text/css';
+			case 'js': return 'text/javascript';
+			case 'html': return 'text/html';
+			default: return 'text/x-php';
+		}
+	};
+
+	const updateShortcodeVisibility = () => {
+		if ( ! shortcodeField || ! locationSelect ) return;
+		shortcodeField.hidden = locationSelect.value !== 'shortcode';
+	};
+
+	const replaceLocationOptions = ( type, preferred = '' ) => {
+		if ( ! locationSelect ) return;
+		const options = locations[ type ] || {};
+		locationSelect.replaceChildren();
+
+		Object.entries( options ).forEach( ( [ value, label ] ) => {
+			const option = document.createElement( 'option' );
+			option.value = value;
+			option.textContent = label;
+			locationSelect.appendChild( option );
+		} );
+
+		if ( Object.prototype.hasOwnProperty.call( options, preferred ) ) {
+			locationSelect.value = preferred;
+		}
+	};
+
+	const rebuildLocations = () => {
+		if ( ! typeSelect || ! locationSelect ) return;
+		const type = typeSelect.value;
+		const previous = locationSelect.value;
+		replaceLocationOptions( type, previous );
+
+		if ( editor?.codemirror ) {
+			editor.codemirror.setOption( 'mode', modeForType( type ) );
+		}
+		updateShortcodeVisibility();
+	};
+
 	const clearRecoveryDraft = () => {
 		try {
 			window.sessionStorage.removeItem( draftKey );
@@ -57,8 +100,20 @@
 			return;
 		}
 
+		// Restore the type first, then rebuild its valid location options before
+		// restoring the selected location. This keeps recovery correct when a
+		// failed save changed both fields at once.
+		const savedType = draft.controls.find( ( saved ) => saved?.name === 'type' );
+		if ( typeSelect && savedType ) {
+			typeSelect.value = String( savedType.value ?? typeSelect.value );
+		}
+		const savedLocation = draft.controls.find( ( saved ) => saved?.name === 'location' );
+		if ( typeSelect && locationSelect ) {
+			replaceLocationOptions( typeSelect.value, String( savedLocation?.value ?? '' ) );
+		}
+
 		draft.controls.forEach( ( saved ) => {
-			if ( ! saved || typeof saved.name !== 'string' ) return;
+			if ( ! saved || typeof saved.name !== 'string' || saved.name === 'location' ) return;
 			const controls = Array.from( editorForm.elements ).filter( ( control ) => control.name === saved.name );
 			controls.forEach( ( control ) => {
 				if ( control.type === 'checkbox' || control.type === 'radio' ) {
@@ -70,6 +125,8 @@
 				}
 			} );
 		} );
+
+		updateShortcodeVisibility();
 
 		// The copy has served its one recovery purpose. A subsequent submit will
 		// create a fresh copy immediately before navigation if needed again.
@@ -102,44 +159,6 @@
 	// Restore before CodeMirror initializes so it starts from the recovered
 	// textarea value rather than needing a second editor synchronization pass.
 	restoreRecoveryDraft();
-
-	const modeForType = ( type ) => {
-		switch ( type ) {
-			case 'css': return 'text/css';
-			case 'js': return 'text/javascript';
-			case 'html': return 'text/html';
-			default: return 'text/x-php';
-		}
-	};
-
-	const updateShortcodeVisibility = () => {
-		if ( ! shortcodeField || ! locationSelect ) return;
-		shortcodeField.hidden = locationSelect.value !== 'shortcode';
-	};
-
-	const rebuildLocations = () => {
-		if ( ! typeSelect || ! locationSelect ) return;
-		const type = typeSelect.value;
-		const options = locations[ type ] || {};
-		const previous = locationSelect.value;
-		locationSelect.replaceChildren();
-
-		Object.entries( options ).forEach( ( [ value, label ] ) => {
-			const option = document.createElement( 'option' );
-			option.value = value;
-			option.textContent = label;
-			locationSelect.appendChild( option );
-		} );
-
-		if ( Object.prototype.hasOwnProperty.call( options, previous ) ) {
-			locationSelect.value = previous;
-		}
-
-		if ( editor?.codemirror ) {
-			editor.codemirror.setOption( 'mode', modeForType( type ) );
-		}
-		updateShortcodeVisibility();
-	};
 
 	if ( codeTextarea && window.wp?.codeEditor?.initialize ) {
 		const settings = data.editor && typeof data.editor === 'object'
