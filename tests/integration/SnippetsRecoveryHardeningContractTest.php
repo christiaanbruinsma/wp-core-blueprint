@@ -21,5 +21,8 @@ final class CB_Base_Snippets_Recovery_Hardening_Contract_Test extends WP_UnitTes
 		self::assertStringContainsString( 'const draftMaxAge = 5 * 60 * 1000;', $script );
 		self::assertStringContainsString( 'clearRecoveryDraft();', $script );
 		self::assertStringContainsString( "editor?.codemirror?.save?.();", $script );
+		self::assertStringContainsString( 'replaceLocationOptions( typeSelect.value', $script );
+		self::assertStringContainsString( "saved?.name === 'type'", $script );
+		self::assertStringContainsString( "saved?.name === 'location'", $script );
 	}
 }
