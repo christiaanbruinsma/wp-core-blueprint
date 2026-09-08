@@ -143,12 +143,6 @@ final class Page extends PageBase {
 		$snippet = array_replace( Schema::default_meta(), is_array( $snippet ) ? $snippet : [] );
 		$code = '' !== $id ? Repository::code( $id ) : '';
 
-		$draft = Actions::pull_draft( $id );
-		if ( is_array( $draft ) && is_array( $draft['input'] ?? null ) && is_string( $draft['code'] ?? null ) ) {
-			$snippet = array_replace( $snippet, $draft['input'] );
-			$code    = $draft['code'];
-		}
-
 		$type = sanitize_key( (string) ( $snippet['type'] ?? 'php' ) );
 		if ( ! in_array( $type, Schema::TYPES, true ) ) {
 			$type = 'php';
