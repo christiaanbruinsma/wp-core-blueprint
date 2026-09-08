@@ -21,8 +21,9 @@ final class CB_Base_Failsafe_Hardening_Contract_Test extends WP_UnitTestCase {
 	}
 
 	public function test_rejected_bypass_audit_writes_are_bounded_per_abuse_window(): void {
+		$event_type = AuditLog::normalize_event_type( 'failsafe.bypass_url_rejected' );
 		$before = AuditLog::query( [
-			'event_type' => 'failsafe.bypass_url_rejected',
+			'event_type' => $event_type,
 			'per_page'   => 1,
 		] )['total'];
 
@@ -32,7 +33,7 @@ final class CB_Base_Failsafe_Hardening_Contract_Test extends WP_UnitTestCase {
 		Failsafe::maybe_handle_bypass_url();
 
 		$during_gate = AuditLog::query( [
-			'event_type' => 'failsafe.bypass_url_rejected',
+			'event_type' => $event_type,
 			'per_page'   => 1,
 		] )['total'];
 		self::assertSame( $before + 1, $during_gate, 'Repeated rejected bypass hits produced repeated database audit writes.' );
@@ -41,7 +42,7 @@ final class CB_Base_Failsafe_Hardening_Contract_Test extends WP_UnitTestCase {
 		Failsafe::maybe_handle_bypass_url();
 
 		$after_new_window = AuditLog::query( [
-			'event_type' => 'failsafe.bypass_url_rejected',
+			'event_type' => $event_type,
 			'per_page'   => 1,
 		] )['total'];
 		self::assertSame( $before + 2, $after_new_window, 'A new abuse window did not restore rejected-attempt audit visibility.' );
