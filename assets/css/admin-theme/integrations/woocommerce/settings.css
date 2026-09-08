@@ -1,0 +1,110 @@
+/**
+ * WooCommerce 11.1+ Settings UI / WordPress Design System bridge.
+ */
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page {
+	--wpds-color-background-surface-neutral: var(--cb-surface-1);
+	--wpds-color-background-surface-neutral-strong: var(--cb-surface-1);
+	--wpds-color-background-surface-neutral-weak: var(--cb-surface-2);
+	--wpds-color-foreground-content-neutral: var(--cb-text-strong);
+	--wpds-color-foreground-content-neutral-weak: var(--cb-text-muted);
+	--wpds-color-foreground-interactive-neutral: var(--cb-text);
+	--wpds-color-foreground-interactive-neutral-strong: var(--cb-text-strong);
+	--wpds-color-foreground-interactive-neutral-weak: var(--cb-text-muted);
+	--wpds-color-stroke-surface-neutral: var(--cb-border);
+	--wpds-color-stroke-surface-neutral-strong: var(--cb-border);
+	--wpds-color-stroke-surface-neutral-weak: var(--cb-border);
+	--wpds-color-stroke-interactive-neutral: var(--cb-border);
+	--wpds-color-stroke-interactive-neutral-strong: var(--cb-text-muted);
+	--wpds-color-stroke-focus: var(--cb-interactive-focus);
+	--wpds-color-background-surface-success: var(--cb-tint-success);
+	--wpds-color-background-surface-success-weak: var(--cb-tint-success);
+	--wpds-color-foreground-content-success: var(--cb-success);
+	--wpds-color-stroke-surface-success: var(--cb-success);
+	--wpds-color-background-surface-warning: var(--cb-tint-warning);
+	--wpds-color-background-surface-warning-weak: var(--cb-tint-warning);
+	--wpds-color-foreground-content-warning: var(--cb-warning);
+	--wpds-color-stroke-surface-warning: var(--cb-warning);
+	--wpds-color-background-surface-caution: var(--cb-tint-warning);
+	--wpds-color-background-surface-caution-weak: var(--cb-tint-warning);
+	--wpds-color-foreground-content-caution: var(--cb-warning);
+	--wpds-color-stroke-surface-caution: var(--cb-warning);
+	--wpds-color-background-surface-error: var(--cb-tint-error);
+	--wpds-color-background-surface-error-weak: var(--cb-tint-error);
+	--wpds-color-foreground-content-error: var(--cb-error);
+	--wpds-color-stroke-surface-error: var(--cb-error);
+	--wpds-color-background-surface-info: var(--cb-tint-accent);
+	--wpds-color-background-surface-info-weak: var(--cb-tint-accent);
+	--wpds-color-foreground-content-info: var(--cb-accent);
+	--wpds-color-stroke-surface-info: var(--cb-accent);
+}
+
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page #mainform,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page #wpcontent,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page #wpbody-content,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page .wrap.woocommerce,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page .wc-settings-ui-shell {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page .woocommerce-layout__header,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-ui-page .wc-settings-ui-shell__header {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-woopayments-modal .components-modal__content,
+body.cb-admin-theme .woocommerce-blueprint-overwrite-modal .components-modal__content,
+body.cb-admin-theme .settings-payment-gateways__header-select-container--indicator-popover .components-popover__content,
+body.cb-admin-theme .woocommerce-official-extension-badge-popover .components-popover__content,
+body.cb-admin-theme .woocommerce-status-badge-popover .components-popover__content,
+body.cb-admin-theme .other-payment-gateways__content__title-popover .components-popover__content {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-woopayments-modal .components-modal__header-heading,
+body.cb-admin-theme .woocommerce-woopayments-modal__content__item,
+body.cb-admin-theme .woocommerce-woopayments-modal__content__item h2,
+body.cb-admin-theme .woocommerce-woopayments-modal__content__item h3,
+body.cb-admin-theme .settings-payments-main__container .settings-payment-gateways__header-title,
+body.cb-admin-theme .settings-payments-main__container .other-payment-gateways__header__title,
+body.cb-admin-theme .settings-payments-main__container .other-payment-gateways__content__title__h3,
+body.cb-admin-theme .settings-payments-offline__container .settings-payments-offline__header h1,
+body.cb-admin-theme .woocommerce-recommended-payments-card .woocommerce-list__item-title,
+body.cb-admin-theme .site-visibility-settings-slotfill,
+body.cb-admin-theme .blueprint-settings-slotfill .woocommerce-collapsible-content,
+body.cb-admin-theme .blueprint-settings-slotfill .woocommerce-collapsible-content button.woocommerce-collapsible-content__toggle span,
+body.cb-admin-theme .woocommerce-blueprint-overwrite-modal .components-modal__header .components-modal__header-heading,
+body.cb-admin-theme .woocommerce-blueprint-overwrite-modal .woocommerce-blueprint-overwrite-modal__description,
+body.cb-admin-theme .woocommerce-blueprint-overwrite-modal ul li {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .settings-payments-main__container .settings-payment-gateways__header-select-container,
+body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder:hover,
+body.cb-admin-theme .woocommerce-recommended-payments-card .woocommerce-list__item:hover,
+body.cb-admin-theme .site-visibility-settings-slotfill .site-visibility-settings-slotfill-private-link,
+body.cb-admin-theme .site-visibility-settings-slotfill .site-visibility-settings-slotfill-private-link input,
+body.cb-admin-theme #wc_settings_email_listing_slotfill .dataviews-wrapper,
+body.cb-admin-theme .wc-settings-email-preview {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .wc-settings-email-preview-container {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder .list-placeholder__title,
+body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder .list-placeholder__after,
+body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder .list-placeholder__before,
+body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder .list-placeholder__content,
+body.cb-admin-theme .settings-payments-main__container .other-payment-gateways__header__title-image-placeholder {
+	background-color: var(--cb-surface-2);
+}
