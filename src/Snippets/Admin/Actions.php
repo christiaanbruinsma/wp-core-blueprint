@@ -171,6 +171,15 @@ final class Actions {
 		return is_array( $result ) ? $result : null;
 	}
 
+	/**
+	 * Server-side draft recovery is intentionally disabled. The editor still
+	 * calls this while rendering, but recovery data now lives only in the
+	 * submitting browser tab and is restored by snippets.js after an error.
+	 */
+	public static function pull_draft( string $snippet_id ): ?array {
+		return null;
+	}
+
 	private static function conditions_from_request(): array {
 		$rules = [];
 		$scope = isset( $_POST['condition_scope'] ) ? sanitize_key( wp_unslash( $_POST['condition_scope'] ) ) : 'any';
