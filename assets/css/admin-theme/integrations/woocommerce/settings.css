@@ -108,3 +108,8 @@ body.cb-admin-theme .woocommerce-item__payment-gateway-placeholder .list-placeho
 body.cb-admin-theme .settings-payments-main__container .other-payment-gateways__header__title-image-placeholder {
 	background-color: var(--cb-surface-2);
 }
+
+/* The secondary payment-gateway container keeps a hardcoded #e0e0e0 frame. */
+body.cb-admin-theme .settings-payments-main__container .other-payment-gateways {
+	border-color: var(--cb-border);
+}
