@@ -133,6 +133,24 @@ body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message:not(.messa
 	color: var(--cb-text-strong) !important;
 }
 
+/* Marketing task/plugin recommendation headings still ship black text in Woo
+ * Admin bundles. Keep sizing/weight/vendor composition and normalize text only. */
+body.cb-admin-theme .woocommerce-task-marketing .components-card__header h2,
+body.cb-admin-theme .woocommerce-plugin-list__title h3,
+body.cb-admin-theme .woocommerce-plugin-list__plugin h4 {
+	color: var(--cb-text-strong);
+}
+
+/* Empty Orders/Products marketplace suggestions use a hardcoded #ddd frame. */
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-body"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-footer"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-header"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-body"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-footer"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-header"] {
+	border-color: var(--cb-border);
+}
+
 /* Coupons appends Woo Admin Cards below the native coupons list table. */
 body.cb-admin-theme .woocommerce-marketing-coupons .components-card,
 body.cb-admin-theme .woocommerce-marketing-coupons .components-card__header,
