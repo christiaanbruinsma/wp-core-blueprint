@@ -1,5 +1,6 @@
 name: Base tests
 
+# Keep manual dispatch available for controlled Golden Standard validation.
 on:
   workflow_dispatch:
   push:
