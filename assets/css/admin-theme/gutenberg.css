@@ -52,6 +52,48 @@ body.cb-admin-theme .components-tab-panel__tabs {
 	color: var(--cb-text);
 }
 
+/* Gutenberg's current document bar uses a hardcoded gray-100 background and
+ * gray text tokens. Normalize the application chrome without changing its
+ * dimensions, layout or command behaviour. */
+body.cb-admin-theme .editor-document-bar {
+	background: var(--cb-surface-2);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .editor-document-bar:hover,
+body.cb-admin-theme .editor-document-bar .components-button:hover {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .editor-document-bar__title,
+body.cb-admin-theme .editor-document-bar__post-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .editor-document-bar__post-type-label,
+body.cb-admin-theme .editor-document-bar__back.components-button,
+body.cb-admin-theme .editor-document-bar__icon-layout svg {
+	color: var(--cb-text-muted);
+	fill: currentColor;
+}
+
+/* The Post / Block tabs header is a distinct Components panel surface. */
+body.cb-admin-theme .components-panel__header.editor-sidebar__panel-tabs {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button:hover,
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button:focus,
+body.cb-admin-theme .editor-sidebar__panel-tabs .components-button[aria-selected="true"] {
+	color: var(--cb-text-strong);
+}
+
 body.cb-admin-theme .components-popover__content,
 body.cb-admin-theme .components-dropdown-menu__menu,
 body.cb-admin-theme .components-menu-group,
@@ -86,4 +128,27 @@ body.cb-admin-theme .edit-post-visual-editor,
 body.cb-admin-theme .edit-post-visual-editor__content-area {
 	background: var(--cb-surface-0);
 	border-color: var(--cb-border);
+}
+
+/* Classic meta boxes remain a supported Gutenberg compatibility surface. Their
+ * internal layouts stay plugin-owned; Base only normalizes the WordPress-owned
+ * surrounding chrome and postbox presentation. */
+body.cb-admin-theme .edit-post-meta-boxes-area,
+body.cb-admin-theme .edit-post-meta-boxes-area #poststuff,
+body.cb-admin-theme .edit-post-meta-boxes-area .postbox,
+body.cb-admin-theme .edit-post-meta-boxes-area .postbox-header {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-area #poststuff h2.hndle,
+body.cb-admin-theme .edit-post-meta-boxes-area #poststuff h3.hndle,
+body.cb-admin-theme .edit-post-meta-boxes-area #poststuff .stuffbox > h3 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .edit-post-meta-boxes-area .postbox > .inside {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
 }
