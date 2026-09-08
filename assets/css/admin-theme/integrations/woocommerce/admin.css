@@ -1,0 +1,283 @@
+/**
+ * WooCommerce Admin React application shell dark presentation.
+ */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header {
+	background: var(--cb-surface-1);
+	border-bottom-color: var(--cb-border);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-heading,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon:hover,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon.components-button:not(:disabled):not([aria-disabled="true"]):hover {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon:focus-visible,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon.components-button:not(:disabled):not([aria-disabled="true"]):focus-visible {
+	box-shadow: inset 0 0 0 1px var(--cb-interactive-focus);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-wrapper,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button:hover,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button:focus,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button.is-active {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__footer {
+	background: var(--cb-surface-1);
+	border-top-color: var(--cb-border);
+	box-shadow: var(--cb-shadow-sm);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homepage-notes-wrapper,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card__header,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card__body {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* Woo Home/onboarding uses Cards plus task-list rows rather than the shared
+ * analytics primitives. Keep the onboarding hierarchy while normalizing only
+ * neutral application presentation. */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homescreen .components-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .components-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .woocommerce-task-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .woocommerce-task-marketplace-link,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homescreen-card {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homescreen .components-card__header,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homescreen .components-card__body,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homescreen .components-card__footer,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .components-card__header,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .components-card__body,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container .components-card__footer {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-progress-header .woocommerce-task-progress-header__progress-bar,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-progress-header .woocommerce-task-progress-header__progress-bar::-webkit-progress-bar {
+	background-color: var(--cb-surface-2);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-progress-header p,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task__additional-info,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task__estimated-time,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-list__item-expandable-content,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container.setup-task-list .woocommerce-task-header__contents p,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container.setup-task-list .woocommerce-task-header__contents span {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container.setup-task-list .woocommerce-task-header__contents h1,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-list__item-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container.setup-task-list ul li,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-experimental-list__item {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+}
+
+/* Woo ships incomplete task icons with a hardcoded white fill and light gray
+ * border in its experimental/task bundles. Keep the state geometry and only
+ * normalize the neutral circle presentation. */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container:not(.setup-task-list) .woocommerce-task-list__item:not(.complete) .woocommerce-task__icon,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-list__item:not(.complete) .woocommerce-task__icon {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout .woocommerce-experimental-list__item:hover,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout .woocommerce-inbox-message:hover {
+	background: var(--cb-interactive-hover);
+}
+
+/* Inbox titles are hardcoded to #1e1e1e with !important upstream. Match that
+ * narrow ownership boundary rather than raising specificity across Woo Admin. */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message__content .woocommerce-inbox-message__title,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message__content .woocommerce-inbox-message__title a,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message:not(.message-is-unread) .woocommerce-inbox-message__title a {
+	color: var(--cb-text-strong) !important;
+}
+
+/* Marketing task/plugin recommendation headings still ship black text in Woo
+ * Admin bundles. Keep sizing/weight/vendor composition and normalize text only. */
+body.cb-admin-theme .woocommerce-task-marketing .components-card__header h2,
+body.cb-admin-theme .woocommerce-plugin-list__title h3,
+body.cb-admin-theme .woocommerce-plugin-list__plugin h4 {
+	color: var(--cb-text-strong);
+}
+
+/* Empty Orders/Products marketplace suggestions use a hardcoded #ddd frame. */
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-body"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-footer"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="orders-list-empty-header"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-body"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-footer"],
+body.cb-admin-theme .marketplace-suggestions-container.showing-suggestion[data-marketplace-suggestions-context="products-list-empty-header"] {
+	border-color: var(--cb-border);
+}
+
+/* Coupons appends Woo Admin Cards below the native coupons list table. */
+body.cb-admin-theme .woocommerce-marketing-coupons .components-card,
+body.cb-admin-theme .woocommerce-marketing-coupons .components-card__header,
+body.cb-admin-theme .woocommerce-marketing-coupons .components-card__body,
+body.cb-admin-theme .woocommerce-marketing-coupons .components-card__footer {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketing-recommended-extensions-item h4,
+body.cb-admin-theme .woocommerce-marketing-knowledgebase-card__post h3 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-marketing-recommended-extensions-item p,
+body.cb-admin-theme .woocommerce-marketing-knowledgebase-card__post-meta {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-marketing-recommended-extensions-item:hover p {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-admin-marketing-product-icon {
+	background: var(--cb-surface-2);
+}
+
+/* Shared promotional cards appear on Orders, Coupons and Marketplace. Preserve
+ * promo imagery/CTA semantics and normalize neutral card/text presentation. */
+body.cb-admin-theme .promo-card:not(.has-background),
+body.cb-admin-theme .woocommerce-marketplace-orders-promo .promo-card {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .promo-card:not(.has-background) .promo-card__body,
+body.cb-admin-theme .woocommerce-marketplace-orders-promo .promo-card .promo-card__body {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .promo-card .promo-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .promo-card .promo-text,
+body.cb-admin-theme .promo-card .promo-cta-link.woocommerce-admin-dismiss-notification {
+	color: var(--cb-text-muted);
+}
+
+/* Marketplace is a WooCommerce-owned mini application. Preserve product art,
+ * ratings, Woo branding and commercial semantics; normalize neutral chrome. */
+body.cb-admin-theme.woocommerce-admin-page__extensions,
+body.cb-admin-theme.woocommerce-admin-page__extensions .woocommerce-layout__main {
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__header,
+body.cb-admin-theme .woocommerce-marketplace__footer {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__tab-button,
+body.cb-admin-theme .woocommerce-marketplace__header-title,
+body.cb-admin-theme .woocommerce-marketplace__footer-title,
+body.cb-admin-theme .woocommerce-marketplace__icon-group-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__sub-text,
+body.cb-admin-theme .woocommerce-marketplace__icon-group-description,
+body.cb-admin-theme .woocommerce-marketplace__product-card__sponsored-label,
+body.cb-admin-theme .woocommerce-marketplace__product-card__on-sale,
+body.cb-admin-theme .woocommerce-marketplace__product-card__price-billing,
+body.cb-admin-theme .woocommerce-marketplace__product-card__rating-count {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__product-card,
+body.cb-admin-theme .woocommerce-marketplace__product-card__details,
+body.cb-admin-theme .woocommerce-marketplace__product-card.woocommerce-marketplace__product-card--business-service .woocommerce-marketplace__business-card__content {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__product-card__meta,
+body.cb-admin-theme .woocommerce-marketplace__product-card__title,
+body.cb-admin-theme .woocommerce-marketplace__product-card__link,
+body.cb-admin-theme .woocommerce-marketplace__product-card__link:hover,
+body.cb-admin-theme .woocommerce-marketplace__product-card__link:active,
+body.cb-admin-theme .woocommerce-marketplace__product-card__price,
+body.cb-admin-theme .woocommerce-marketplace__business-card__content,
+body.cb-admin-theme .woocommerce-marketplace__business-card__main-content h2 {
+	color: var(--cb-text-strong) !important;
+}
+
+body.cb-admin-theme .woocommerce-marketplace__category-item-button,
+body.cb-admin-theme .woocommerce-marketplace__category-dropdown-button,
+body.cb-admin-theme .woocommerce-marketplace__category-dropdown-content,
+body.cb-admin-theme .woocommerce-marketplace__quality-badge__chip {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__category-dropdown-item:hover {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__category-dropdown-item-button {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__tabs::after {
+	background: linear-gradient(to right, transparent 0%, color-mix(in srgb, var(--cb-surface-1) 50%, transparent) 25%, var(--cb-surface-1) 100%);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__category-navigation-button--prev {
+	background: linear-gradient(to right, var(--cb-surface-0), transparent);
+}
+
+body.cb-admin-theme .woocommerce-marketplace__category-navigation-button--next {
+	background: linear-gradient(to left, var(--cb-surface-0), transparent);
+}
