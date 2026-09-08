@@ -35,6 +35,11 @@ final class AdminThemeAdapters {
 	private const GUTENBERG_CANVAS_HANDLE = 'cb-core-css-admin-theme-gutenberg-canvas';
 	private const HAPPYFILES_HANDLE = 'cb-core-css-admin-theme-integration-happyfiles';
 	private const BRICKS_HANDLE = 'cb-core-css-admin-theme-integration-bricks';
+	private const WOOCOMMERCE_TOKENS_HANDLE = 'cb-core-css-admin-theme-integration-woocommerce-tokens';
+	private const WOOCOMMERCE_CLASSIC_HANDLE = 'cb-core-css-admin-theme-integration-woocommerce-classic';
+	private const WOOCOMMERCE_ADMIN_HANDLE = 'cb-core-css-admin-theme-integration-woocommerce-admin';
+	private const WOOCOMMERCE_COMPONENTS_HANDLE = 'cb-core-css-admin-theme-integration-woocommerce-components';
+	private const WOOCOMMERCE_SETTINGS_HANDLE = 'cb-core-css-admin-theme-integration-woocommerce-settings';
 
 	/** @var array<string, true> */
 	private const DARK_ADAPTER_HANDLES = [
@@ -47,6 +52,11 @@ final class AdminThemeAdapters {
 		self::GUTENBERG_HANDLE => true,
 		self::HAPPYFILES_HANDLE => true,
 		self::BRICKS_HANDLE => true,
+		self::WOOCOMMERCE_TOKENS_HANDLE => true,
+		self::WOOCOMMERCE_CLASSIC_HANDLE => true,
+		self::WOOCOMMERCE_ADMIN_HANDLE => true,
+		self::WOOCOMMERCE_COMPONENTS_HANDLE => true,
+		self::WOOCOMMERCE_SETTINGS_HANDLE => true,
 	];
 
 	private static bool $initialized = false;
@@ -139,6 +149,46 @@ final class AdminThemeAdapters {
 				CB_CORE_VERSION
 			);
 		}
+
+		// WooCommerce is a larger curated integration with classic admin, Woo
+		// Admin React and the newer WPDS-based Settings UI. Load it only when
+		// WooCommerce is active AND the current screen is WooCommerce-owned.
+		if ( self::is_woocommerce_admin_screen() ) {
+			wp_enqueue_style(
+				self::WOOCOMMERCE_TOKENS_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/woocommerce/tokens.css',
+				[ 'cb-core-css-admin-theme', self::TYPOGRAPHY_HANDLE ],
+				CB_CORE_VERSION
+			);
+
+			wp_enqueue_style(
+				self::WOOCOMMERCE_CLASSIC_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/woocommerce/classic.css',
+				[ self::WOOCOMMERCE_TOKENS_HANDLE ],
+				CB_CORE_VERSION
+			);
+
+			wp_enqueue_style(
+				self::WOOCOMMERCE_ADMIN_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/woocommerce/admin.css',
+				[ self::WOOCOMMERCE_TOKENS_HANDLE ],
+				CB_CORE_VERSION
+			);
+
+			wp_enqueue_style(
+				self::WOOCOMMERCE_COMPONENTS_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/woocommerce/components.css',
+				[ self::WOOCOMMERCE_TOKENS_HANDLE, self::WOOCOMMERCE_ADMIN_HANDLE ],
+				CB_CORE_VERSION
+			);
+
+			wp_enqueue_style(
+				self::WOOCOMMERCE_SETTINGS_HANDLE,
+				CB_CORE_URL . 'assets/css/admin-theme/integrations/woocommerce/settings.css',
+				[ self::WOOCOMMERCE_TOKENS_HANDLE, self::WOOCOMMERCE_COMPONENTS_HANDLE ],
+				CB_CORE_VERSION
+			);
+		}
 	}
 
 	/** Enqueue Gutenberg UI chrome through the official editor UI hook. */
@@ -220,5 +270,22 @@ final class AdminThemeAdapters {
 
 		$screen = get_current_screen();
 		return $screen instanceof \WP_Screen && $screen->is_block_editor();
+	}
+
+	private static function is_woocommerce_admin_screen(): bool {
+		if ( ! defined( 'WC_VERSION' ) || ! WC_VERSION || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen instanceof \WP_Screen ) {
+			return false;
+		}
+
+		if ( function_exists( 'wc_get_screen_ids' ) && in_array( $screen->id, wc_get_screen_ids(), true ) ) {
+			return true;
+		}
+
+		return in_array( $screen->id, [ 'woocommerce_page_wc-admin', 'admin_page_wc-admin' ], true );
 	}
 }
