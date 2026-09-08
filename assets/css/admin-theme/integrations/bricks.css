@@ -65,3 +65,40 @@ body.cb-admin-theme #bricks-settings td {
 body.cb-admin-theme #bricks-settings .description {
 	color: var(--cb-text-muted);
 }
+
+/* Sidebars uses a dedicated Bricks application surface. Keep its layout intact
+ * while replacing only the confirmed hardcoded light presentation. */
+body.cb-admin-theme .bricks-admin-wrapper.sidebars .bricks-admin-inner {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.sidebars .bricks-admin-inner p,
+body.cb-admin-theme .bricks-admin-wrapper.sidebars .bricks-admin-inner .description {
+	color: var(--cb-text-muted);
+}
+
+/* System Information ships alternating #fafafa rows. Preserve the striped
+ * information hierarchy with semantic dark surfaces instead. */
+body.cb-admin-theme .bricks-admin-wrapper.system-information table tr:nth-child(2n) td {
+	background-color: var(--cb-surface-2);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.system-information table td,
+body.cb-admin-theme .bricks-admin-wrapper.system-information table th {
+	border-color: var(--cb-border);
+}
+
+/* License management is Bricks-owned application UI. Only normalize its
+ * confirmed hardcoded white form surface; buttons, status colors and spacing
+ * remain owned by Bricks. */
+body.cb-admin-theme .bricks-admin-wrapper.license form {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.license form p,
+body.cb-admin-theme .bricks-admin-wrapper.license form .description {
+	color: var(--cb-text-muted);
+}

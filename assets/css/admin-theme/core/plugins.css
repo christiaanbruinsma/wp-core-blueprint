@@ -33,7 +33,17 @@
 	color: var(--cb-text-strong);
 }
 
+/* WordPress applies a direct #2c3338 color to .widefat p/ol/ul. Because that
+ * lands on the child element, inherited plugin-row colors cannot override it.
+ * Normalize those primitives inside the Plugins table only. */
+.plugins p,
+.plugins ol,
+.plugins ul {
+	color: var(--cb-text);
+}
+
 .plugins .plugin-description,
+.plugins .plugin-description p,
 .plugins .plugin-version-author-uri,
 .plugins .second,
 .plugins .inactive .plugin-title strong {
