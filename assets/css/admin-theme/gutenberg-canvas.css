@@ -2,26 +2,30 @@
  * Gutenberg iframe content fallback for the Core Blueprint Admin Theme.
  *
  * Loaded through enqueue_block_assets so WordPress includes it inside the
- * editor iframe. All selectors intentionally use :where() to keep specificity
- * at zero: explicit theme.json, theme editor styles, block classes and inline
- * design choices remain authoritative over this dark fallback.
+ * editor iframe. The editor root deliberately has enough specificity to win
+ * over WordPress/theme default canvas backgrounds in Dark mode, while explicit
+ * block classes, theme block styles and inline design choices remain
+ * authoritative for actual content presentation.
  *
  * @package CB\Core
  * @since   1.0.0
  */
 
-:where(html[data-cb-mode="dark"]) {
+html.block-editor-iframe__html[data-cb-mode="dark"] {
 	--wp-editor-canvas-background: var(--cb-surface-0);
 	color-scheme: dark;
-	background: var(--cb-surface-0);
+	background-color: var(--cb-surface-0);
 }
 
-:where(html[data-cb-mode="dark"]) :where(body.block-editor-iframe__body),
-:where(html[data-cb-mode="dark"]) :where(.editor-styles-wrapper) {
+html.block-editor-iframe__html[data-cb-mode="dark"] body.block-editor-iframe__body,
+html.block-editor-iframe__html[data-cb-mode="dark"] body.block-editor-iframe__body.editor-styles-wrapper {
 	background-color: var(--cb-surface-0);
 	color: var(--cb-text);
 }
 
-:where(html[data-cb-mode="dark"]) :where(.editor-styles-wrapper) :where(h1, h2, h3, h4, h5, h6) {
+/* Default content typography follows the dark editor canvas by inheritance.
+ * Explicit block/theme colors still win because this rule targets only the
+ * editor root and does not force color on arbitrary descendants. */
+html.block-editor-iframe__html[data-cb-mode="dark"] body.block-editor-iframe__body.editor-styles-wrapper :where(h1, h2, h3, h4, h5, h6) {
 	color: inherit;
 }
