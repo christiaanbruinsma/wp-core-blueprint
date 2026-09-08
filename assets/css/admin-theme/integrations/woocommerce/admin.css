@@ -1,0 +1,63 @@
+/**
+ * WooCommerce Admin React application shell dark presentation.
+ */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header {
+	background: var(--cb-surface-1);
+	border-bottom-color: var(--cb-border);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-heading,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon:hover,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon.components-button:not(:disabled):not([aria-disabled="true"]):hover {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon:focus-visible,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__header .woocommerce-layout__header-meta-icon.components-button:not(:disabled):not([aria-disabled="true"]):focus-visible {
+	box-shadow: inset 0 0 0 1px var(--cb-interactive-focus);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-wrapper,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button:hover,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button:focus,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__activity-panel-tabs .components-button.is-active {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__footer {
+	background: var(--cb-surface-1);
+	border-top-color: var(--cb-border);
+	box-shadow: var(--cb-shadow-sm);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-homepage-notes-wrapper,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card__header,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout__no-match .components-card__body {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
