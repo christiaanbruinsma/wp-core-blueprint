@@ -1,0 +1,95 @@
+/**
+ * WooCommerce classic wp-admin dark presentation.
+ *
+ * Targets confirmed WooCommerce-owned hardcoded light surfaces only. WordPress
+ * Core controls remain owned by the Base Core adapter.
+ */
+body.cb-admin-theme #woocommerce-product-data,
+body.cb-admin-theme #woocommerce-product-data .woocommerce_options_panel,
+body.cb-admin-theme .wc-metaboxes-wrapper .wc-metabox,
+body.cb-admin-theme .wc-metaboxes-wrapper .wc-metabox-content {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #woocommerce-product-data .product_data_tabs.wc-tabs li a,
+body.cb-admin-theme .wc-metaboxes-wrapper .wc-metabox h3,
+body.cb-admin-theme .wc-metaboxes-wrapper .wc-metabox h4 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items thead th {
+	background: var(--cb-surface-2);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items tbody th,
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items td {
+	border-bottom-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items tbody tr:hover td,
+body.cb-admin-theme #woocommerce-order-items .woocommerce_order_items_wrapper table.woocommerce_order_items tbody tr:hover th {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .wc-modal-shipping-method-settings form .form-table,
+body.cb-admin-theme table.wc-shipping-zones,
+body.cb-admin-theme table.wc-shipping-zone-methods,
+body.cb-admin-theme table.wc-shipping-classes {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .wc-modal-shipping-method-settings form .form-table tr td,
+body.cb-admin-theme .wc-modal-shipping-method-settings form .form-table tr th,
+body.cb-admin-theme table.wc-shipping-zones td,
+body.cb-admin-theme table.wc-shipping-zones th,
+body.cb-admin-theme table.wc-shipping-zone-methods td,
+body.cb-admin-theme table.wc-shipping-zone-methods th,
+body.cb-admin-theme table.wc-shipping-classes td,
+body.cb-admin-theme table.wc-shipping-classes th {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .wc-logs-entries {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .wc-logs-entries .line-content {
+	background: var(--cb-surface-1);
+	border-left-color: var(--cb-border);
+}
+
+body.cb-admin-theme .wc-logs-entries .line:target .line-content {
+	background: var(--cb-tint-warning);
+}
+
+body.cb-admin-theme .wc-logs-entries .line:target,
+body.cb-admin-theme .wc-logs-entries .line-content {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme #woocommerce-product-images .inside #product_images_container ul li.add .woocommerce-product-gallery__video-preview,
+body.cb-admin-theme #woocommerce-product-images .inside #product_images_container ul li.image .woocommerce-product-gallery__video-preview,
+body.cb-admin-theme #woocommerce-product-images .inside #product_images_container ul li.wc-metabox-sortable-placeholder .woocommerce-product-gallery__video-preview {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme .woocommerce_options_panel .description,
+body.cb-admin-theme .woocommerce_variations .description,
+body.cb-admin-theme .wc-shipping-zone-heading-help-text,
+body.cb-admin-theme .wc-shipping-zone-help-text {
+	color: var(--cb-text-muted);
+}
