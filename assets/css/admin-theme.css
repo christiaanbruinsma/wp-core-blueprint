@@ -230,8 +230,11 @@ body.cb-admin-theme.wp-core-ui select:focus {
 	outline: none;
 }
 
-body.cb-admin-theme.wp-core-ui input[type="checkbox"],
-body.cb-admin-theme.wp-core-ui input[type="radio"] {
+/* Keep the global WordPress checkbox/radio adapter deliberately low-specificity.
+ * Foundation-owned controls inside .cb-core-wrap / .cb-core-form-scope have
+ * richer checked, hover and indeterminate states in form-controls.css and must
+ * remain authoritative even though this dark adapter is enqueued later. */
+body.cb-admin-theme.wp-core-ui :where(input[type="checkbox"], input[type="radio"]) {
 	background: var(--cb-surface-1);
 	border-color: var(--cb-border);
 	color: var(--cb-accent);
