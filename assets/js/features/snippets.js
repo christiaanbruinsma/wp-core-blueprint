@@ -13,7 +13,95 @@
 	const locationSelect = document.getElementById( 'cb-snippet-location' );
 	const shortcodeField = document.querySelector( '.cb-snippets-shortcode-field' );
 	const codeTextarea = document.getElementById( 'cb-snippet-code' );
+	const editorForm = document.querySelector( '.cb-snippets-editor' );
+	const draftKey = 'cb-core-snippets-editor-draft';
+	const draftMaxAge = 5 * 60 * 1000;
 	let editor = null;
+
+	const clearRecoveryDraft = () => {
+		try {
+			window.sessionStorage.removeItem( draftKey );
+		} catch ( error ) {
+			// Storage can be disabled by browser/privacy policy; recovery is optional.
+		}
+	};
+
+	const restoreRecoveryDraft = () => {
+		if ( ! editorForm ) return;
+
+		// A recovery draft is relevant only after the server returned a save
+		// error. Success/normal renders immediately discard any stale tab copy.
+		const saveError = document.querySelector( '.cb-snippets-wrap > .notice.notice-error.inline' );
+		if ( ! saveError ) {
+			clearRecoveryDraft();
+			return;
+		}
+
+		let draft;
+		try {
+			const raw = window.sessionStorage.getItem( draftKey );
+			draft = raw ? JSON.parse( raw ) : null;
+		} catch ( error ) {
+			clearRecoveryDraft();
+			return;
+		}
+
+		if ( ! draft || ! Number.isFinite( draft.savedAt ) || Date.now() - draft.savedAt > draftMaxAge || ! Array.isArray( draft.controls ) ) {
+			clearRecoveryDraft();
+			return;
+		}
+
+		const snippetId = editorForm.querySelector( '[name="snippet_id"]' )?.value || '';
+		if ( String( draft.snippetId || '' ) !== snippetId ) {
+			clearRecoveryDraft();
+			return;
+		}
+
+		draft.controls.forEach( ( saved ) => {
+			if ( ! saved || typeof saved.name !== 'string' ) return;
+			const controls = Array.from( editorForm.elements ).filter( ( control ) => control.name === saved.name );
+			controls.forEach( ( control ) => {
+				if ( control.type === 'checkbox' || control.type === 'radio' ) {
+					if ( String( control.value ) === String( saved.value ) ) {
+						control.checked = Boolean( saved.checked );
+					}
+				} else if ( controls.length === 1 ) {
+					control.value = String( saved.value ?? '' );
+				}
+			} );
+		} );
+
+		// The copy has served its one recovery purpose. A subsequent submit will
+		// create a fresh copy immediately before navigation if needed again.
+		clearRecoveryDraft();
+	};
+
+	const storeRecoveryDraft = () => {
+		if ( ! editorForm ) return;
+		editor?.codemirror?.save?.();
+
+		const controls = Array.from( editorForm.elements )
+			.filter( ( control ) => control.name && ! [ '_wpnonce', '_wp_http_referer', 'action' ].includes( control.name ) )
+			.map( ( control ) => ( {
+				name: control.name,
+				value: control.value,
+				checked: control.type === 'checkbox' || control.type === 'radio' ? control.checked : undefined,
+			} ) );
+
+		try {
+			window.sessionStorage.setItem( draftKey, JSON.stringify( {
+				savedAt: Date.now(),
+				snippetId: editorForm.querySelector( '[name="snippet_id"]' )?.value || '',
+				controls,
+			} ) );
+		} catch ( error ) {
+			// The save itself must never depend on optional browser recovery state.
+		}
+	};
+
+	// Restore before CodeMirror initializes so it starts from the recovered
+	// textarea value rather than needing a second editor synchronization pass.
+	restoreRecoveryDraft();
 
 	const modeForType = ( type ) => {
 		switch ( type ) {
@@ -67,10 +155,10 @@
 		editor = window.wp.codeEditor.initialize( codeTextarea, settings );
 	}
 
+	editorForm?.addEventListener( 'submit', storeRecoveryDraft );
 	typeSelect?.addEventListener( 'change', rebuildLocations );
 	locationSelect?.addEventListener( 'change', updateShortcodeVisibility );
 	updateShortcodeVisibility();
-
 
 	// Destructive row action uses the suite modal when available. The browser
 	// confirm fallback exists only for partial/failed asset loads.
