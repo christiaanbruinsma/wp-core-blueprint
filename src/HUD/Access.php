@@ -14,6 +14,10 @@ declare(strict_types=1);
  *      list (filterable, empty by default - operators tend to want HUD
  *      EVERYWHERE, restricting frontend visibility is the rarer case)
  *
+ * Embedded builder previews are presentation canvases, not independent
+ * operator workspaces. Known preview requests therefore suppress the HUD so a
+ * builder can keep one canonical launcher in its outer application chrome.
+ *
  * The canonical Role Policy grants cb_core_hud_use explicitly to the
  * Administrator and CB Operator roles. Custom roles may receive it normally.
  *
@@ -69,6 +73,13 @@ final class Access {
 			return false;
 		}
 
+		// Embedded builder preview documents are visual canvases inside a parent
+		// operator workspace. Rendering HUD in both documents creates duplicate
+		// launchers and contaminates the preview itself.
+		if ( self::is_embedded_builder_preview() ) {
+			return false;
+		}
+
 		// Admin context - always allowed for capable users. The "front
 		// door" philosophy applies most strongly inside /wp-admin.
 		if ( is_admin() ) {
@@ -79,6 +90,26 @@ final class Access {
 		// for sites that don't want HUD on certain singular post types
 		// (e.g. landing pages where pixel-perfect visual review matters).
 		return ! self::is_excluded_frontend_context();
+	}
+
+	/**
+	 * Detect confirmed embedded builder-preview requests.
+	 *
+	 * Bricks renders its work-area preview as a frontend iframe whose URL uses
+	 * both `bricks=run` and `brickspreview=true`. Requiring both signals keeps
+	 * normal frontend visits and the outer Bricks Builder application eligible
+	 * for HUD while suppressing only the nested preview document.
+	 */
+	private static function is_embedded_builder_preview(): bool {
+		$bricks = isset( $_GET['bricks'] )
+			? sanitize_key( wp_unslash( (string) $_GET['bricks'] ) )
+			: '';
+
+		$preview = isset( $_GET['brickspreview'] )
+			? sanitize_key( wp_unslash( (string) $_GET['brickspreview'] ) )
+			: '';
+
+		return 'run' === $bricks && 'true' === $preview;
 	}
 
 	/**
