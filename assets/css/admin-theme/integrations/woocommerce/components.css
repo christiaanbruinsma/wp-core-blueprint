@@ -86,3 +86,135 @@ body.cb-admin-theme .woocommerce-search-list__list > [role="menu"] {
 	border-color: var(--cb-border);
 	color: var(--cb-text);
 }
+
+/* Woo Card is a shared application primitive used by Home, Analytics and
+ * marketing screens. Normalize only neutral card chrome. */
+body.cb-admin-theme.woocommerce-admin-page .components-card,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-card {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme.woocommerce-admin-page .components-card__header,
+body.cb-admin-theme.woocommerce-admin-page .components-card__body,
+body.cb-admin-theme.woocommerce-admin-page .components-card__footer,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-card__header,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-card__body,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-card__footer {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* Woo list primitives back onboarding/product choice cards and several tools
+ * lists. Vendor CSS applies hardcoded white to the row and hover state. */
+body.cb-admin-theme .woocommerce-list__item,
+body.cb-admin-theme .woocommerce-list-item {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-list__item-content {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-list__item-after svg {
+	fill: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-products-stack .woocommerce-list__item-before,
+body.cb-admin-theme .woocommerce-products-card-list .woocommerce-list__item-before {
+	background: var(--cb-surface-2);
+}
+
+/* Analytics cards use white legend controls/header/footer surfaces separately
+ * from the chart canvas. */
+body.cb-admin-theme .woocommerce-legend__item > button,
+body.cb-admin-theme .woocommerce-legend__total {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-legend__item > button:hover,
+body.cb-admin-theme .woocommerce-dashboard__chart-block .woocommerce-card__body .woocommerce-chart:hover,
+body.cb-admin-theme .woocommerce-dashboard__chart-block .woocommerce-card__body .woocommerce-chart:hover .woocommerce-legend__item > button,
+body.cb-admin-theme .woocommerce-dashboard__chart-block:hover,
+body.cb-admin-theme .woocommerce-dashboard__chart-block-wrapper:hover .woocommerce-chart,
+body.cb-admin-theme .woocommerce-dashboard__chart-block-wrapper:hover .woocommerce-card__header {
+	background: var(--cb-interactive-hover);
+}
+
+body.cb-admin-theme .woocommerce-summary__item .woocommerce-summary__item-label,
+body.cb-admin-theme .woocommerce-summary__item .woocommerce-summary__info-tooltip {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-summary__item .woocommerce-summary__item-value,
+body.cb-admin-theme .woocommerce-summary__item .woocommerce-summary__item-data {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-summary__item .woocommerce-summary__item-delta {
+	background: var(--cb-surface-3);
+	color: var(--cb-text);
+}
+
+/* Report filters/customer screens still use Woo's older dropdown and select
+ * primitives alongside @wordpress/components. */
+body.cb-admin-theme .components-button.woocommerce-dropdown-button,
+body.cb-admin-theme .woocommerce-experimental-select-control__combo-box-wrapper,
+body.cb-admin-theme .components-popover.woocommerce-experimental-select-control__popover-menu,
+body.cb-admin-theme .woocommerce-select-control .woocommerce-select-control__listbox,
+body.cb-admin-theme .experimental-woocommerce-tree--level-1 {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-select-control .woocommerce-select-control__option,
+body.cb-admin-theme .woocommerce-search.woocommerce-select-control .woocommerce-select-control__option,
+body.cb-admin-theme .woocommerce-filters-filter__content-list-item .woocommerce-filters-filter__button {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-select-control .woocommerce-select-control__option.is-selected,
+body.cb-admin-theme .woocommerce-select-control .woocommerce-select-control__option:hover,
+body.cb-admin-theme .woocommerce-search.woocommerce-select-control .woocommerce-select-control__option.is-selected,
+body.cb-admin-theme .woocommerce-search.woocommerce-select-control .woocommerce-select-control__option:focus,
+body.cb-admin-theme .woocommerce-filters-filter__content-list-item.is-selected .woocommerce-filters-filter__button {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-analytics-import-status-bar {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .woocommerce-analytics-import-status-bar-wrapper__label,
+body.cb-admin-theme .woocommerce-analytics-import-status-bar__value {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .woocommerce-analytics-import-status-bar__label {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .woocommerce-table__header .components-button,
+body.cb-admin-theme .woocommerce-table__header a {
+	color: var(--cb-text-strong);
+}
+
+/* Woo table horizontal overflow fades are hardcoded white gradients. */
+body.cb-admin-theme .woocommerce-table__table::before {
+	background: linear-gradient(90deg, var(--cb-surface-1), transparent);
+}
+
+body.cb-admin-theme .woocommerce-table__table::after {
+	background: linear-gradient(90deg, transparent, var(--cb-surface-1));
+}
