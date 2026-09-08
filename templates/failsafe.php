@@ -3,7 +3,6 @@
  * Core Blueprint - Failsafe management page
  *
  * Available variables (set by \CB\Core\Admin\Admin::render_failsafe):
- *   $new_token - plaintext token just generated (set via transient, shown once)
  *   $self_test - \CB\Core\Security\Failsafe::self_test() result
  *   $layers    - \CB\Core\Security\Failsafe::active_layers() result
  *   $bypassed  - bool, is any failsafe layer active
@@ -40,38 +39,6 @@ $admin_email = get_option( 'admin_email', '' );
 			]
 		);
 		?>
-	<?php endif; ?>
-
-	<!-- ─── If a new token was just generated, display it once ────────── -->
-
-	<?php if ( ! empty( $new_token ) ) :
-		$bypass_url = \CB\Core\Security\Failsafe::build_bypass_url( $new_token );
-	?>
-		<section class="cb-core-failsafe-token-issued" aria-labelledby="cb-core-failsafe-token-title">
-			<?php
-			echo \CB\Core\UI\Notice::render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped - Notice::render() returns escape-clean HTML.
-				[
-					'variant' => \CB\Core\UI\Notice::WARNING,
-					'title'   => __( 'New bypass token - save this now', 'core-blueprint' ),
-					'message' => __( 'This is the only time the bypass URL will be shown in plaintext. Copy it to your password manager immediately.', 'core-blueprint' ),
-					'items'   => [
-						__( 'All restrictive Core Blueprint features are disabled for 60 minutes when the URL is used.', 'core-blueprint' ),
-						__( 'The token is rotated after use.', 'core-blueprint' ),
-						sprintf( __( 'An email notification is sent to %s.', 'core-blueprint' ), $admin_email ),
-						__( 'The event is recorded in the audit log.', 'core-blueprint' ),
-					],
-				]
-			);
-			?>
-
-			<div class="cb-core-failsafe-token-field">
-				<strong id="cb-core-failsafe-token-title"><?php esc_html_e( 'Bypass URL', 'core-blueprint' ); ?></strong>
-				<div class="cb-core-token-display" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Copy URL', 'core-blueprint' ); ?>" title="<?php esc_attr_e( 'Click to copy', 'core-blueprint' ); ?>"><?php echo esc_html( $bypass_url ); ?></div>
-				<p class="description">
-					<?php esc_html_e( 'Store it in a password manager or another secure location outside this WordPress installation.', 'core-blueprint' ); ?>
-				</p>
-			</div>
-		</section>
 	<?php endif; ?>
 
 	<!-- ─── Layer overview ────────────────────────────────────────── -->

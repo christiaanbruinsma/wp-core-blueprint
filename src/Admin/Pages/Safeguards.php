@@ -11,7 +11,7 @@ declare(strict_types=1);
  *
  * Tabs:
  *   overview      - read-only status strip + bypass banner + quick actions
- *   core-shield   - master switch, modules, header test, audit retention
+ *   core-shield   - master switch, modules, header test + audit retention
  *   access-mode   - public / coming-soon / maintenance / admin-only state
  *   failsafe      - lockout bypass mechanisms + emergency controls
  *   login-shield  - custom login URL + /wp-admin guest-handling policy
@@ -317,13 +317,6 @@ final class Safeguards extends PageBase {
 		if ( ! class_exists( Failsafe::class ) ) {
 			$this->render_subsystem_missing( __( 'Failsafe subsystem not loaded.', 'core-blueprint' ) );
 			return;
-		}
-		$new_token = null;
-		$flash_key = 'cb_core_new_token_' . get_current_user_id();
-		$flashed   = get_transient( $flash_key );
-		if ( $flashed ) {
-			$new_token = $flashed;
-			delete_transient( $flash_key );
 		}
 		$self_test = Failsafe::self_test();
 		$layers    = Failsafe::active_layers();

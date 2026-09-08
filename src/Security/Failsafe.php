@@ -39,6 +39,12 @@ final class Failsafe {
 	/** Query parameter used on the secret bypass URL. */
 	const BYPASS_PARAM = 'cb_core_bypass';
 
+	/** Fixed, bounded gate for anonymous rejected-URL audit writes. */
+	private const REJECT_AUDIT_GATE = 'cb_core_failsafe_rejected_audit_gate';
+
+	/** Log at most one rejected bypass attempt per five-minute abuse window. */
+	private const REJECT_AUDIT_WINDOW = 300;
+
 	private static bool $bootstrapped = false;
 
 	// ─── Bootstrap ────────────────────────────────────────────────────────────
@@ -158,6 +164,11 @@ final class Failsafe {
 		$token = bin2hex( random_bytes( 32 ) ); // 64 chars
 		update_option( CB_CORE_BYPASS_TOK, wp_hash_password( $token ), false );
 
+		// A legitimate rotation starts a new token lifecycle. Reset only the
+		// fixed rejected-attempt bucket so the first rejection against the new
+		// lifecycle is visible while repeated anonymous rejects remain bounded.
+		delete_transient( self::REJECT_AUDIT_GATE );
+
 		if ( class_exists( AuditLog::class ) ) {
 			AuditLog::log( 'failsafe.token_rotated', 'notice', [
 				'hint' => substr( $token, 0, 4 ) . '…',
@@ -239,13 +250,29 @@ final class Failsafe {
 			return;
 		}
 
+		// Rejected hits are anonymous and attacker-controlled. Keep visibility of
+		// the first event while bounding database writes during a request flood.
+		// One fixed key is intentional: never derive transient keys from IPs or
+		// supplied tokens, which would let an attacker create unbounded state.
+		if ( ! $success ) {
+			if ( false !== get_transient( self::REJECT_AUDIT_GATE ) ) {
+				return;
+			}
+			set_transient( self::REJECT_AUDIT_GATE, 'active', self::REJECT_AUDIT_WINDOW );
+		}
+
+		$context = [
+			'reason'     => $reason,
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 200 ) : '',
+		];
+		if ( ! $success ) {
+			$context['suppression_window_seconds'] = self::REJECT_AUDIT_WINDOW;
+		}
+
 		AuditLog::log(
 			$success ? 'failsafe.bypass_url_used' : 'failsafe.bypass_url_rejected',
 			$success ? 'critical' : 'warning',
-			[
-				'reason'     => $reason,
-				'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 200 ) : '',
-			]
+			$context
 		);
 	}
 

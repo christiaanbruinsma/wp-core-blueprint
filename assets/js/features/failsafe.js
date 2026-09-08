@@ -31,6 +31,74 @@ if ( nonce ) {
 	const toast = window.cbCore?.toast;
 	const busy  = window.cbCore?.busy;
 
+	/**
+	 * Render the one-time bypass URL from the authenticated AJAX response.
+	 *
+	 * Every value is assigned through textContent/attributes: the server sends
+	 * translated copy plus the secret URL, while the browser never persists the
+	 * plaintext secret in storage or a redirect/query string.
+	 */
+	const revealBypassUrl = ( payload ) => {
+		const bypassUrl = payload?.bypass_url || '';
+		if ( ! bypassUrl ) return false;
+
+		const copy = payload?.reveal || {};
+		const firstSection = document.querySelector( '.cb-core-failsafe-section' );
+		if ( ! firstSection ) return false;
+
+		document.querySelector( '.cb-core-failsafe-token-issued' )?.remove();
+
+		const section = document.createElement( 'section' );
+		section.className = 'cb-core-failsafe-token-issued';
+		section.setAttribute( 'aria-labelledby', 'cb-core-failsafe-token-title' );
+		section.setAttribute( 'aria-live', 'polite' );
+
+		const title = document.createElement( 'h2' );
+		title.id = 'cb-core-failsafe-token-title';
+		title.textContent = copy.title || 'New bypass token - save this now';
+		section.append( title );
+
+		const message = document.createElement( 'p' );
+		message.textContent = copy.message || 'This is the only time the bypass URL will be shown in plaintext. Copy it to your password manager immediately.';
+		section.append( message );
+
+		if ( Array.isArray( copy.items ) && copy.items.length ) {
+			const list = document.createElement( 'ul' );
+			copy.items.forEach( ( item ) => {
+				const li = document.createElement( 'li' );
+				li.textContent = String( item );
+				list.append( li );
+			} );
+			section.append( list );
+		}
+
+		const field = document.createElement( 'div' );
+		field.className = 'cb-core-failsafe-token-field';
+
+		const label = document.createElement( 'strong' );
+		label.textContent = copy.label || 'Bypass URL';
+		field.append( label );
+
+		const tokenDisplay = document.createElement( 'div' );
+		tokenDisplay.className = 'cb-core-token-display';
+		tokenDisplay.setAttribute( 'role', 'button' );
+		tokenDisplay.setAttribute( 'tabindex', '0' );
+		tokenDisplay.setAttribute( 'aria-label', copy.copy_label || 'Copy URL' );
+		tokenDisplay.setAttribute( 'title', copy.copy_title || 'Click to copy' );
+		tokenDisplay.textContent = bypassUrl;
+		field.append( tokenDisplay );
+
+		const description = document.createElement( 'p' );
+		description.className = 'description';
+		description.textContent = copy.description || 'Store it in a password manager or another secure location outside this WordPress installation.';
+		field.append( description );
+
+		section.append( field );
+		firstSection.before( section );
+		section.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+		return true;
+	};
+
 	// ─── Rotate token ───────────────────────────────────────────────────────
 	document.addEventListener( 'click', async ( event ) => {
 		const btn = event.target.closest( '.cb-core-rotate-token' );
@@ -43,7 +111,7 @@ if ( nonce ) {
 		// confirm, null on cancel.
 		const password = await modal.show( {
 			title:        i18n.failsafeRotateTitle  || 'Rotate bypass token',
-			body:         i18n.failsafeRotateBody   || 'This invalidates the current bypass URL immediately. The new URL will be shown only once on the redirected page.\n\nRe-enter your WordPress password to continue.',
+			body:         i18n.failsafeRotateBody   || 'This invalidates the current bypass URL immediately. The new URL will be shown only once after rotation.\n\nRe-enter your WordPress password to continue.',
 			confirmLabel: i18n.failsafeRotateConfirm || 'Rotate token',
 			confirmVariant: 'remediation',
 			input: {
@@ -58,8 +126,9 @@ if ( nonce ) {
 
 		try {
 			const response = await apiPost( 'cb_core_rotate_token', nonce, { password } );
-			if ( response?.success && response.data?.url ) {
-				window.location.href = response.data.url;
+			if ( response?.success && revealBypassUrl( response.data ) ) {
+				toast?.success?.( response.data?.message || i18n.saved || 'Token rotated' );
+				busy?.button( btn, false );
 			} else {
 				toast.error( response?.data?.message || i18n.networkError || 'Request failed' );
 				busy?.button( btn, false );

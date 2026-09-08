@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace CB\Core\Ajax\Handlers;
 
-use CB\Core\Admin\Admin;
 use CB\Core\Ajax\Guards;
 use CB\Core\Ajax\Request;
 use CB\Core\Security\Failsafe as SecurityFailsafe;
@@ -34,15 +33,30 @@ final class Failsafe {
 		self::require_admin();
 		self::require_password_reconfirm();
 
-		$token = SecurityFailsafe::rotate_token();
+		$token      = SecurityFailsafe::rotate_token();
+		$bypass_url = SecurityFailsafe::build_bypass_url( $token );
+		$admin_email = (string) get_option( 'admin_email', '' );
 
-		// Flash the new token via a short-lived user-scoped transient so
-		// the next page load can display it exactly once.
-		set_transient( 'cb_core_new_token_' . get_current_user_id(), $token, 60 );
-
+		// The plaintext token deliberately exists only in this authenticated
+		// response and the current browser DOM. Never persist it in options,
+		// transients, query strings, or other server-side recovery state.
 		wp_send_json_success( [
-			'message' => __( 'Token rotated. Redirecting to the failsafe page to display it.', 'core-blueprint' ),
-			'url'     => admin_url( 'admin.php?page=' . Admin::SAFEGUARDS_SLUG . '&tab=failsafe' ),
+			'message'    => __( 'Token rotated. Save the new bypass URL now; it will not be shown again.', 'core-blueprint' ),
+			'bypass_url' => $bypass_url,
+			'reveal'     => [
+				'title'       => __( 'New bypass token - save this now', 'core-blueprint' ),
+				'message'     => __( 'This is the only time the bypass URL will be shown in plaintext. Copy it to your password manager immediately.', 'core-blueprint' ),
+				'label'       => __( 'Bypass URL', 'core-blueprint' ),
+				'copy_label'  => __( 'Copy URL', 'core-blueprint' ),
+				'copy_title'  => __( 'Click to copy', 'core-blueprint' ),
+				'description' => __( 'Store it in a password manager or another secure location outside this WordPress installation.', 'core-blueprint' ),
+				'items'       => [
+					__( 'All restrictive Core Blueprint features are disabled for 60 minutes when the URL is used.', 'core-blueprint' ),
+					__( 'The token is rotated after use.', 'core-blueprint' ),
+					sprintf( __( 'An email notification is sent to %s.', 'core-blueprint' ), $admin_email ),
+					__( 'The event is recorded in the audit log.', 'core-blueprint' ),
+				],
+			],
 		] );
 	}
 
