@@ -226,8 +226,13 @@ before="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"
 browser_request -sS -o /tmp/b1-rotate-wrong.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=wrong' "$site/wp-admin/admin-ajax.php"
 code="$B1_HTTP_RESULT"; eq "$code" 401 'Browser rotate accepted wrong password'; eq "$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')" "$before" 'Rejected browser rotate mutated hash'
 browser_request -sS -o /tmp/b1-rotate-ok.json -w '%{http_code}' -X POST -H "Cookie: $failsafe_cookie" --data 'action=cb_core_rotate_token' --data-urlencode "nonce=$failsafe_ajax" --data 'password=cb-b1-failsafe-admin-pass' "$site/wp-admin/admin-ajax.php"
-code="$B1_HTTP_RESULT"; eq "$code" 200 'Valid browser rotate failed'; after="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; [[ "$after" != "$before" ]] || fail 'Valid browser rotate did not change hash'; eq "$(wp_cli_eval_args 'echo get_transient("cb_core_new_token_".(int)$args[0])?"yes":"no";' "$failsafe_admin_id")" yes 'Browser rotate did not create one-time display transient'
-echo "[B1] Browser token rotation lifecycle PASS"
+code="$B1_HTTP_RESULT"; eq "$code" 200 'Valid browser rotate failed'; after="$(wp_cli eval 'echo get_option(CB_CORE_BYPASS_TOK,"");')"; [[ "$after" != "$before" ]] || fail 'Valid browser rotate did not change hash'
+rotated_url="$(php -r '$j=json_decode(file_get_contents("/tmp/b1-rotate-ok.json"),true);echo (is_array($j)&&!empty($j["success"])&&is_array($j["data"]??null))?(string)($j["data"]["bypass_url"]??""):"";')"
+rotated_token="$(sed -nE 's/.*cb_core_bypass=([0-9a-f]{64}).*/\1/p' <<<"$rotated_url" | head -n1)"
+[[ "$rotated_token" =~ ^[0-9a-f]{64}$ ]] || fail 'Browser rotate response omitted one-time 64-hex bypass URL'
+eq "$(wp_cli_eval_args '$t=$args[0];echo wp_check_password($t,get_option(CB_CORE_BYPASS_TOK,""))?"yes":"no";' "$rotated_token")" yes 'Browser rotate response token does not match stored hash'
+eq "$(wp_cli_eval_args 'echo get_transient("cb_core_new_token_".(int)$args[0])?"yes":"no";' "$failsafe_admin_id")" no 'Browser rotate persisted legacy one-time display transient'
+echo "[B1] Browser token rotation response-only lifecycle PASS"
 
 failsafe_admin_remove="$(wp_cli cb operator remove "$failsafe_admin_id" --force)"; contains "$failsafe_admin_remove" 'demoted from CB Operator' 'Browser Failsafe Administrator operator remove failed'
 browser_remove="$(wp_cli cb operator remove "$browser_operator_id" --force)"; contains "$browser_remove" 'demoted from CB Operator' 'Browser Console operator remove failed'
