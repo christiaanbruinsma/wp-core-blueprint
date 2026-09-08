@@ -255,3 +255,9 @@ body.cb-admin-theme.wp-core-ui .woocommerce a.button-primary.debug-report:hover,
 body.cb-admin-theme.wp-core-ui .woocommerce a.button-primary.debug-report:focus {
 	color: var(--cb-on-accent);
 }
+
+/* Classic settings footer marketplace link keeps native light border/text. */
+body.cb-admin-theme.woocommerce_page_wc-settings .wc-settings-marketplace-link {
+	border-top-color: var(--cb-border);
+	color: var(--cb-text-muted);
+}
