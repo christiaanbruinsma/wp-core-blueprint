@@ -54,6 +54,29 @@
 	color: var(--cb-text);
 }
 
+/* ─── Classic post/CPT editor ───────────────────────────────────────── */
+#titlediv #title {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text-strong);
+	box-shadow: none;
+}
+
+#titlediv #title:focus {
+	border-color: var(--cb-interactive-border-hover);
+	box-shadow: 0 0 0 1px var(--cb-interactive-focus);
+}
+
+#titlediv #title-prompt-text {
+	color: var(--cb-text-muted);
+}
+
+#major-publishing-actions {
+	background: var(--cb-surface-2);
+	border-top-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
 /* ─── Site Health ───────────────────────────────────────────────────── */
 .health-check-header,
 .privacy-settings-header {
