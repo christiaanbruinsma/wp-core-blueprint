@@ -1,0 +1,15 @@
+/**
+ * WooCommerce admin semantic token bridge.
+ *
+ * WooCommerce remains owner of brand colours and application layout. This
+ * adapter only maps neutral presentation primitives to Core Blueprint tokens.
+ */
+body.cb-admin-theme {
+	--wc-content-bg: var(--cb-surface-1);
+	--wc-subtext: var(--cb-text-muted);
+	--wc-secondary: var(--cb-surface-2);
+	--wc-secondary-text: var(--cb-text);
+	--wc-form-color-background: var(--cb-surface-1);
+	--wc-form-color-text: var(--cb-text);
+	--wc-form-border-color: var(--cb-border);
+}
