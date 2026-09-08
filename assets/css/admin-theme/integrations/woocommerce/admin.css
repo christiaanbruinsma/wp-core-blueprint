@@ -111,9 +111,26 @@ body.cb-admin-theme.woocommerce-admin-page .woocommerce-experimental-list__item 
 	border-color: var(--cb-border);
 }
 
+/* Woo ships incomplete task icons with a hardcoded white fill and light gray
+ * border in its experimental/task bundles. Keep the state geometry and only
+ * normalize the neutral circle presentation. */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-dashboard__container:not(.setup-task-list) .woocommerce-task-list__item:not(.complete) .woocommerce-task__icon,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-task-list__item:not(.complete) .woocommerce-task__icon {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+}
+
 body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout .woocommerce-experimental-list__item:hover,
 body.cb-admin-theme.woocommerce-admin-page .woocommerce-layout .woocommerce-inbox-message:hover {
 	background: var(--cb-interactive-hover);
+}
+
+/* Inbox titles are hardcoded to #1e1e1e with !important upstream. Match that
+ * narrow ownership boundary rather than raising specificity across Woo Admin. */
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message__content .woocommerce-inbox-message__title,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message__content .woocommerce-inbox-message__title a,
+body.cb-admin-theme.woocommerce-admin-page .woocommerce-inbox-message:not(.message-is-unread) .woocommerce-inbox-message__title a {
+	color: var(--cb-text-strong) !important;
 }
 
 /* Coupons appends Woo Admin Cards below the native coupons list table. */
