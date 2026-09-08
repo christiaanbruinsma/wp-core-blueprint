@@ -12,4 +12,19 @@ body.cb-admin-theme {
 	--wc-form-color-background: var(--cb-surface-1);
 	--wc-form-color-text: var(--cb-text);
 	--wc-form-border-color: var(--cb-border);
+
+	/* Woo Admin is built heavily on @wordpress/components. Keep WordPress/Woo
+	 * accent semantics intact while mapping the neutral component palette. */
+	--wp-components-color-background: var(--cb-surface-1);
+	--wp-components-color-foreground: var(--cb-text-strong);
+	--wp-components-color-foreground-muted: var(--cb-text-muted);
+	--wp-components-color-foreground-inverted: var(--cb-surface-0);
+	--wp-components-color-gray-100: var(--cb-surface-2);
+	--wp-components-color-gray-200: var(--cb-surface-2);
+	--wp-components-color-gray-300: var(--cb-border);
+	--wp-components-color-gray-400: var(--cb-border);
+	--wp-components-color-gray-600: var(--cb-text-faint);
+	--wp-components-color-gray-700: var(--cb-text-muted);
+	--wp-components-color-gray-800: var(--cb-text);
+	--wp-components-color-gray-900: var(--cb-text-strong);
 }
