@@ -144,6 +144,7 @@ foreach ( $cb_base_option_prefixes as $prefix ) {
 
 $cb_base_transient_prefixes = [
 	'cb_core_bypass_window',
+	'cb_core_failsafe_rejected_audit_gate',
 	'cb_core_failsafe_t_',
 	'cb_core_failsafe_test_',
 	'cb_core_integrity_scan_progress_',
