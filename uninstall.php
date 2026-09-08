@@ -220,6 +220,27 @@ if ( ! empty( $cb_uploads['basedir'] ) ) {
 	}
 }
 
+// ─── Snippets storage ownership ──────────────────────────────────────────────
+// Managed snippet source is operator-authored content and intentionally survives
+// Base deletion for portability/exit freedom. Only generated runtime state in
+// the canonical Base-owned storage directory is neutralised. Do not resolve the
+// storage-dir filter during uninstall: a filtered/custom path is externally
+// configured and must never become an arbitrary deletion target.
+
+$cb_snippets_default_dir = untrailingslashit( trailingslashit( WP_CONTENT_DIR ) . 'cb-snippets' );
+$cb_snippets_runtime_files = [
+	$cb_snippets_default_dir . '/runtime-index.php',
+	$cb_snippets_default_dir . '/.lock',
+];
+
+foreach ( $cb_snippets_runtime_files as $runtime_file ) {
+	if ( is_file( $runtime_file ) ) {
+		@unlink( $runtime_file );
+	}
+}
+
+// Preserved deliberately: registry.php, code/* and direct-access guard files.
+
 // ─── Base-owned database tables ──────────────────────────────────────────────
 // Identifiers cannot be parameterised with $wpdb->prepare(). Validate the
 // complete generated identifier and quote it as an identifier instead.
