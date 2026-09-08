@@ -1,0 +1,27 @@
+/**
+ * Gutenberg iframe content fallback for the Core Blueprint Admin Theme.
+ *
+ * Loaded through enqueue_block_assets so WordPress includes it inside the
+ * editor iframe. All selectors intentionally use :where() to keep specificity
+ * at zero: explicit theme.json, theme editor styles, block classes and inline
+ * design choices remain authoritative over this dark fallback.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+:where(html[data-cb-mode="dark"]) {
+	--wp-editor-canvas-background: var(--cb-surface-0);
+	color-scheme: dark;
+	background: var(--cb-surface-0);
+}
+
+:where(html[data-cb-mode="dark"]) :where(body.block-editor-iframe__body),
+:where(html[data-cb-mode="dark"]) :where(.editor-styles-wrapper) {
+	background-color: var(--cb-surface-0);
+	color: var(--cb-text);
+}
+
+:where(html[data-cb-mode="dark"]) :where(.editor-styles-wrapper) :where(h1, h2, h3, h4, h5, h6) {
+	color: inherit;
+}

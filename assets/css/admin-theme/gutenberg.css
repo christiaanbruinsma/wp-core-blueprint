@@ -1,0 +1,89 @@
+/**
+ * Gutenberg editor UI dark adapter.
+ *
+ * This stylesheet targets the editor application chrome only. Editor content is
+ * handled separately through Gutenberg's official iframe asset path.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+body.cb-admin-theme {
+	--wp-components-color-accent: var(--cb-accent);
+	--wp-components-color-accent-darker-10: var(--cb-accent-strong);
+	--wp-components-color-accent-darker-20: var(--cb-accent-strong);
+	--wp-components-color-accent-inverted: var(--cb-on-accent);
+	--wp-components-color-background: var(--cb-surface-1);
+	--wp-components-color-foreground: var(--cb-text-strong);
+	--wp-components-color-foreground-inverted: var(--cb-surface-0);
+	--wp-components-color-gray-100: var(--cb-surface-2);
+	--wp-components-color-gray-200: var(--cb-surface-2);
+	--wp-components-color-gray-300: var(--cb-border);
+	--wp-components-color-gray-400: var(--cb-border);
+	--wp-components-color-gray-600: var(--cb-text-faint);
+	--wp-components-color-gray-700: var(--cb-text-muted);
+	--wp-components-color-gray-800: var(--cb-text);
+}
+
+body.cb-admin-theme .interface-interface-skeleton__header,
+body.cb-admin-theme .editor-header,
+body.cb-admin-theme .editor-header__center,
+body.cb-admin-theme .editor-header__settings,
+body.cb-admin-theme .interface-interface-skeleton__footer {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .interface-interface-skeleton__sidebar,
+body.cb-admin-theme .interface-complementary-area,
+body.cb-admin-theme .components-panel {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .components-panel__header,
+body.cb-admin-theme .components-panel__body,
+body.cb-admin-theme .components-panel__body-title,
+body.cb-admin-theme .components-tools-panel,
+body.cb-admin-theme .components-tab-panel__tabs {
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .components-popover__content,
+body.cb-admin-theme .components-dropdown-menu__menu,
+body.cb-admin-theme .components-menu-group,
+body.cb-admin-theme .block-editor-inserter__menu {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+	box-shadow: var(--cb-shadow-md);
+}
+
+body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive) {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive):hover,
+body.cb-admin-theme .components-button:not(.is-primary):not(.is-destructive):focus,
+body.cb-admin-theme .components-button.is-pressed:not(.is-primary):not(.is-destructive) {
+	background: var(--cb-interactive-hover);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .components-tab-panel__tabs-item,
+body.cb-admin-theme .components-base-control__label,
+body.cb-admin-theme .components-input-control__label,
+body.cb-admin-theme .components-toggle-control__label {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .block-editor-iframe__container,
+body.cb-admin-theme .block-editor-iframe__scale-container,
+body.cb-admin-theme .edit-post-visual-editor,
+body.cb-admin-theme .edit-post-visual-editor__content-area {
+	background: var(--cb-surface-0);
+	border-color: var(--cb-border);
+}

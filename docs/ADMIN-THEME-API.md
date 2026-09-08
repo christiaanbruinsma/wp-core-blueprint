@@ -99,13 +99,53 @@ Additional hooks:
 - `cb_admin_theme_screen_registered`
 - `cb_admin_theme_body_classes`
 
+## Internal adapter layers
+
+Base keeps its own presentation adapters modular:
+
+```text
+assets/css/admin-theme/
+├── core-screens.css
+├── core/
+│   ├── dashboard.css
+│   └── plugins.css
+├── compat/
+│   └── dashboard-widgets.css
+├── gutenberg.css
+├── gutenberg-canvas.css
+└── integrations/
+    ├── bricks.css
+    └── happyfiles.css
+```
+
+The ownership boundaries are deliberate:
+
+- `core/*` contains selectors owned by WordPress Core.
+- `compat/*` contains tightly scoped normalization for ordinary WordPress-native primitives used by third-party widgets. It must not become a generic wildcard skin.
+- `integrations/*` contains only explicitly curated third-party bridges.
+- Gutenberg UI and editor content are separate because the editor content runs in an iframe.
+
 ## Curated third-party bridges
 
 Base does **not** maintain a skin for every WordPress plugin. A curated bridge is only appropriate when it is intentionally supported, small, and primarily maps the third party's own presentation variables to Core Blueprint semantic tokens.
 
-HappyFiles is the first built-in example. Its adapter maps confirmed `--hf-*` presentation variables and corrects only a minimal hardcoded light surface. HappyFiles keeps ownership of layout, interactions, and business UI.
+The current curated bridges are:
+
+- **HappyFiles:** maps confirmed `--hf-*` presentation variables and corrects confirmed hardcoded light sidebar/search states.
+- **Bricks:** maps confirmed Bricks admin variables such as `--admin-color-border`, `--bricks-bg-light`, and `--bricks-text-light`, plus a small set of confirmed hardcoded light admin surfaces. Bricks keeps ownership of layout and brand accents.
 
 Plugin developers should normally ship their own compatibility layer through the public token and enqueue contracts instead of asking Base to own their UI.
+
+## Gutenberg
+
+WordPress 7.1 always uses an iframe for the Post Editor. Base therefore respects the official WordPress separation:
+
+- `enqueue_block_editor_assets` is used for Gutenberg application chrome.
+- `enqueue_block_assets` is used for editor-content assets that WordPress places inside the iframe.
+
+The iframe receives a **low-specificity dark fallback** only while the resolved admin mode is Dark. The fallback uses `:where()` so explicit `theme.json`, theme editor styles, block classes, and inline design choices remain authoritative.
+
+The browser runtime mirrors `data-cb-theme` and `data-cb-mode` into the same-origin Gutenberg iframe so HUD Light/Dark changes can update the editor without a reload.
 
 ## Browser API
 
@@ -138,8 +178,8 @@ Base owns:
 - WordPress Core Dark adaptation;
 - shared Foundation component presentation;
 - public theme integration contracts;
-- a deliberately small set of curated compatibility bridges.
+- tightly scoped WordPress-native compatibility normalization;
+- a deliberately small set of curated compatibility bridges;
+- the Gutenberg admin/editor fallback boundary.
 
 Extensions own their domain composition and must not implement their own theme state, theme toggle, or duplicated shared presentation layer.
-
-The WordPress editor content canvas is intentionally not forced into Dark or Light. Editor chrome may follow the admin theme, while content continues to represent the site/editor styles.

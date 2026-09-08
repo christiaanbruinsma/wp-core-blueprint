@@ -1,0 +1,67 @@
+/**
+ * Bricks admin compatibility bridge.
+ *
+ * Bricks remains owner of its application layout and brand presentation. This
+ * adapter maps confirmed Bricks admin presentation variables to Core Blueprint
+ * semantic tokens and corrects confirmed hardcoded light surfaces.
+ *
+ * @package CB\Core
+ * @since   1.0.0
+ */
+
+body.cb-admin-theme .bricks-admin-wrapper {
+	--admin-color-border: var(--cb-border);
+	--bricks-bg-light: var(--cb-surface-2);
+	--bricks-text-light: var(--cb-text-muted);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper h1,
+body.cb-admin-theme .bricks-admin-wrapper h2,
+body.cb-admin-theme .bricks-admin-wrapper h3,
+body.cb-admin-theme .bricks-admin-wrapper h4 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.getting-started .bricks-admin-inner {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.getting-started .box-wrapper {
+	box-shadow: 0 -1px 0 var(--cb-border);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.getting-started .badge {
+	background-color: var(--cb-surface-2);
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.getting-started p {
+	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme #bricks-settings {
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-settings tr {
+	background-color: var(--cb-surface-1);
+	box-shadow: 0 0 0 1px var(--cb-border);
+}
+
+body.cb-admin-theme #bricks-settings th {
+	background-color: var(--cb-surface-2);
+	border-right-color: var(--cb-border);
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #bricks-settings td {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-settings .description {
+	color: var(--cb-text-muted);
+}
