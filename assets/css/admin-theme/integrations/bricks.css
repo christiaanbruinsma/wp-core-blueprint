@@ -1,18 +1,42 @@
 /**
  * Bricks admin compatibility bridge.
  *
- * Bricks remains owner of its application layout and brand presentation. This
- * adapter maps confirmed Bricks admin presentation variables to Core Blueprint
- * semantic tokens and corrects confirmed hardcoded light surfaces.
+ * Bricks remains owner of its application layout, brand colours, semantic
+ * states, and control geometry. This adapter maps confirmed neutral Bricks
+ * presentation variables to Core Blueprint semantic tokens and corrects
+ * source-confirmed hardcoded light surfaces from Bricks 2.3.12.
  *
  * @package CB\Core
  * @since   1.0.0
  */
 
-body.cb-admin-theme .bricks-admin-wrapper {
+/* Bricks exposes a compact neutral presentation contract in admin.min.css.
+ * Map that contract only inside Bricks-owned UI so Bricks can keep using its
+ * own variables while Base supplies the resolved Dark-mode palette. */
+body.cb-admin-theme .bricks-admin-wrapper,
+body.cb-admin-theme #bricks-settings,
+body.cb-admin-theme .bricks-capability-modal,
+body.cb-admin-theme #bricks-font-metabox,
+body.cb-admin-theme #bricks-feedback-form-inner,
+body.cb-admin-theme .bricks-block-editor-notice-wrapper,
+body.cb-admin-theme .bricks-classic-editor-wrapper,
+body.cb-admin-theme .bricks-editor {
 	--admin-color-border: var(--cb-border);
-	--bricks-bg-light: var(--cb-surface-2);
+	--bricks-text-dark: var(--cb-text-strong);
+	--bricks-text-medium: var(--cb-text);
 	--bricks-text-light: var(--cb-text-muted);
+	--bricks-bg-light: var(--cb-surface-2);
+	--bricks-border-color: var(--cb-border);
+
+	/* Preserve Bricks' semantic hues while replacing its light pastel fills
+	 * with dark-compatible translucent state surfaces. */
+	--bricks-bg-info: color-mix(in srgb, var(--bricks-text-info) 12%, transparent);
+	--bricks-bg-success: color-mix(in srgb, var(--bricks-text-success) 12%, transparent);
+	--bricks-bg-warning: color-mix(in srgb, var(--bricks-text-warning) 12%, transparent);
+	--bricks-bg-danger: color-mix(in srgb, var(--bricks-text-danger) 12%, transparent);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper {
 	color: var(--cb-text);
 }
 
@@ -23,6 +47,7 @@ body.cb-admin-theme .bricks-admin-wrapper h4 {
 	color: var(--cb-text-strong);
 }
 
+/* Getting Started. */
 body.cb-admin-theme .bricks-admin-wrapper.getting-started .bricks-admin-inner {
 	background-color: var(--cb-surface-1);
 	border-color: var(--cb-border);
@@ -42,6 +67,7 @@ body.cb-admin-theme .bricks-admin-wrapper.getting-started p {
 	color: var(--cb-text-muted);
 }
 
+/* Settings tables and source-confirmed auxiliary surfaces. */
 body.cb-admin-theme #bricks-settings {
 	color: var(--cb-text);
 }
@@ -66,12 +92,123 @@ body.cb-admin-theme #bricks-settings .description {
 	color: var(--cb-text-muted);
 }
 
+body.cb-admin-theme #bricks-admin-import-form-wrapper,
+body.cb-admin-theme #bricks-admin-import-form-wrapper .import-progress {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-settings td.blocking .blocking-info-wrapper {
+	background-color: color-mix(in srgb, var(--cb-surface-1) 82%, transparent);
+	color: var(--cb-text);
+}
+
+/* Bricks Settings uses a custom switch. Preserve its geometry and the WP admin
+ * theme colour for the checked state; only replace its neutral light track and
+ * thumb presentation. */
+body.cb-admin-theme #bricks-settings input[type="checkbox"] {
+	background-color: var(--cb-surface-3);
+}
+
+body.cb-admin-theme #bricks-settings input[type="checkbox"]::before {
+	background-color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme #bricks-settings input[type="checkbox"]:checked {
+	background-color: var(--wp-admin-theme-color, #2271b1);
+}
+
+body.cb-admin-theme #bricks-settings input[type="checkbox"]:checked::before {
+	background-color: var(--cb-on-accent);
+}
+
+/* Settings multiselect and custom capability UI. */
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"].multiple .input,
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"] .options-wrapper {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"].multiple .input .value {
+	background: color-mix(in srgb, var(--wp-admin-theme-color, #2271b1) 12%, transparent);
+}
+
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"] .searchable-wrapper,
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"] .searchable-wrapper input {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme #bricks-settings .bricks-multiselect[data-control="select"] .searchable-wrapper input {
+	background-color: var(--cb-surface-2);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-settings .bricks-custom-capabilities-wrapper .capability-item {
+	background: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-capability-modal {
+	background: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-header,
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-content .capability-permissions .permission-section .section-header,
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-footer {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-header h2,
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-content h3 {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-footer {
+	background: var(--cb-surface-2);
+}
+
+body.cb-admin-theme .bricks-capability-modal .bricks-capability-modal-footer .save-reminder {
+	color: var(--cb-text-muted);
+}
+
+/* Element Manager is primarily a WordPress list table. Only correct Bricks'
+ * own hardcoded neutral dividers, sticky action surface, and row hover. */
+body.cb-admin-theme.bricks_page_bricks-elements form#bricks-element-manager tr:not(:last-child) {
+	box-shadow: 0 1px 0 0 var(--cb-border);
+}
+
+body.cb-admin-theme.bricks_page_bricks-elements form#bricks-element-manager .custom-element {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme.bricks_page_bricks-elements form#bricks-element-manager .submit-wrapper.sticky {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme.bricks_page_bricks-elements form#bricks-element-manager tbody tr:hover {
+	background-color: var(--cb-interactive-hover);
+	box-shadow: 0 0 0 1px var(--cb-interactive-border-hover);
+}
+
 /* Sidebars uses a dedicated Bricks application surface. Keep its layout intact
  * while replacing only the confirmed hardcoded light presentation. */
 body.cb-admin-theme .bricks-admin-wrapper.sidebars .bricks-admin-inner {
 	background-color: var(--cb-surface-1);
 	border-color: var(--cb-border);
 	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.sidebars .new-sidebar-wrapper {
+	border-right-color: var(--cb-border);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.sidebars .new-sidebar-wrapper form {
+	border-color: var(--cb-border);
 }
 
 body.cb-admin-theme .bricks-admin-wrapper.sidebars .bricks-admin-inner p,
@@ -90,15 +227,86 @@ body.cb-admin-theme .bricks-admin-wrapper.system-information table th {
 	border-color: var(--cb-border);
 }
 
+/* Custom Fonts owns its own cards inside a WordPress metabox. */
+body.cb-admin-theme #bricks-font-metabox .bricks-font-variant {
+	background-color: var(--cb-surface-1);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-font-metabox .bricks-font-variant .font-header .bricks-font-style-wrapper {
+	border-left-color: var(--cb-border);
+	border-right-color: var(--cb-border);
+}
+
+body.cb-admin-theme #bricks-font-metabox .bricks-font-variant .font-faces {
+	border-top-color: var(--cb-border);
+}
+
+/* Bricks editor integrations appear on native post-editor screens rather than
+ * only on Bricks admin pages. Keep Bricks' yellow primary action untouched and
+ * normalize only the source-confirmed neutral shell/delete presentation. */
+body.cb-admin-theme .bricks-active .switch-bricks {
+	background: var(--cb-surface-2);
+	border-bottom-color: var(--cb-surface-2);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-editor .wp-editor-container,
+body.cb-admin-theme .bricks-block-editor-notice-wrapper {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme .bricks-block-editor-notice-wrapper {
+	border-color: var(--cb-border);
+}
+
+body.cb-admin-theme .bricks-block-editor-notice-wrapper .bricks-delete-post-meta,
+body.cb-admin-theme .bricks-classic-editor-wrapper .bricks-delete-post-meta,
+body.cb-admin-theme .bricks-editor .wp-editor-container .bricks-delete-post-meta,
+body.cb-admin-theme .edit-post-header-toolbar .bricks-delete-post-meta {
+	background-color: var(--cb-surface-2);
+	color: var(--cb-text-muted);
+}
+
 /* License management is Bricks-owned application UI. Only normalize its
- * confirmed hardcoded white form surface; buttons, status colors and spacing
- * remain owned by Bricks. */
+ * confirmed neutral form/status surfaces; actions and semantic hues stay Bricks-owned. */
 body.cb-admin-theme .bricks-admin-wrapper.license form {
 	background-color: var(--cb-surface-1);
 	color: var(--cb-text);
 }
 
 body.cb-admin-theme .bricks-admin-wrapper.license form p,
-body.cb-admin-theme .bricks-admin-wrapper.license form .description {
+body.cb-admin-theme .bricks-admin-wrapper.license form .description,
+body.cb-admin-theme .bricks-admin-wrapper.license form .desc {
 	color: var(--cb-text-muted);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.license form .license-mismatch {
+	background-color: color-mix(in srgb, var(--bricks-text-danger) 12%, transparent);
+}
+
+body.cb-admin-theme .bricks-admin-wrapper.license form .license-outage {
+	background-color: color-mix(in srgb, var(--bricks-text-warning) 12%, transparent);
+}
+
+/* Theme deactivation feedback modal is rendered on themes.php outside the
+ * normal Bricks wrapper, so it needs its own tightly scoped neutral surface. */
+body.cb-admin-theme #bricks-feedback-form-inner {
+	background-color: var(--cb-surface-1);
+	color: var(--cb-text);
+}
+
+body.cb-admin-theme #bricks-feedback-form-inner .bricks-title-wrapper {
+	box-shadow: 0 0 0 1px var(--cb-border);
+}
+
+body.cb-admin-theme #bricks-feedback-form-inner .bricks-title-wrapper .bricks-title {
+	color: var(--cb-text-strong);
+}
+
+body.cb-admin-theme #bricks-feedback-form-inner label,
+body.cb-admin-theme #bricks-feedback-form-inner .bricks-description {
+	color: var(--cb-text);
 }
