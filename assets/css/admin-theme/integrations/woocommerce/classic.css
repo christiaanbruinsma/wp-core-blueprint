@@ -165,8 +165,10 @@ body.cb-admin-theme .woocommerce-reports-wrap .postbox .chart-prompt {
 /* Classic/embedded Woo Settings still uses a large hardcoded #f0f0f1 canvas
  * around the form and a light nav strip. Scope the correction to the Woo
  * settings screen so normal WordPress forms remain untouched. */
+body.cb-admin-theme.woocommerce_page_wc-settings #wpcontent,
 body.cb-admin-theme.woocommerce_page_wc-settings #mainform,
-body.cb-admin-theme.woocommerce_page_wc-settings .woocommerce-embedded-layout__primary {
+body.cb-admin-theme.woocommerce_page_wc-settings .woocommerce-embedded-layout__primary,
+body.cb-admin-theme.woocommerce_page_wc-settings.woocommerce-settings-payments-tab #mainform {
 	background: var(--cb-surface-0);
 	color: var(--cb-text);
 }
@@ -228,4 +230,28 @@ body.cb-admin-theme.woocommerce_page_wc-settings #mainform textarea:focus,
 body.cb-admin-theme.woocommerce_page_wc-settings #mainform select:focus {
 	border-color: var(--cb-interactive-focus);
 	box-shadow: 0 0 0 1px var(--cb-interactive-focus);
+}
+
+/* Shipping, gateway, e-mail and status tables still ship their own zebra/final
+ * row backgrounds instead of inheriting WordPress striped-table presentation. */
+body.cb-admin-theme table.wc-shipping-classes .wc-shipping-zone-rows-tfoot .even td,
+body.cb-admin-theme table.wc-shipping-zone-methods .wc-shipping-zone-rows-tfoot .even td,
+body.cb-admin-theme table.wc-shipping-zones .wc-shipping-zone-rows-tfoot .even td,
+body.cb-admin-theme table.wc_emails tr:nth-child(odd) td,
+body.cb-admin-theme table.wc_gateways tr:nth-child(odd) td,
+body.cb-admin-theme table.wc_shipping tr:nth-child(odd) td,
+body.cb-admin-theme table.wc_status_table tr:nth-child(2n) td,
+body.cb-admin-theme table.wc_status_table tr:nth-child(2n) th {
+	background: var(--cb-surface-2);
+	border-color: var(--cb-border);
+	color: var(--cb-text);
+}
+
+/* Woo's legacy System Status action has .button-primary without WordPress's
+ * companion .button class. Keep it a primary action instead of allowing the
+ * generic .wrap link colour to make the label match its accent background. */
+body.cb-admin-theme.wp-core-ui .woocommerce a.button-primary.debug-report,
+body.cb-admin-theme.wp-core-ui .woocommerce a.button-primary.debug-report:hover,
+body.cb-admin-theme.wp-core-ui .woocommerce a.button-primary.debug-report:focus {
+	color: var(--cb-on-accent);
 }
