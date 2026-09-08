@@ -13,7 +13,6 @@ defined( 'ABSPATH' ) || exit;
 
 final class Actions {
 	private const RESULT_PREFIX = 'cb_core_snippets_result_';
-	private const DRAFT_PREFIX  = 'cb_core_snippets_draft_';
 
 	public static function boot(): void {
 		add_action( 'admin_post_cb_core_snippets_save', [ __CLASS__, 'save' ] );
@@ -44,7 +43,8 @@ final class Actions {
 		$was_new = '' === $id;
 		$saved = Repository::save( $input, $code );
 		if ( is_wp_error( $saved ) ) {
-			self::set_draft( $id, $input, $code );
+			// The browser keeps a short-lived tab-local recovery copy. Never write
+			// raw snippet code into WordPress options/transients on save failure.
 			self::set_result( 'error', $saved->get_error_message() );
 			self::redirect( 'snippets', [ 'view' => 'edit' ] + ( '' !== $id ? [ 'snippet' => $id ] : [] ) );
 		}
@@ -171,16 +171,6 @@ final class Actions {
 		return is_array( $result ) ? $result : null;
 	}
 
-	public static function pull_draft( string $snippet_id ): ?array {
-		$key   = self::DRAFT_PREFIX . get_current_user_id();
-		$draft = get_transient( $key );
-		if ( ! is_array( $draft ) || (string) ( $draft['snippet_id'] ?? '' ) !== $snippet_id ) {
-			return null;
-		}
-		delete_transient( $key );
-		return $draft;
-	}
-
 	private static function conditions_from_request(): array {
 		$rules = [];
 		$scope = isset( $_POST['condition_scope'] ) ? sanitize_key( wp_unslash( $_POST['condition_scope'] ) ) : 'any';
@@ -232,16 +222,6 @@ final class Actions {
 
 	private static function set_result( string $type, string $message ): void {
 		set_transient( self::RESULT_PREFIX . get_current_user_id(), [ 'type' => $type, 'message' => $message ], MINUTE_IN_SECONDS );
-	}
-
-	private static function set_draft( string $snippet_id, array $input, string $code ): void {
-		// Local, short-lived recovery only. Never log snippet code or send it over
-		// the network; this protects the editor contents across POST redirects.
-		set_transient( self::DRAFT_PREFIX . get_current_user_id(), [
-			'snippet_id' => $snippet_id,
-			'input'      => $input,
-			'code'       => $code,
-		], 5 * MINUTE_IN_SECONDS );
 	}
 
 	private static function redirect( string $tab, array $args = [] ): void {
