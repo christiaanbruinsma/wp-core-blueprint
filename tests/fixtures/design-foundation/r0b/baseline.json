@@ -1,0 +1,308 @@
+{
+  "fixture_set": "core-blueprint-design-foundation-r0b",
+  "fixture_set_version": 1,
+  "captured_on": "2026-09-09",
+  "purpose": "Immutable pre-Design-Foundation regression baseline for existing document rendering behavior.",
+  "golden_strategy": {
+    "pdf_byte_hash": false,
+    "comparison": "semantic-observables-and-pinned-render-provenance",
+    "reason": "PDF binaries are renderer/environment artifacts and are not the authoritative consumer/domain state.",
+    "production_renderers_unchanged_by_r0b": true
+  },
+  "source_baselines": {
+    "base": {
+      "repository": "christiaanbruinsma/wp-core-blueprint",
+      "commit": "a33e04cff746b655eb6d4833fece3c8c3d8b51f8",
+      "files": {
+        "src/PDF/Api/PdfApi.php": "d5829497498b2d22fa8e65556f79cb1b52acfeba",
+        "src/PDF/Renderer.php": "37db9488802f0db87455fcab1fb24b7a17add286",
+        "src/Reports/MaintenanceAggregator.php": "932c95de4c4e3e66583eb7181ef82ce1473314f9",
+        "src/Reports/MaintenancePdf.php": "50bd822f74bddaf9090060e19e83488c7d005980",
+        "templates/pdf/maintenance-report.php": "6c123505b8ed91ad5672c206132934e6fc9f8b92"
+      }
+    },
+    "certificates": {
+      "repository": "christiaanbruinsma/wp-core-blueprint-certificates",
+      "commit": "79bf9c6ea909dbe1e6b8257f5b1d05c30a69c2e1",
+      "files": {
+        "src/Design/Defaults.php": "8807a7b1192829a1f136bcfe76c00eab70b955cd",
+        "src/Design/EditorState.php": "e5cecdc0f6790744a17d66fa2abe9fbf3a8cd424",
+        "src/Design/ElementRegistry.php": "7f96ec570200ac469573ea6f531e87ea2d79ef63",
+        "src/Design/Resolver.php": "10e81642911133821af2b2e53879511e8c22079e",
+        "src/Design/Validator.php": "a09b19835390039db2cdd8d71ae7139e429546c3",
+        "src/Rendering/CertificateHtml.php": "31ce5fd07fd2b15865df0aa8d7f498ae80fd2d82",
+        "src/Rendering/PdfGateway.php": "37697d81bae923e69609711e978e964993f19bd4"
+      }
+    },
+    "commerce_essentials": {
+      "repository": "christiaanbruinsma/wp-core-blueprint-commerce-essentials",
+      "commit": "9eec7a9b2aef9a44f469649ce777a125749ab111",
+      "files": {
+        "src/Documents/DocumentHtml.php": "57aadabd613e1af629315498a173d12198cc5606",
+        "src/Documents/PdfRenderer.php": "be5c829e1aacf4fa54c3dede68339a4d47522df1",
+        "src/Documents/SnapshotFactory.php": "5297fe8d7df764f9cb21e89afb5a012158aee1ba"
+      }
+    }
+  },
+  "renderer": {
+    "public_extension_boundary": "CB\\Core\\PDF\\Api\\PdfApi",
+    "base_internal_renderer": "CB\\Core\\PDF\\Renderer",
+    "backend": {
+      "name": "dompdf/dompdf",
+      "version": "3.1.6",
+      "upstream_commit": "6d4b4eb8500f7a786da8868ba463a71b725a4005"
+    },
+    "base_defaults": {
+      "paper_size": "A4",
+      "orientation": "portrait",
+      "default_font": "DejaVu Sans",
+      "html5_parser": true
+    },
+    "security_policy": {
+      "remote_resources": false,
+      "embedded_php": false,
+      "embedded_javascript": false,
+      "decoded_image_limit": "32M",
+      "reject_foreign_loaded_dompdf": true
+    },
+    "compatibility_policy": {
+      "modern_browser_css_parity_guaranteed": false,
+      "flexbox_required": false,
+      "css_grid_required": false,
+      "pdfa_implied": false
+    }
+  },
+  "fixtures": [
+    {
+      "id": "maintenance-report-current",
+      "status": "existing-production-baseline",
+      "consumer_provider": "coreblueprint.maintenance",
+      "consumer_owns_external_data": true,
+      "layout_character": "paginated-flow-like-html",
+      "render_path": [
+        "immutable maintenance snapshot",
+        "CB\\Core\\Reports\\MaintenancePdf",
+        "templates/pdf/maintenance-report.php",
+        "CB\\Core\\PDF\\Renderer",
+        "in-memory PDF"
+      ],
+      "paper": {
+        "size": "A4",
+        "orientation": "portrait"
+      },
+      "observables": {
+        "snapshot_version": 1,
+        "snapshot_version_must_match": true,
+        "required_snapshot_metadata": [
+          "site.url",
+          "generated_at"
+        ],
+        "branding_resolved_separately_at_render_time": true,
+        "kpi_maximum": 5,
+        "optional_security_block": true,
+        "activity_sections": [
+          "theme_updates",
+          "plugin_updates",
+          "plugin_installations",
+          "plugin_removals",
+          "core_updates"
+        ],
+        "backups_summary": true,
+        "dompdf_layout_constraints": [
+          "inline CSS",
+          "table layout instead of flexbox",
+          "conservative units",
+          "CSS page counters"
+        ],
+        "permanent_pdf_storage": false
+      },
+      "migration_parity": {
+        "must_preserve": [
+          "immutable snapshot authority",
+          "visible report semantics",
+          "multi-page behavior",
+          "optional security omission behavior",
+          "activity table content",
+          "branding lifecycle policy"
+        ],
+        "must_not_move_to_foundation": [
+          "maintenance snapshot truth",
+          "maintenance data collection",
+          "maintenance lifecycle semantics"
+        ]
+      }
+    },
+    {
+      "id": "certificates-fixed-current",
+      "status": "existing-production-baseline",
+      "consumer_provider": "coreblueprint.certificates",
+      "consumer_owns_external_data": true,
+      "legacy_design_schema_version": "1.0",
+      "layout_character": "fixed-a4-absolute",
+      "render_path": [
+        "validated declarative certificate design",
+        "resolved issuance payload",
+        "CB\\Certificates\\Rendering\\CertificateHtml",
+        "artwork placeholder hydration",
+        "CB\\Certificates\\Rendering\\PdfGateway",
+        "CB\\Core\\PDF\\Api\\PdfApi"
+      ],
+      "paper": {
+        "size": "A4",
+        "orientations": [
+          "portrait",
+          "landscape"
+        ]
+      },
+      "observables": {
+        "page_geometry_mm": true,
+        "absolute_positioning": true,
+        "arbitrary_design_html_css_javascript": false,
+        "element_types": [
+          "static_text",
+          "dynamic_text",
+          "image",
+          "box",
+          "qr"
+        ],
+        "background_types": [
+          "solid",
+          "image",
+          "artwork"
+        ],
+        "text_overflow_modes": [
+          "wrap",
+          "clip"
+        ],
+        "artwork_pdf_hydration": "local data URI",
+        "resolved_design_snapshotted_at_issuance": true,
+        "render_html_snapshotted_at_issuance": true,
+        "editor_only_metadata_excluded_from_issued_render_state": true
+      },
+      "known_migration_differences": [
+        "Legacy CertificateHtml derives the HTML language from determine_locale(); the Design Foundation migration must instead receive an explicit consumer-owned render locale."
+      ],
+      "migration_parity": {
+        "must_preserve": [
+          "fixed A4 geometry",
+          "portrait and landscape output",
+          "validated declarative design input",
+          "issued artifact immutability",
+          "text/image/box/QR presentation semantics",
+          "artwork containment behavior"
+        ],
+        "must_not_move_to_foundation": [
+          "issuance truth",
+          "recipient/completion truth",
+          "certificate numbering",
+          "verification semantics",
+          "historical artifact lifecycle"
+        ]
+      }
+    },
+    {
+      "id": "commerce-financial-current",
+      "status": "existing-production-baseline",
+      "consumer_provider": "coreblueprint.commerce",
+      "consumer_owns_external_data": true,
+      "layout_character": "paginated-flow-like-html",
+      "render_path": [
+        "immutable financial document snapshot",
+        "CB\\CommerceEssentials\\Documents\\DocumentHtml",
+        "CB\\CommerceEssentials\\Documents\\PdfRenderer",
+        "CB\\Core\\PDF\\Api\\PdfApi"
+      ],
+      "paper": {
+        "size": "A4",
+        "orientation": "portrait",
+        "default_font": "DejaVu Sans"
+      },
+      "observables": {
+        "document_types": [
+          "invoice",
+          "credit_note"
+        ],
+        "issuer_block": true,
+        "buyer_block": true,
+        "line_table": [
+          "description",
+          "quantity",
+          "unit_net",
+          "net_total",
+          "vat_rate",
+          "tax_total",
+          "gross_total"
+        ],
+        "totals": [
+          "subtotal",
+          "discount_total",
+          "shipping_total",
+          "tax_total",
+          "total"
+        ],
+        "vat_breakdown": true,
+        "reverse_charge_notice": true,
+        "credit_note_original_invoice_reference": true,
+        "payment_method": true,
+        "public_document_id_in_footer": true,
+        "financial_truth_is_snapshot_owned": true
+      },
+      "known_migration_differences": [
+        "Legacy DocumentHtml hardcodes html lang=en while translated labels follow the active WordPress translation context; the Design Foundation migration must receive an explicit consumer-owned render locale."
+      ],
+      "migration_parity": {
+        "must_preserve": [
+          "invoice and credit-note required content",
+          "issuer and buyer presentation",
+          "line-item presentation",
+          "VAT and reverse-charge presentation",
+          "totals presentation",
+          "pagination behavior",
+          "public document identity"
+        ],
+        "must_not_move_to_foundation": [
+          "financial calculations",
+          "VAT truth",
+          "rounding",
+          "invoice numbering",
+          "credit-note numbering",
+          "buyer/issuer truth",
+          "financial snapshot lifecycle",
+          "idempotency"
+        ]
+      }
+    },
+    {
+      "id": "shipping-label-r3b-proof-definition",
+      "status": "synthetic-proof-definition-only",
+      "consumer_provider": "fixture.shipping",
+      "provider_id_is_test_only": true,
+      "consumer_owns_external_data": true,
+      "layout_character": "fixed-bounded-document",
+      "purpose": "Prove that a third-party-style consumer can traverse the eventual public Design Foundation extension boundary without depending on Certificates or Commerce internals.",
+      "required_proof": [
+        "provider registration and authorization",
+        "consumer-supplied synthetic binding/sample data",
+        "opaque local asset identity",
+        "fixed layout",
+        "typed render fragments",
+        "Base PdfApi boundary",
+        "actual PDF output",
+        "regression comparison against this R0b proof definition"
+      ],
+      "explicitly_deferred_to_r3b": [
+        "shipping-label paper dimensions",
+        "carrier semantics",
+        "barcode symbology",
+        "production provider identity",
+        "public schema/API shape"
+      ],
+      "security_expectations": [
+        "no arbitrary filesystem paths",
+        "no remote resource dependency",
+        "no executable expressions",
+        "unauthorized data access fails closed"
+      ]
+    }
+  ]
+}
