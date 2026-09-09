@@ -21,6 +21,9 @@ final class Renderer {
 
 	private const EXPECTED_DOMPDF_VERSION = '3.1.6';
 	private const REQUIRED_EXTENSIONS      = [ 'dom', 'mbstring' ];
+	private const POINTS_PER_INCH          = 72.0;
+	private const MILLIMETRES_PER_INCH     = 25.4;
+	private const MAX_CUSTOM_PAPER_MM      = 2000.0;
 
 	/*
 	 * Third-party PDF dependencies are vendored verbatim. Do not apply Core
@@ -33,8 +36,9 @@ final class Renderer {
 
 	/**
 	 * @param array $options {
-	 *     @type string $paper_size        Paper size, e.g. A4 or Letter.
-	 *     @type string $orientation       portrait|landscape.
+	 *     @type string $paper_size        Named paper size, e.g. A4 or Letter.
+	 *     @type array  $paper_size_mm     Optional final [width,height] in millimetres.
+	 *     @type string $orientation       portrait|landscape for named paper sizes.
 	 *     @type string $default_font      Default font family.
 	 *     @type bool   $is_html5_parser   Use Dompdf's HTML5 parser.
 	 * }
@@ -84,12 +88,13 @@ final class Renderer {
 	 * @throws RendererException When rendering fails.
 	 */
 	public function render( string $html, array $options = [] ): string {
-		$this->require_engine();
 		$opts = array_merge( $this->defaults, $options );
+		[ $paper_size, $orientation ] = $this->paper_contract( $opts );
+		$this->require_engine();
 
 		try {
 			$dompdf = new \Dompdf\Dompdf( $this->build_dompdf_options( $opts ) );
-			$dompdf->setPaper( (string) $opts['paper_size'], (string) $opts['orientation'] );
+			$dompdf->setPaper( $paper_size, $orientation );
 			$dompdf->loadHtml( $html );
 			$dompdf->render();
 			$output = $dompdf->output();
@@ -162,6 +167,41 @@ final class Renderer {
 
 		$prefix = rtrim( $own_root, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
 		return 0 === strncmp( $loaded, $prefix, strlen( $prefix ) );
+	}
+
+	/**
+	 * @param array<string,mixed> $opts
+	 * @return array{0:string|array{0:float,1:float,2:float,3:float},1:string}
+	 */
+	private function paper_contract( array $opts ): array {
+		if ( ! array_key_exists( 'paper_size_mm', $opts ) ) {
+			return [ (string) $opts['paper_size'], (string) $opts['orientation'] ];
+		}
+
+		$dimensions = $opts['paper_size_mm'];
+		if ( ! is_array( $dimensions ) || ! array_is_list( $dimensions ) || 2 !== count( $dimensions ) ) {
+			throw new RendererException( 'paper_size_mm must contain exactly [width, height].' );
+		}
+
+		$width_mm  = $this->paper_dimension_mm( $dimensions[0] );
+		$height_mm = $this->paper_dimension_mm( $dimensions[1] );
+		if ( null === $width_mm || null === $height_mm ) {
+			throw new RendererException( 'paper_size_mm dimensions must be positive finite numbers up to 2000 mm.' );
+		}
+
+		$to_points = static fn ( float $mm ): float => $mm * self::POINTS_PER_INCH / self::MILLIMETRES_PER_INCH;
+		return [ [ 0.0, 0.0, $to_points( $width_mm ), $to_points( $height_mm ) ], 'portrait' ];
+	}
+
+	private function paper_dimension_mm( mixed $value ): ?float {
+		if ( ! is_int( $value ) && ! is_float( $value ) ) {
+			return null;
+		}
+		$number = (float) $value;
+		if ( ! is_finite( $number ) || $number <= 0.0 || $number > self::MAX_CUSTOM_PAPER_MM ) {
+			return null;
+		}
+		return $number;
 	}
 
 	private function build_dompdf_options( array $opts ): \Dompdf\Options {
