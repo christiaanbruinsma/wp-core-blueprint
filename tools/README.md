@@ -4,7 +4,9 @@
 
 It intentionally uses an **allowlist** rather than archiving the repository wholesale. Public release ZIPs contain only the plugin runtime, public documentation that belongs in the package, translations, and license material. Development-only files such as `.github/`, `tests/`, `tools/`, `vendor/`, Composer metadata, PHPUnit configuration, and Git metadata are not package inputs.
 
-## Setup
+## Release packaging
+
+### Setup
 
 Requirements:
 
@@ -14,7 +16,7 @@ Requirements:
 
 The plugin header version and `CB_CORE_VERSION` must match. The builder fails closed when required runtime files/directories are missing, version metadata disagrees, or an allowlisted source path contains a symlink.
 
-## Usage
+### Usage
 
 From the repository root:
 
@@ -34,13 +36,13 @@ Build a different source checkout, for example a pinned previous RC used by CI u
 python3 tools/build-release --source /path/to/source --output-dir /tmp/core-blueprint-release
 ```
 
-## Outputs
+### Outputs
 
-For version `1.0.0-rc3.41` the builder creates:
+For version `1.0.0-rc1` the builder creates:
 
 ```text
-dist/core-blueprint-1.0.0-rc3.41.zip
-dist/core-blueprint-1.0.0-rc3.41.zip.sha256
+dist/core-blueprint-1.0.0-rc1.zip
+dist/core-blueprint-1.0.0-rc1.zip.sha256
 ```
 
 Every ZIP entry lives below the canonical plugin root:
@@ -51,7 +53,7 @@ core-blueprint/
 
 The archive is deterministic for identical source bytes: paths are sorted, ZIP timestamps are fixed, permissions are normalized, and compression settings are stable.
 
-## Failure behaviour
+### Failure behaviour
 
 Packaging stops with a non-zero exit code when:
 
@@ -63,7 +65,7 @@ Packaging stops with a non-zero exit code when:
 
 A failed build must never be treated as a releasable artifact.
 
-## Maintenance
+### Maintenance
 
 When Base gains or removes a **runtime-owned top-level path**, update the allowlist in `tools/build-release` and the release-package CI assertions in the same change.
 
