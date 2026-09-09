@@ -52,7 +52,6 @@ final class MaintenanceFlowCompiler {
 
 		$kpi = $this->kpi_table( $snapshot );
 		if ( null !== $kpi ) {
-			$blocks[] = RenderBlock::text( __( 'Maintenance summary', 'core-blueprint' ), [ 'space_after' => 1.0 ] );
 			$blocks[] = $kpi;
 		}
 
