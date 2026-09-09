@@ -44,6 +44,9 @@ jobs:
       - name: Design Editor JavaScript contract
         run: node --test tests/js/design-editor-core.test.mjs tests/js/design-editor-boundary.test.mjs
 
+      - name: Document Fixed JavaScript contract
+        run: node --test tests/js/design-document-fixed.test.mjs tests/js/design-document-fixed-boundary.test.mjs
+
       - name: PHP syntax
         run: bash tests/bin/php-lint.sh
 

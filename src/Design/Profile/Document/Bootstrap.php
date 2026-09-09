@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class Bootstrap {
 	public static function boot(): void {
-		// R1 intentionally registers no document types or layout capabilities.
-		// Concrete registrations begin only when Fixed/Flow behavior exists.
+		// Document contracts are autoloaded on demand.
+		// R3 adds Fixed behavior without global registries or consumer-owned design types.
 	}
 }
