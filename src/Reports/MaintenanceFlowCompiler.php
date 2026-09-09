@@ -86,6 +86,20 @@ final class MaintenanceFlowCompiler {
 			$blocks[] = $block;
 		}
 
+		$site_url = (string) ( $site['url'] ?? '' );
+		$site_host = wp_parse_url( $site_url, PHP_URL_HOST );
+		if ( ! is_string( $site_host ) || '' === $site_host ) {
+			$site_host = (string) preg_replace( '#^https?://#i', '', $site_url );
+		}
+		$blocks[] = RenderBlock::page_footer(
+			sprintf(
+				/* translators: %s: site host (e.g., example.nl). */
+				__( 'Report generated for %s', 'core-blueprint' ),
+				$site_host
+			),
+			__( 'Page', 'core-blueprint' )
+		);
+
 		return [
 			'layout'       => self::layout(),
 			'blocks'       => $blocks,
