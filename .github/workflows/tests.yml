@@ -41,6 +41,9 @@ jobs:
       - name: ObjectPicker JavaScript contract
         run: node --test tests/js/object-picker-identifiers.test.mjs
 
+      - name: Design Editor JavaScript contract
+        run: node --test tests/js/design-editor-core.test.mjs tests/js/design-editor-boundary.test.mjs
+
       - name: PHP syntax
         run: bash tests/bin/php-lint.sh
 

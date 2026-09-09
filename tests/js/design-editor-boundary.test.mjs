@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import { readFile, readdir } from 'node:fs/promises';
+import test from 'node:test';
+
+const sourceDirectory = new URL('../../assets/js/design/core/', import.meta.url);
+
+test('shared editor core remains profile-neutral and free of document/PDF geometry dependencies', async () => {
+	const entries = await readdir(sourceDirectory, { withFileTypes: true });
+	const files = entries.filter((entry) => entry.isFile() && entry.name.endsWith('.js'));
+	assert.ok(files.length >= 10);
+
+	for (const file of files) {
+		const source = await readFile(new URL(file.name, sourceDirectory), 'utf8');
+		const imports = [...source.matchAll(/(?:import|export)\s+[\s\S]*?\sfrom\s+['"]([^'"]+)['"]/g)]
+			.map((match) => match[1].toLowerCase());
+		for (const specifier of imports) {
+			assert.doesNotMatch(
+				specifier,
+				/(?:profile|document|pdf|fixed|flow|geometry|pagination|paper)/,
+				`${file.name} must not import profile/document rendering concerns`
+			);
+		}
+		assert.doesNotMatch(
+			source,
+			/\b(?:pageWidth|pageHeight|paperSize|pagination|pdfRenderer|fixedProfile|flowProfile)\b/i,
+			`${file.name} must not own document-profile geometry`
+		);
+	}
+});
