@@ -11,14 +11,29 @@ final readonly class RenderBlock {
 	private const MAX_TEXT_BYTES = 65536;
 	private const MAX_COLUMNS = 32;
 	private const MAX_ROWS = 2000;
+	private const MAX_COMPOSITION_COLUMNS = 4;
+	private const MAX_COLUMN_WEIGHT = 100.0;
 
 	/** @param mixed $payload @param array{space_before:float,space_after:float,break_before:bool,break_after:bool,keep_together:bool} $hints */
 	private function __construct( private string $type, private mixed $payload, private array $hints ) {}
 
 	/** @param array<string,mixed> $hints */
 	public static function text( string $text, array $hints = [] ): self {
-		if ( strlen( $text ) > self::MAX_TEXT_BYTES ) { throw new \InvalidArgumentException( 'Flow text block exceeds the supported size.' ); }
+		self::assert_text_size( $text, 'Flow text block exceeds the supported size.' );
 		return new self( 'text', $text, self::normalize_hints( $hints ) );
+	}
+
+	/**
+	 * Semantic heading with a bounded presentation role.
+	 *
+	 * @param array<string,mixed> $hints
+	 */
+	public static function heading( string $text, string $role = 'section', array $hints = [] ): self {
+		self::assert_text_size( $text, 'Flow heading exceeds the supported size.' );
+		if ( ! in_array( $role, [ 'title', 'section', 'subsection' ], true ) ) {
+			throw new \InvalidArgumentException( 'Unsupported Flow heading role.' );
+		}
+		return new self( 'heading', [ 'text' => $text, 'role' => $role ], self::normalize_hints( $hints ) );
 	}
 
 	/** @param array<string,mixed> $hints */
@@ -35,8 +50,65 @@ final readonly class RenderBlock {
 		return new self( 'container', array_values( $children ), self::normalize_hints( $hints ) );
 	}
 
-	/** @param list<string> $headers @param list<list<string>> $rows @param array<string,mixed> $hints */
-	public static function table( array $headers, array $rows, array $hints = [] ): self {
+	/**
+	 * Bounded multi-column composition for document sections.
+	 *
+	 * Columns contain typed render blocks only. Widths are positive relative
+	 * weights; consumers cannot supply CSS, units or arbitrary layout values.
+	 *
+	 * @param list<list<RenderBlock>> $columns
+	 * @param list<float|int> $weights
+	 * @param array<string,mixed> $hints
+	 */
+	public static function columns( array $columns, array $weights = [], array $hints = [] ): self {
+		if ( ! array_is_list( $columns ) || count( $columns ) < 2 || count( $columns ) > self::MAX_COMPOSITION_COLUMNS ) {
+			throw new \InvalidArgumentException( 'Flow columns require between 2 and 4 ordered columns.' );
+		}
+		foreach ( $columns as $column ) {
+			if ( ! is_array( $column ) || ! array_is_list( $column ) ) {
+				throw new \InvalidArgumentException( 'Every Flow column must be an ordered list of typed render blocks.' );
+			}
+			foreach ( $column as $child ) {
+				if ( ! $child instanceof self ) {
+					throw new \InvalidArgumentException( 'Flow columns accept typed render blocks only.' );
+				}
+			}
+		}
+
+		if ( [] === $weights ) {
+			$weights = array_fill( 0, count( $columns ), 1.0 );
+		}
+		if ( ! array_is_list( $weights ) || count( $weights ) !== count( $columns ) ) {
+			throw new \InvalidArgumentException( 'Flow column weights must match the declared column count.' );
+		}
+
+		$normalized_weights = [];
+		foreach ( $weights as $weight ) {
+			if ( ! is_int( $weight ) && ! is_float( $weight ) ) {
+				throw new \InvalidArgumentException( 'Flow column weights must be numeric.' );
+			}
+			$weight = (float) $weight;
+			if ( ! is_finite( $weight ) || $weight <= 0.0 || $weight > self::MAX_COLUMN_WEIGHT ) {
+				throw new \InvalidArgumentException( 'Flow column weight is outside the supported range.' );
+			}
+			$normalized_weights[] = $weight;
+		}
+
+		return new self(
+			'columns',
+			[ 'columns' => array_values( $columns ), 'weights' => $normalized_weights ],
+			self::normalize_hints( $hints )
+		);
+	}
+
+	/**
+	 * @param list<string> $headers
+	 * @param list<list<string>> $rows
+	 * @param array<string,mixed> $hints
+	 * @param list<TableColumn> $columns Optional presentation metadata. Empty
+	 *        preserves the original R4/R5 table rendering behavior.
+	 */
+	public static function table( array $headers, array $rows, array $hints = [], array $columns = [], bool $show_header = true ): self {
 		if ( ! array_is_list( $headers ) || ! array_is_list( $rows ) ) { throw new \InvalidArgumentException( 'Flow table headers and rows must be ordered lists.' ); }
 		if ( [] === $headers || count( $headers ) > self::MAX_COLUMNS ) { throw new \InvalidArgumentException( 'Flow tables require between 1 and 32 columns.' ); }
 		foreach ( $headers as $header ) {
@@ -49,23 +121,47 @@ final readonly class RenderBlock {
 				if ( ! is_string( $cell ) || strlen( $cell ) > self::MAX_TEXT_BYTES ) { throw new \InvalidArgumentException( 'Flow table cells must be bounded strings.' ); }
 			}
 		}
-		return new self( 'table', [ 'headers' => array_values( $headers ), 'rows' => array_values( $rows ) ], self::normalize_hints( $hints ) );
+
+		if ( [] !== $columns ) {
+			if ( ! array_is_list( $columns ) || count( $columns ) !== count( $headers ) ) {
+				throw new \InvalidArgumentException( 'Flow table column metadata must match the declared column count.' );
+			}
+			foreach ( $columns as $column ) {
+				if ( ! $column instanceof TableColumn ) {
+					throw new \InvalidArgumentException( 'Flow tables accept typed column metadata only.' );
+				}
+			}
+		}
+
+		return new self(
+			'table',
+			[
+				'headers'     => array_values( $headers ),
+				'rows'        => array_values( $rows ),
+				'columns'     => array_values( $columns ),
+				'show_header' => $show_header,
+			],
+			self::normalize_hints( $hints )
+		);
 	}
 
 	/**
-	 * Fixed per-page footer with consumer-owned escaped text and a renderer-owned
-	 * CSS page counter. No layout/style options are accepted by consumers.
+	 * Fixed per-page footer with consumer-owned escaped text and optional,
+	 * renderer-owned CSS page counter. No layout/style options are accepted.
 	 */
-	public static function page_footer( string $left_text, string $page_label ): self {
-		if ( strlen( $left_text ) > self::MAX_TEXT_BYTES || strlen( $page_label ) > self::MAX_TEXT_BYTES ) {
-			throw new \InvalidArgumentException( 'Flow page footer text exceeds the supported size.' );
-		}
-		if ( '' === trim( $page_label ) ) {
-			throw new \InvalidArgumentException( 'Flow page footer requires a page label.' );
+	public static function page_footer( string $left_text, string $page_label = '', bool $show_page_number = true ): self {
+		self::assert_text_size( $left_text, 'Flow page footer text exceeds the supported size.' );
+		self::assert_text_size( $page_label, 'Flow page footer text exceeds the supported size.' );
+		if ( $show_page_number && '' === trim( $page_label ) ) {
+			throw new \InvalidArgumentException( 'Flow page footer requires a page label when page numbering is enabled.' );
 		}
 		return new self(
 			'page_footer',
-			[ 'left_text' => $left_text, 'page_label' => $page_label ],
+			[
+				'left_text'        => $left_text,
+				'page_label'       => $page_label,
+				'show_page_number' => $show_page_number,
+			],
 			self::normalize_hints( [] )
 		);
 	}
@@ -80,5 +176,11 @@ final readonly class RenderBlock {
 		$normalized = Hints::normalize( $hints );
 		if ( null === $normalized ) { throw new \InvalidArgumentException( 'Invalid Flow render hints.' ); }
 		return $normalized;
+	}
+
+	private static function assert_text_size( string $text, string $message ): void {
+		if ( strlen( $text ) > self::MAX_TEXT_BYTES ) {
+			throw new \InvalidArgumentException( $message );
+		}
 	}
 }
