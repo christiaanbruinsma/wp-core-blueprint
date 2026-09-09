@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class HtmlRenderer {
 	/** @param array<string,mixed> $layout @param list<RenderBlock> $blocks */
-	public function render( array $layout, array $blocks, string $locale ): string {
+	public function render( array $layout, array $blocks, string $locale, ?Presentation $presentation = null ): string {
 		if ( ! Layout::matches_contract( $layout ) ) {
 			throw new \InvalidArgumentException( 'Flow rendering requires the exact root-owned Flow layout contract.' );
 		}
@@ -27,12 +27,14 @@ final class HtmlRenderer {
 		$body = implode( '', array_map( fn ( RenderBlock $block ): string => $this->block( $block ), $blocks ) );
 		$page_size = self::number( $page['width'] ) . 'mm ' . self::number( $page['height'] ) . 'mm';
 		$margin = implode( ' ', [ self::number( $margins['top'] ) . 'mm', self::number( $margins['right'] ) . 'mm', self::number( $margins['bottom'] ) . 'mm', self::number( $margins['left'] ) . 'mm' ] );
+		$accent = ( $presentation ?? Presentation::defaults() )->accent();
 
 		return '<!doctype html><html lang="' . self::escape( $lang ) . '"><head><meta charset="utf-8"><style>'
 			. '@page{size:' . $page_size . ';margin:' . $margin . ';}'
 			. 'html,body{margin:0;padding:0;}body{font-family:"DejaVu Sans",sans-serif;font-size:10pt;line-height:1.4;color:#111;}'
 			. '.cb-flow-block{box-sizing:border-box;}.cb-flow-image img{display:block;max-width:100%;height:auto;border:0;}'
 			. '.cb-flow-table{width:100%;border-collapse:collapse;}.cb-flow-table th,.cb-flow-table td{padding:4pt;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;}'
+			. '.cb-flow-table th{color:' . self::escape( $accent ) . ';border-bottom-color:' . self::escape( $accent ) . ';}'
 			. '</style></head><body>' . $body . '</body></html>';
 	}
 
