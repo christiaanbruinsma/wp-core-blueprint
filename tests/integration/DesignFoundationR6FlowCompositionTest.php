@@ -102,7 +102,8 @@ final class CB_Design_Foundation_R6_Flow_Composition_Test extends WP_UnitTestCas
 
 		self::assertStringContainsString( '<table class="cb-flow-table"><thead><tr>', $html );
 		self::assertStringNotContainsString( '<colgroup>', $html );
-		self::assertStringNotContainsString( 'white-space:nowrap;', $html );
+		self::assertStringNotContainsString( '<th style=', $html );
+		self::assertStringNotContainsString( '<td style=', $html );
 	}
 
 	public function test_heading_roles_fail_closed(): void {
