@@ -1,0 +1,77 @@
+{
+  "fixture_set": "core-blueprint-design-foundation-r3b-shipping-proof",
+  "fixture_version": 1,
+  "status": "synthetic-test-only",
+  "provider": "fixture.shipping",
+  "design_type": "fixture.shipping.label",
+  "locale": "en_GB",
+  "design": {
+    "schema_version": 0,
+    "design_type": "fixture.shipping.label",
+    "root": {
+      "type": "document",
+      "provider": "fixture.shipping",
+      "properties": {
+        "layout": {
+          "mode": "fixed",
+          "units": "mm",
+          "page": { "width": 100, "height": 150 }
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "provider": "fixture.shipping",
+          "properties": {
+            "frame": { "x": 6, "y": 8, "width": 88, "height": 10 },
+            "value": { "source": "literal", "text": "SHIP TO" }
+          },
+          "children": []
+        },
+        {
+          "type": "text",
+          "provider": "fixture.shipping",
+          "properties": {
+            "frame": { "x": 6, "y": 22, "width": 88, "height": 18 },
+            "value": { "source": "binding", "provider": "fixture.shipping", "binding": "recipient.name" }
+          },
+          "children": []
+        },
+        {
+          "type": "image",
+          "provider": "fixture.shipping",
+          "properties": {
+            "frame": { "x": 6, "y": 46, "width": 24, "height": 24 },
+            "asset": { "provider": "fixture.shipping", "asset_id": "carrier-mark" }
+          },
+          "children": []
+        },
+        {
+          "type": "text",
+          "provider": "fixture.shipping",
+          "properties": {
+            "frame": { "x": 34, "y": 48, "width": 60, "height": 16 },
+            "value": { "source": "binding", "provider": "fixture.shipping", "binding": "shipment.reference" }
+          },
+          "children": []
+        }
+      ]
+    }
+  },
+  "sample_bindings": {
+    "recipient.name": "Ada Example",
+    "shipment.reference": "SHP-000042"
+  },
+  "asset_catalog": {
+    "carrier-mark": {
+      "mime": "image/png",
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII="
+    }
+  },
+  "expected": {
+    "page_mm": [100, 150],
+    "fragment_types": ["text", "text", "image", "text"],
+    "html_sha256": "b936b439a6ce245cca238bdfe2d35c86a930971a394dc992d7dc81a30d2a6020",
+    "pdf_media_box_points": [283.4646, 425.1969]
+  }
+}

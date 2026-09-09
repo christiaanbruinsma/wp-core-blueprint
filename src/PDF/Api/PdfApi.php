@@ -31,10 +31,15 @@ final class PdfApi {
 	 * Render a complete HTML document to an in-memory PDF binary.
 	 *
 	 * Supported renderer options currently include:
-	 * - paper_size: e.g. A4 or Letter.
-	 * - orientation: portrait or landscape.
+	 * - paper_size: named size such as A4 or Letter.
+	 * - paper_size_mm: final custom [width, height] dimensions in millimetres.
+	 * - orientation: portrait or landscape for named paper sizes.
 	 * - default_font: default font family.
 	 * - is_html5_parser: whether Dompdf's HTML5 parser is enabled.
+	 *
+	 * When paper_size_mm is supplied its dimensions are authoritative and
+	 * orientation is ignored. Dompdf's native point-array paper contract remains
+	 * an internal Base implementation detail.
 	 *
 	 * Permanent storage, filenames, downloads and caller-specific logging are
 	 * intentionally outside this API. Security-sensitive Dompdf options such as

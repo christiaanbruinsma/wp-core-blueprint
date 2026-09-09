@@ -89,11 +89,30 @@ final class CB_Design_Foundation_R3_Fixed_Contract_Test extends WP_UnitTestCase 
 		self::assertNull( Geometry::number( NAN ) );
 	}
 
-	public function test_fixed_profile_has_no_renderer_or_flow_dependency(): void {
+	public function test_fixed_profile_remains_free_of_flow_dompdf_and_internal_pdf_renderer_dependencies(): void {
 		$directory = dirname( __DIR__, 2 ) . '/src/Design/Profile/Document/Fixed';
 		foreach ( glob( $directory . '/*.php' ) ?: [] as $file ) {
 			$source = (string) file_get_contents( $file );
-			self::assertDoesNotMatchRegularExpression( '/\b(?:Dompdf|PdfApi|Renderer|pagination|Flow)\b/i', $source, basename( $file ) );
+			self::assertDoesNotMatchRegularExpression( '/\b(?:Dompdf|pagination|Flow)\b/i', $source, basename( $file ) );
+			self::assertStringNotContainsString( 'CB\\Core\\PDF\\Renderer', $source, basename( $file ) );
 		}
+	}
+
+	public function test_fixed_geometry_and_validation_core_remain_pdf_api_free(): void {
+		$directory = dirname( __DIR__, 2 ) . '/src/Design/Profile/Document/Fixed';
+		foreach ( [ 'Contract.php', 'Geometry.php', 'Validator.php' ] as $filename ) {
+			$source = (string) file_get_contents( $directory . '/' . $filename );
+			self::assertStringNotContainsString( 'PdfApi', $source, $filename );
+			self::assertStringNotContainsString( 'CB\\Core\\PDF', $source, $filename );
+		}
+	}
+
+	public function test_fixed_pdf_adapter_uses_only_the_public_base_pdf_boundary(): void {
+		$path = dirname( __DIR__, 2 ) . '/src/Design/Profile/Document/Fixed/PdfRenderer.php';
+		$source = (string) file_get_contents( $path );
+		self::assertStringContainsString( 'use CB\\Core\\PDF\\Api\\PdfApi;', $source );
+		self::assertStringContainsString( 'PdfApi::render(', $source );
+		self::assertStringNotContainsString( 'Dompdf', $source );
+		self::assertStringNotContainsString( 'CB\\Core\\PDF\\Renderer', $source );
 	}
 }
