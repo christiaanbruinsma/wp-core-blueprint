@@ -52,6 +52,7 @@ final class MaintenanceFlowCompiler {
 
 		$kpi = $this->kpi_table( $snapshot );
 		if ( null !== $kpi ) {
+			$blocks[] = RenderBlock::text( __( 'Maintenance summary', 'core-blueprint' ), [ 'space_after' => 1.0 ] );
 			$blocks[] = $kpi;
 		}
 
@@ -275,7 +276,7 @@ final class MaintenanceFlowCompiler {
 			$backup_lines[] = sprintf( __( 'Last backup: %s', 'core-blueprint' ), $display );
 		}
 		$providers = array_values( array_filter( array_map( 'strval', (array) ( $backups['providers'] ?? [] ) ) ) );
-		if ( [] !== $providers ) { $backup_lines[] = __( 'Providers', 'core-blueprint' ) . ': ' . implode( ', ', $providers ); }
+		if ( [] !== $providers ) { $backup_lines[] = implode( ', ', $providers ); }
 		if ( '' !== (string) ( $backups['summary'] ?? '' ) ) { $backup_lines[] = (string) $backups['summary']; }
 		$blocks[] = RenderBlock::text( implode( "\n", $backup_lines ), [ 'space_before' => 4.0, 'keep_together' => true ] );
 		return $blocks;
