@@ -52,6 +52,24 @@ final readonly class RenderBlock {
 		return new self( 'table', [ 'headers' => array_values( $headers ), 'rows' => array_values( $rows ) ], self::normalize_hints( $hints ) );
 	}
 
+	/**
+	 * Fixed per-page footer with consumer-owned escaped text and a renderer-owned
+	 * CSS page counter. No layout/style options are accepted by consumers.
+	 */
+	public static function page_footer( string $left_text, string $page_label ): self {
+		if ( strlen( $left_text ) > self::MAX_TEXT_BYTES || strlen( $page_label ) > self::MAX_TEXT_BYTES ) {
+			throw new \InvalidArgumentException( 'Flow page footer text exceeds the supported size.' );
+		}
+		if ( '' === trim( $page_label ) ) {
+			throw new \InvalidArgumentException( 'Flow page footer requires a page label.' );
+		}
+		return new self(
+			'page_footer',
+			[ 'left_text' => $left_text, 'page_label' => $page_label ],
+			self::normalize_hints( [] )
+		);
+	}
+
 	public function type(): string { return $this->type; }
 	public function payload(): mixed { return $this->payload; }
 	/** @return array{space_before:float,space_after:float,break_before:bool,break_after:bool,keep_together:bool} */
