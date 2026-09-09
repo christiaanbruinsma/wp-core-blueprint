@@ -8,6 +8,6 @@ defined( 'ABSPATH' ) || exit;
 final class Bootstrap {
 	public static function boot(): void {
 		// Document contracts are autoloaded on demand.
-		// R3 adds Fixed behavior without global registries or consumer-owned design types.
+		// Fixed and Flow remain concrete profile-local behavior with no global profile registry.
 	}
 }
