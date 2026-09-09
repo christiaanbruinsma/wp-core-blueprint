@@ -49,6 +49,10 @@ final class HtmlRenderer {
 				self::number( $frame['height'] )
 			);
 			if ( 'text' === $fragment->type() ) {
+				$text_style = $fragment->style();
+				if ( $text_style instanceof TextStyle ) {
+					$style .= self::text_style( $text_style );
+				}
 				$body .= '<div class="cb-fixed-fragment cb-fixed-text" style="' . $style . '">'
 					. htmlspecialchars( $fragment->payload(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' )
 					. '</div>';
@@ -58,6 +62,14 @@ final class HtmlRenderer {
 				$body .= '<div class="cb-fixed-fragment cb-fixed-image" style="' . $style . '"><img alt="" src="'
 					. htmlspecialchars( $fragment->payload(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' )
 					. '" style="display:block;width:100%;height:100%;border:0;" /></div>';
+				continue;
+			}
+			if ( 'box' === $fragment->type() ) {
+				$box_style = $fragment->style();
+				if ( ! $box_style instanceof BoxStyle ) {
+					throw new \InvalidArgumentException( 'Fixed box fragments require typed box presentation.' );
+				}
+				$body .= '<div class="cb-fixed-fragment cb-fixed-box" style="' . $style . self::box_style( $box_style ) . '"></div>';
 				continue;
 			}
 			throw new \InvalidArgumentException( 'Unsupported Fixed render fragment type.' );
@@ -71,6 +83,28 @@ final class HtmlRenderer {
 			. '</style></head><body><div class="cb-fixed-page">'
 			. $body
 			. '</div></body></html>';
+	}
+
+	private static function text_style( TextStyle $style ): string {
+		return 'font-family:' . $style->font_family() . ',sans-serif;'
+			. 'font-size:' . self::number( $style->font_size_pt() ) . 'pt;'
+			. 'font-weight:' . $style->font_weight() . ';'
+			. 'line-height:' . self::number( $style->line_height() ) . ';'
+			. 'letter-spacing:' . self::number( $style->letter_spacing_em() ) . 'em;'
+			. 'text-align:' . $style->alignment() . ';'
+			. 'color:' . $style->color() . ';'
+			. 'white-space:normal;overflow-wrap:break-word;word-wrap:break-word;'
+			. ( 'wrap' === $style->overflow() ? 'overflow:visible;' : 'overflow:hidden;' );
+	}
+
+	private static function box_style( BoxStyle $style ): string {
+		$css = 'background-color:' . ( $style->fill_enabled() ? $style->fill_color() : 'transparent' ) . ';';
+		if ( $style->border_enabled() && $style->border_width_mm() > 0.0 ) {
+			return $css
+				. 'border:' . self::number( $style->border_width_mm() ) . 'mm '
+				. $style->border_style() . ' ' . $style->border_color() . ';';
+		}
+		return $css . 'border:none;';
 	}
 
 	private static function number( float $value ): string {
