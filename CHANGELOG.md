@@ -2,7 +2,15 @@
 
 > The public launch line was normalized back to `1.0.0-rc1` on 2026-09-06. Older RC entries below are retained as pre-launch development history; the public plugin version remains `1.0.0-rc1` throughout the current Golden Standard closure cycle.
 
-## 1.0.0-rc1 — 2026-09-08
+## 1.0.0-rc1 — 2026-09-09
+
+### Golden Standard Gates 2–4 — security, architecture and persistence hardening
+
+- Harden Failsafe token rotation so plaintext recovery material is returned only to the authorized request and is no longer persisted in WordPress transients; bound rejected-token audit writes without suppressing valid lifecycle evidence.
+- Keep failed Snippets editor recovery out of server-side persistent storage and make uninstall ownership explicit: preserve user-authored snippet source while neutralizing generated runtime state.
+- Split Access Mode persistence/admin transport from runtime enforcement and move the Base-owned settings schema into `SettingsDefaults` while preserving the existing public facades and storage contract.
+- Make Scanner global/slice lease refresh and release ownership-atomic with compare-and-swap updates so stale workers cannot clobber a newer lock owner.
+- Keep the public plugin version, Core API version and database schema version unchanged at `1.0.0-rc1` / `1.0` / `1.0`.
 
 ### Golden Standard Gate 1 — PHP 8.4 and CI baseline
 
