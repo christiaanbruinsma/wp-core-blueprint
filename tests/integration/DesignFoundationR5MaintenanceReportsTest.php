@@ -4,6 +4,7 @@ declare(strict_types=1);
 use CB\Core\Design\Profile\Document\Flow\HtmlRenderer;
 use CB\Core\Design\Profile\Document\Flow\PdfRenderer;
 use CB\Core\Design\Profile\Document\Flow\Presentation;
+use CB\Core\Design\Profile\Document\Flow\RenderBlock;
 use CB\Core\Reports\MaintenanceAggregator;
 use CB\Core\Reports\MaintenanceFlowBranding;
 use CB\Core\Reports\MaintenanceFlowCompiler;
@@ -132,6 +133,8 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 		self::assertStringContainsString( 'Backups', $html );
 		self::assertStringContainsString( 'Local, Remote', $html );
 		self::assertStringContainsString( 'Infused &lt;Agency&gt;', $html );
+		self::assertStringContainsString( 'Report generated for example.test', $html );
+		self::assertStringContainsString( 'Page <span class="cb-flow-page-number"></span>', $html );
 	}
 
 	public function test_security_is_fully_omitted_when_snapshot_security_is_null(): void {
@@ -156,6 +159,23 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 
 		$this->expectException( InvalidArgumentException::class );
 		Presentation::from_accent( '#0064c8;body{display:none}' );
+	}
+
+	public function test_page_footer_is_typed_escaped_and_renderer_owns_page_counter(): void {
+		$html = ( new HtmlRenderer() )->render(
+			MaintenanceFlowCompiler::layout(),
+			[
+				RenderBlock::text( 'Body' ),
+				RenderBlock::page_footer( '<unsafe footer>', '<Page>' ),
+			],
+			'en_GB'
+		);
+
+		self::assertStringContainsString( '&lt;unsafe footer&gt;', $html );
+		self::assertStringContainsString( '&lt;Page&gt;', $html );
+		self::assertStringContainsString( 'counter(page)', $html );
+		self::assertStringNotContainsString( '<unsafe footer>', $html );
+		self::assertStringNotContainsString( '<Page>', $html );
 	}
 
 	public function test_flow_branding_resolves_local_png_and_safe_fallback_without_remote_fetch(): void {
@@ -315,6 +335,7 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 
 		self::assertStringNotContainsString( 'CB\\Core\\PDF\\Renderer;', $maintenance_pdf );
 		self::assertStringNotContainsString( 'templates/pdf/maintenance-report.php', $maintenance_pdf );
+		self::assertFileDoesNotExist( $root . '/templates/pdf/maintenance-report.php' );
 		self::assertStringContainsString( 'Document\\Flow\\PdfRenderer', $maintenance_pdf );
 		self::assertStringNotContainsString( 'new Renderer()', $ajax_reports );
 		self::assertStringContainsString( 'PDF\\Api\\PdfApi', $ajax_reports );
