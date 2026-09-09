@@ -137,6 +137,7 @@ final class MaintenanceFlowCompiler {
 	/** @param array<string,mixed> $snapshot */
 	private function kpi_table( array $snapshot ): ?RenderBlock {
 		$kpis = is_array( $snapshot['kpis'] ?? null ) ? $snapshot['kpis'] : [];
+		$security_available = is_array( $snapshot['security'] ?? null );
 		$order = [
 			'updates_performed' => __( 'Updates Performed', 'core-blueprint' ),
 			'updates_pending'   => __( 'Updates Pending', 'core-blueprint' ),
@@ -147,6 +148,7 @@ final class MaintenanceFlowCompiler {
 		$headers = [];
 		$values = [];
 		foreach ( $order as $key => $label ) {
+			if ( 'security_issues' === $key && ! $security_available ) { continue; }
 			if ( ! isset( $kpis[ $key ] ) || ! is_array( $kpis[ $key ] ) ) { continue; }
 			$headers[] = $label;
 			$breakdown = array_values( array_filter( array_map( 'strval', (array) ( $kpis[ $key ]['breakdown'] ?? [] ) ), static fn ( string $line ): bool => '' !== $line ) );
