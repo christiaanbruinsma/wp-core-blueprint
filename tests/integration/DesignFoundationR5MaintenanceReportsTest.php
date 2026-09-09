@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 use CB\Core\Design\Profile\Document\Flow\HtmlRenderer;
 use CB\Core\Design\Profile\Document\Flow\PdfRenderer;
+use CB\Core\Design\Profile\Document\Flow\Presentation;
 use CB\Core\Reports\MaintenanceAggregator;
+use CB\Core\Reports\MaintenanceFlowBranding;
 use CB\Core\Reports\MaintenanceFlowCompiler;
 use CB\Core\Reports\MaintenancePdf;
+use CB\Core\Settings;
 
 final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTestCase {
 	/** @return array<string,mixed> */
@@ -100,6 +103,11 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 
 	private function html( bool $with_security = true ): string {
 		$snapshot = $this->snapshot( $with_security );
+		return $this->render_snapshot( $snapshot );
+	}
+
+	/** @param array<string,mixed> $snapshot */
+	private function render_snapshot( array $snapshot ): string {
 		$document = ( new MaintenanceFlowCompiler() )->compile( $this->report( $snapshot ), $snapshot, $this->branding(), 'en_GB' );
 		return ( new HtmlRenderer() )->render( $document['layout'], $document['blocks'], $document['locale'], $document['presentation'] );
 	}
@@ -122,6 +130,7 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 		self::assertStringContainsString( 'Showing the newest 2 of 5 recorded actions.', $html );
 		self::assertStringContainsString( 'Security Activity', $html );
 		self::assertStringContainsString( 'Backups', $html );
+		self::assertStringContainsString( 'Local, Remote', $html );
 		self::assertStringContainsString( 'Infused &lt;Agency&gt;', $html );
 	}
 
@@ -129,6 +138,104 @@ final class CB_Design_Foundation_R5_Maintenance_Reports_Test extends WP_UnitTest
 		$html = $this->html( false );
 		self::assertStringNotContainsString( 'Security Issues', $html );
 		self::assertStringNotContainsString( 'Security Activity', $html );
+	}
+
+	public function test_security_null_is_authoritative_over_stale_security_kpi(): void {
+		$snapshot = $this->snapshot( false );
+		$snapshot['kpis']['security_issues'] = [ 'count' => 99, 'breakdown' => [ 'stale snapshot value' ] ];
+
+		$html = $this->render_snapshot( $snapshot );
+		self::assertStringNotContainsString( 'Security Issues', $html );
+		self::assertStringNotContainsString( 'stale snapshot value', $html );
+		self::assertStringNotContainsString( 'Security Activity', $html );
+	}
+
+	public function test_flow_presentation_accent_is_bounded_hex_only(): void {
+		self::assertSame( '#0064c8', Presentation::from_accent( '#0064c8' )->accent() );
+		self::assertSame( '#aabbcc', Presentation::from_accent( '#abc' )->accent() );
+
+		$this->expectException( InvalidArgumentException::class );
+		Presentation::from_accent( '#0064c8;body{display:none}' );
+	}
+
+	public function test_flow_branding_resolves_local_png_and_safe_fallback_without_remote_fetch(): void {
+		$settings = Settings::get();
+		$previous_reports = is_array( $settings['reports'] ?? null ) ? $settings['reports'] : [];
+		$png = base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=', true );
+		self::assertIsString( $png );
+
+		$upload = wp_upload_bits( 'cb-r5-maintenance-branding.png', null, $png );
+		self::assertSame( '', (string) ( $upload['error'] ?? '' ) );
+		self::assertNotEmpty( $upload['file'] ?? '' );
+
+		$attachment_id = wp_insert_attachment(
+			[
+				'post_mime_type' => 'image/png',
+				'post_title'     => 'R5 Maintenance branding',
+				'post_status'    => 'inherit',
+			],
+			(string) $upload['file']
+		);
+		self::assertFalse( is_wp_error( $attachment_id ) );
+		$attachment_id = (int) $attachment_id;
+		self::assertGreaterThan( 0, $attachment_id );
+		update_attached_file( $attachment_id, (string) $upload['file'] );
+
+		try {
+			Settings::set_key(
+				'reports',
+				[
+					'branding' => [
+						'logo_attachment_id' => $attachment_id,
+						'provider_name'       => 'Infused Provider',
+						'provider_contact'    => 'hello@example.test',
+						'accent_color'        => '#123abc',
+					],
+				],
+				'r5-test'
+			);
+
+			$resolved = MaintenanceFlowBranding::resolve();
+			self::assertStringStartsWith( 'data:image/png;base64,', $resolved['logo_url'] );
+			self::assertSame( '', $resolved['fallback_text'] );
+			self::assertSame( 'Infused Provider', $resolved['provider_name'] );
+			self::assertSame( 'hello@example.test', $resolved['provider_contact'] );
+			self::assertSame( '#123abc', $resolved['accent_color'] );
+			$serialized = wp_json_encode( $resolved );
+			self::assertIsString( $serialized );
+			self::assertStringNotContainsString( 'http://', $serialized );
+			self::assertStringNotContainsString( 'https://', $serialized );
+			self::assertStringNotContainsString( 'file://', $serialized );
+
+			Settings::set_key(
+				'reports',
+				[
+					'branding' => [
+						'logo_attachment_id' => 0,
+						'provider_name'       => '',
+						'provider_contact'    => '',
+						'accent_color'        => '#0064c8',
+					],
+				],
+				'r5-test-fallback'
+			);
+
+			$fallback = MaintenanceFlowBranding::resolve();
+			if ( '' !== $fallback['logo_url'] ) {
+				self::assertStringStartsWith( 'data:image/png;base64,', $fallback['logo_url'] );
+				self::assertSame( '', $fallback['fallback_text'] );
+			} else {
+				self::assertSame( 'Core Blueprint', $fallback['fallback_text'] );
+			}
+			$serialized = wp_json_encode( $fallback );
+			self::assertIsString( $serialized );
+			self::assertStringNotContainsString( 'http://', $serialized );
+			self::assertStringNotContainsString( 'https://', $serialized );
+			self::assertStringNotContainsString( 'file://', $serialized );
+		} finally {
+			Settings::set_key( 'reports', $previous_reports, 'r5-test-restore' );
+			wp_delete_attachment( $attachment_id, true );
+		}
 	}
 
 	public function test_html_like_snapshot_values_are_escaped_without_execution(): void {
