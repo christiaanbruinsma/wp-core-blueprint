@@ -16,4 +16,8 @@ done < <(
     -type f -name '*.php' -print0
 )
 
+if ! php "$ROOT/tools/check-translations.php"; then
+  status=1
+fi
+
 exit "$status"

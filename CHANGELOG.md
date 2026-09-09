@@ -4,6 +4,13 @@
 
 ## 1.0.0-rc1 — 2026-09-09
 
+### Golden Standard Gate 5B — localization quality
+
+- Align all six shipped locale catalogs with the current 3,216-string `1.0.0-rc1` runtime source.
+- Replace broken mixed-language and low-quality historical translations in DE, FR, ES, IT and PT while adding the missing current-source strings to NL.
+- Preserve placeholders, contexts and locale-specific plural rules, including French `n > 1`, and ship WordPress-native `.l10n.php` catalogs as the single compiled runtime format for the WP 7.0+ baseline.
+- Remove stale duplicate PO/MO/POT runtime artifacts, add deterministic source-to-catalog freshness checking, and verify actual WordPress singular/plural loading for NL/DE/FR/ES/IT/PT.
+
 ### Golden Standard Gates 2–4 — security, architecture and concurrency
 
 - Harden Failsafe rejection auditing against unauthenticated write amplification while preserving complete audit coverage for valid bypass lifecycle events.
