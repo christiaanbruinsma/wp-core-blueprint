@@ -16,10 +16,6 @@ defined( 'ABSPATH' ) || exit;
  */
 final class MaintenanceFlowBranding {
 	private const FALLBACK_TEXT = 'Core Blueprint';
-	private const RASTER_DENSITY = 192;
-	private const RASTER_MAX_W = 400;
-	private const RASTER_MAX_H = 110;
-	private const MAX_RASTER_BYTES = 4194304;
 
 	/**
 	 * @return array{logo_url:string,fallback_text:string,provider_name:string,provider_contact:string,accent_color:string,is_default:bool}
@@ -82,18 +78,18 @@ final class MaintenanceFlowBranding {
 			$image = new \Imagick();
 			try {
 				$image->setBackgroundColor( new \ImagickPixel( 'transparent' ) );
-				$image->setResolution( self::RASTER_DENSITY, self::RASTER_DENSITY );
+				$image->setResolution( ReportBranding::PDF_SVG_DENSITY, ReportBranding::PDF_SVG_DENSITY );
 				$image->readImageBlob( $svg );
 				if ( $image->getNumberImages() < 1 ) {
 					return '';
 				}
 				$image->setIteratorIndex( 0 );
 				$image->setImageFormat( 'png32' );
-				$image->thumbnailImage( self::RASTER_MAX_W, self::RASTER_MAX_H, true );
+				$image->thumbnailImage( ReportBranding::PDF_RASTER_MAX_W, ReportBranding::PDF_RASTER_MAX_H, true );
 				$image->setImagePage( 0, 0, 0, 0 );
 				$image->stripImage();
 				$png = $image->getImageBlob();
-				if ( '' === $png || strlen( $png ) > self::MAX_RASTER_BYTES ) {
+				if ( '' === $png || strlen( $png ) > ReportBranding::MAX_PDF_LOGO_BYTES ) {
 					return '';
 				}
 				return self::validated_document_image( 'data:image/png;base64,' . base64_encode( $png ) );
