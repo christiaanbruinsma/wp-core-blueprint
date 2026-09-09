@@ -105,7 +105,8 @@ final readonly class RenderBlock {
 	 * @param list<string> $headers
 	 * @param list<list<string>> $rows
 	 * @param array<string,mixed> $hints
-	 * @param list<TableColumn> $columns
+	 * @param list<TableColumn> $columns Optional presentation metadata. Empty
+	 *        preserves the original R4/R5 table rendering behavior.
 	 */
 	public static function table( array $headers, array $rows, array $hints = [], array $columns = [], bool $show_header = true ): self {
 		if ( ! array_is_list( $headers ) || ! array_is_list( $rows ) ) { throw new \InvalidArgumentException( 'Flow table headers and rows must be ordered lists.' ); }
@@ -121,15 +122,14 @@ final readonly class RenderBlock {
 			}
 		}
 
-		if ( [] === $columns ) {
-			$columns = array_fill( 0, count( $headers ), TableColumn::left() );
-		}
-		if ( ! array_is_list( $columns ) || count( $columns ) !== count( $headers ) ) {
-			throw new \InvalidArgumentException( 'Flow table column metadata must match the declared column count.' );
-		}
-		foreach ( $columns as $column ) {
-			if ( ! $column instanceof TableColumn ) {
-				throw new \InvalidArgumentException( 'Flow tables accept typed column metadata only.' );
+		if ( [] !== $columns ) {
+			if ( ! array_is_list( $columns ) || count( $columns ) !== count( $headers ) ) {
+				throw new \InvalidArgumentException( 'Flow table column metadata must match the declared column count.' );
+			}
+			foreach ( $columns as $column ) {
+				if ( ! $column instanceof TableColumn ) {
+					throw new \InvalidArgumentException( 'Flow tables accept typed column metadata only.' );
+				}
 			}
 		}
 
