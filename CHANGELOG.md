@@ -2,7 +2,17 @@
 
 > The public launch line was normalized back to `1.0.0-rc1` on 2026-09-06. Older RC entries below are retained as pre-launch development history; the public plugin version remains `1.0.0-rc1` throughout the current Golden Standard closure cycle.
 
-## 1.0.0-rc1 — 2026-09-08
+## 1.0.0-rc1 — 2026-09-09
+
+### Golden Standard Gates 2–4 — security, architecture and concurrency
+
+- Harden Failsafe rejection auditing against unauthenticated write amplification while preserving complete audit coverage for valid bypass lifecycle events.
+- Remove server-side plaintext recovery copies for rotated Failsafe tokens and failed Snippets saves; one-time recovery now remains request/browser scoped.
+- Preserve user-authored Snippets source on uninstall while neutralizing Base-owned generated runtime state.
+- Split Access Mode persistence/admin transport from runtime enforcement without changing the public AccessMode API.
+- Move Base-owned settings defaults into a dedicated schema owner while retaining `Settings::defaults()` as the stable public facade.
+- Make Scanner global and slice lock refresh/release operations compare-and-swap guarded so a superseded worker cannot overwrite or release a newer owner lease.
+- Add regression coverage for Scanner stale takeover, ownership and atomic mutation contracts.
 
 ### Golden Standard Gate 1 — PHP 8.4 and CI baseline
 
