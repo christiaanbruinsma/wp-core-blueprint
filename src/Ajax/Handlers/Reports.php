@@ -29,7 +29,7 @@ namespace CB\Core\Ajax\Handlers;
 use CB\Core\Ajax\Guards;
 use CB\Core\Ajax\Request;
 use CB\Core\Log\AuditLog;
-use CB\Core\PDF\Renderer;
+use CB\Core\PDF\Api\PdfApi;
 use CB\Core\PDF\RendererException;
 use CB\Core\Reports\Generator;
 use CB\Core\Reports\MaintenancePdf;
@@ -141,7 +141,7 @@ final class Reports {
 			);
 		}
 
-		if ( ! Renderer::is_available() ) {
+		if ( ! PdfApi::is_available() ) {
 			wp_die(
 				esc_html__( 'PDF engine is not available.', 'core-blueprint' ),
 				esc_html__( 'Service unavailable', 'core-blueprint' ),
@@ -150,7 +150,7 @@ final class Reports {
 		}
 
 		try {
-			$pdf = ( new MaintenancePdf( new Renderer() ) )->render( $row );
+			$pdf = ( new MaintenancePdf() )->render( $row );
 		} catch ( RendererException $e ) {
 			AuditLog::log( 'reports.pdf_render_failed', 'warning', [
 				'report_id' => $report_id,
