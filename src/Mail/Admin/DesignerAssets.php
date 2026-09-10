@@ -30,7 +30,7 @@ final class DesignerAssets {
 		wp_enqueue_style(
 			self::STYLE_HANDLE,
 			CB_CORE_URL . 'assets/css/pages/mail-designer.css',
-			[ 'cb-core-css-page-mail' ],
+			[],
 			CB_CORE_VERSION
 		);
 		wp_enqueue_script_module(
