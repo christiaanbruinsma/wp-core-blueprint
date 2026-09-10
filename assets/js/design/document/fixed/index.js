@@ -1,3 +1,11 @@
+import { normalizePage } from './geometry.js';
+
+export const validateProject = (project) => {
+	const layout = project?.root?.properties?.layout;
+	normalizePage(layout);
+	return project;
+};
+
 export {
 	FIXED_LAYOUT_MODE,
 	FIXED_UNITS,
