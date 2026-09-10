@@ -52,10 +52,14 @@ final class DesignerAjax {
 			wp_send_json_error( [ 'message' => __( 'The mail preview could not be rendered.', 'core-blueprint' ) ], 422 );
 		}
 
-		wp_send_json_success( [
-			'subject' => $preview['subject'],
-			'html'    => $preview['html'],
-		] );
+		wp_send_json_success(
+			[
+				'subject' => $preview['subject'],
+				'html'    => $preview['html'],
+			],
+			200,
+			JSON_INVALID_UTF8_SUBSTITUTE
+		);
 	}
 
 	private function __construct() {}
