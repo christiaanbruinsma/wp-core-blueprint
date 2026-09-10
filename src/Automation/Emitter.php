@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace CB\Core\Automation;
 
+use CB\Core\Automation\Internal\CapabilityRegistry;
+
 defined( 'ABSPATH' ) || exit;
 
 final class Emitter {
@@ -30,6 +32,13 @@ final class Emitter {
 	 * @return TriggerEvent|\WP_Error
 	 */
 	public static function emit( string $provider, string $trigger_id, array $payload, ?string $event_id = null ): TriggerEvent|\WP_Error {
+		if ( ! CapabilityRegistry::is_ready() ) {
+			return new \WP_Error(
+				'cb_core_automation_not_ready',
+				__( 'Automation capabilities are not available before all active plugins have loaded.', 'core-blueprint' )
+			);
+		}
+
 		$definition = TriggerRegistry::get( $provider, $trigger_id );
 		if ( null === $definition ) {
 			return new \WP_Error(
