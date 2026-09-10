@@ -59,9 +59,16 @@ final class HtmlRenderer {
 				continue;
 			}
 			if ( 'image' === $fragment->type() ) {
+				$image_style = $fragment->style();
+				if ( ! $image_style instanceof ImageStyle ) {
+					$body .= '<div class="cb-fixed-fragment cb-fixed-image" style="' . $style . '"><img alt="" src="'
+						. htmlspecialchars( $fragment->payload(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' )
+						. '" style="display:block;width:100%;height:100%;border:0;" /></div>';
+					continue;
+				}
 				$body .= '<div class="cb-fixed-fragment cb-fixed-image" style="' . $style . '"><img alt="" src="'
 					. htmlspecialchars( $fragment->payload(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' )
-					. '" style="display:block;width:100%;height:100%;border:0;" /></div>';
+					. '" style="' . self::image_style( $frame, $image_style ) . '" /></div>';
 				continue;
 			}
 			if ( 'box' === $fragment->type() ) {
@@ -105,6 +112,35 @@ final class HtmlRenderer {
 				. $style->border_style() . ' ' . $style->border_color() . ';';
 		}
 		return $css . 'border:none;';
+	}
+
+	/** @param array{x:float,y:float,width:float,height:float} $frame */
+	private static function image_style( array $frame, ImageStyle $style ): string {
+		$box_width = $frame['width'];
+		$box_height = $frame['height'];
+		$left = 0.0;
+		$top = 0.0;
+		$width = $box_width;
+		$height = $box_height;
+
+		if ( 'stretch' !== $style->fit() ) {
+			$ratio = $style->aspect_ratio();
+			$box_ratio = $box_width / $box_height;
+			$use_width = ( 'contain' === $style->fit() && $ratio >= $box_ratio )
+				|| ( 'cover' === $style->fit() && $ratio < $box_ratio );
+			if ( $use_width ) {
+				$width = $box_width;
+				$height = $width / $ratio;
+				$top = ( $box_height - $height ) / 2;
+			} else {
+				$height = $box_height;
+				$width = $height * $ratio;
+				$left = ( $box_width - $width ) / 2;
+			}
+		}
+
+		return 'position:absolute;display:block;max-width:none;max-height:none;left:' . self::number( $left ) . 'mm;'
+			. 'top:' . self::number( $top ) . 'mm;width:' . self::number( $width ) . 'mm;height:' . self::number( $height ) . 'mm;border:0;';
 	}
 
 	private static function number( float $value ): string {
