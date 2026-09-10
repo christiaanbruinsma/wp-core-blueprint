@@ -93,6 +93,10 @@ final class HtmlRenderer {
 	}
 
 	private static function text_style( TextStyle $style ): string {
+		$transform = 'none' === $style->text_transform()
+			? ''
+			: 'text-transform:' . $style->text_transform() . ';';
+
 		return 'font-family:' . $style->font_family() . ',sans-serif;'
 			. 'font-size:' . self::number( $style->font_size_pt() ) . 'pt;'
 			. 'font-weight:' . $style->font_weight() . ';'
@@ -100,6 +104,7 @@ final class HtmlRenderer {
 			. 'letter-spacing:' . self::number( $style->letter_spacing_em() ) . 'em;'
 			. 'text-align:' . $style->alignment() . ';'
 			. 'color:' . $style->color() . ';'
+			. $transform
 			. 'white-space:normal;overflow-wrap:break-word;word-wrap:break-word;'
 			. ( 'wrap' === $style->overflow() ? 'overflow:visible;' : 'overflow:hidden;' );
 	}
