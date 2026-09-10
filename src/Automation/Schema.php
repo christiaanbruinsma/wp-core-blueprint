@@ -12,7 +12,6 @@ declare(strict_types=1);
  */
 
 namespace CB\Core\Automation;
-
 defined( 'ABSPATH' ) || exit;
 
 final class Schema {
@@ -23,6 +22,10 @@ final class Schema {
 
 	/**
 	 * Normalize and validate one public transport schema.
+	 *
+	 * Normalization is deliberately idempotent because registry definitions are
+	 * stored normalized and are validated again at runtime emission/invocation
+	 * boundaries.
 	 *
 	 * @param array<string,mixed> $schema
 	 * @return array<string,array{type:string,required:bool,sensitive:bool,items:?string}>|null
@@ -59,7 +62,7 @@ final class Schema {
 				if ( ! is_string( $items ) || ! in_array( $items, self::ITEM_TYPES, true ) ) {
 					return null;
 				}
-			} elseif ( array_key_exists( 'items', $definition ) ) {
+			} elseif ( array_key_exists( 'items', $definition ) && null !== $definition['items'] ) {
 				return null;
 			}
 
