@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class DesignerAssets {
 	public const MODULE_ID = '@cb-core/mail-designer';
+	public const STYLE_HANDLE = 'cb-core-mail-designer';
 
 	public static function enqueue( string $hook ): void {
 		if ( $hook !== PageRegistry::hook_suffix( Page::SLUG ) ) {
@@ -26,6 +27,12 @@ final class DesignerAssets {
 		}
 
 		DesignEditorAssets::enqueue();
+		wp_enqueue_style(
+			self::STYLE_HANDLE,
+			CB_CORE_URL . 'assets/css/pages/mail-designer.css',
+			[ 'cb-core-css-page-mail' ],
+			CB_CORE_VERSION
+		);
 		wp_enqueue_script_module(
 			self::MODULE_ID,
 			CB_CORE_URL . 'assets/js/features/mail-designer.js',
