@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace CB\Core\Automation;
 
 use CB\Core\Automation\Internal\CapabilityRegistry;
-
 defined( 'ABSPATH' ) || exit;
 
 final class Emitter {
@@ -28,13 +27,14 @@ final class Emitter {
 	 * orchestration runtime can deduplicate repeated delivery. When omitted,
 	 * Base generates a request-local UUID for the emission.
 	 *
+	 * Error messages are intentionally translation-neutral developer/runtime
+	 * diagnostics; consumers should key behavior to WP_Error codes, not prose.
+	 *
 	 * @param array<string,mixed> $payload
 	 * @return TriggerEvent|\WP_Error
 	 */
 	public static function emit( string $provider, string $trigger_id, array $payload, ?string $event_id = null ): TriggerEvent|\WP_Error {
 		if ( ! CapabilityRegistry::is_ready() ) {
-			// This path is intentionally translation-free: callers can reach it
-			// before Base's init-time text-domain lifecycle has started.
 			return new \WP_Error(
 				'cb_core_automation_not_ready',
 				'Automation capabilities are not available before the WordPress init lifecycle has completed.'
@@ -45,7 +45,7 @@ final class Emitter {
 		if ( null === $definition ) {
 			return new \WP_Error(
 				'cb_core_automation_unknown_trigger',
-				__( 'Unknown automation trigger.', 'core-blueprint' )
+				'Unknown automation trigger.'
 			);
 		}
 
@@ -53,7 +53,7 @@ final class Emitter {
 		if ( ! is_array( $schema ) || ! Schema::validate( $payload, $schema ) ) {
 			return new \WP_Error(
 				'cb_core_automation_invalid_payload',
-				__( 'Automation trigger payload does not match its registered schema.', 'core-blueprint' )
+				'Automation trigger payload does not match its registered schema.'
 			);
 		}
 
@@ -64,7 +64,7 @@ final class Emitter {
 			if ( 1 !== preg_match( self::EVENT_ID_PATTERN, $event_id ) ) {
 				return new \WP_Error(
 					'cb_core_automation_invalid_event_id',
-					__( 'Automation event id is invalid.', 'core-blueprint' )
+					'Automation event id is invalid.'
 				);
 			}
 		}
