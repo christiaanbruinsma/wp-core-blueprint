@@ -17,6 +17,7 @@ use CB\Core\Admin\TabNav;
 use CB\Core\Mail\ConflictDetector;
 use CB\Core\Mail\DeliveryState;
 use CB\Core\Mail\Designer\BindingRegistry;
+use CB\Core\Mail\Designer\ComponentRegistry;
 use CB\Core\Mail\Designer\Renderer as DesignerRenderer;
 use CB\Core\Mail\Designer\TemplateRepository;
 use CB\Core\Mail\Designer\TemplateRegistry;
@@ -127,6 +128,7 @@ final class Page extends PageBase {
 			}
 			$current_template = '' !== $template_id ? TemplateRepository::get( $template_id ) : null;
 			$bindings = BindingRegistry::all();
+			$components = ComponentRegistry::all();
 			$preview = is_array( $current_template ) ? DesignerRenderer::preview( $template_id ) : null;
 			include CB_CORE_DIR . 'templates/mail-designer.php';
 		} elseif ( 'settings' === $tab ) {
