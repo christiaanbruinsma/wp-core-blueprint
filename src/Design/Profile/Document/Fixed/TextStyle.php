@@ -9,6 +9,7 @@ final readonly class TextStyle {
 	private const FAMILIES = [ 'DejaVu Sans', 'DejaVu Serif', 'DejaVu Sans Mono' ];
 	private const ALIGNMENTS = [ 'left', 'center', 'right' ];
 	private const OVERFLOWS = [ 'wrap', 'clip' ];
+	private const TRANSFORMS = [ 'none', 'uppercase', 'lowercase' ];
 
 	public function __construct(
 		private string $font_family = 'DejaVu Sans',
@@ -19,6 +20,7 @@ final readonly class TextStyle {
 		private string $alignment = 'left',
 		private string $color = '#111111',
 		private string $overflow = 'wrap',
+		private string $text_transform = 'none',
 	) {
 		if ( ! in_array( $this->font_family, self::FAMILIES, true ) ) {
 			throw new \InvalidArgumentException( 'Unsupported Fixed text font family.' );
@@ -44,6 +46,9 @@ final readonly class TextStyle {
 		if ( ! in_array( $this->overflow, self::OVERFLOWS, true ) ) {
 			throw new \InvalidArgumentException( 'Unsupported Fixed text overflow mode.' );
 		}
+		if ( ! in_array( $this->text_transform, self::TRANSFORMS, true ) ) {
+			throw new \InvalidArgumentException( 'Unsupported Fixed text transform.' );
+		}
 	}
 
 	public function font_family(): string { return $this->font_family; }
@@ -54,4 +59,5 @@ final readonly class TextStyle {
 	public function alignment(): string { return $this->alignment; }
 	public function color(): string { return strtolower( $this->color ); }
 	public function overflow(): string { return $this->overflow; }
+	public function text_transform(): string { return $this->text_transform; }
 }
