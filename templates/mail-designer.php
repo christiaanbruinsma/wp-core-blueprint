@@ -7,6 +7,8 @@ $project_json = is_array( $current_template )
 	? wp_json_encode( $current_template['project'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
 	: '{}';
 $project_json = is_string( $project_json ) ? $project_json : '{}';
+$components_json = wp_json_encode( $components ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+$components_json = is_string( $components_json ) ? $components_json : '{}';
 ?>
 <div class="wrap cb-core-wrap cb-core-mail-wrap cb-core-mail-designer-wrap">
 	<h1 class="cb-core-title"><?php esc_html_e( 'Mail Templates', 'core-blueprint' ); ?></h1>
@@ -75,6 +77,7 @@ $project_json = is_string( $project_json ) ? $project_json : '{}';
 					<input type="hidden" name="template_id" value="<?php echo esc_attr( $template_id ); ?>" />
 					<?php wp_nonce_field( 'cb_core_mail_template_save' ); ?>
 					<textarea name="project_json" data-cb-mail-project hidden><?php echo esc_textarea( $project_json ); ?></textarea>
+					<textarea data-cb-mail-components hidden><?php echo esc_textarea( $components_json ); ?></textarea>
 
 					<div class="cb-core-mail-designer__subject cb-core-field">
 						<label class="cb-core-field__label" for="cb-mail-designer-subject"><?php esc_html_e( 'Subject', 'core-blueprint' ); ?></label>
@@ -97,8 +100,11 @@ $project_json = is_string( $project_json ) ? $project_json : '{}';
 						<section class="cb-core-mail-designer__palette">
 							<h3><?php esc_html_e( 'Elements', 'core-blueprint' ); ?></h3>
 							<div class="cb-core-mail-designer__palette-list">
-								<?php foreach ( [ 'heading' => __( 'Heading', 'core-blueprint' ), 'text' => __( 'Text', 'core-blueprint' ), 'button' => __( 'Button', 'core-blueprint' ), 'image' => __( 'Image', 'core-blueprint' ), 'divider' => __( 'Divider', 'core-blueprint' ), 'spacer' => __( 'Spacer', 'core-blueprint' ) ] as $type => $label ) : ?>
-									<button type="button" class="button cb-core-mail-designer__element" data-cb-mail-add="<?php echo esc_attr( $type ); ?>"><?php echo esc_html( $label ); ?></button>
+								<?php foreach ( $components as $component_id => $component ) : ?>
+									<button type="button" class="button cb-core-mail-designer__element" data-cb-mail-add="<?php echo esc_attr( (string) $component_id ); ?>">
+										<?php echo esc_html( (string) ( $component['label'] ?? $component_id ) ); ?>
+										<?php if ( 'core' !== (string) ( $component['provider'] ?? 'core' ) ) : ?><small><?php echo esc_html( (string) $component['provider'] ); ?></small><?php endif; ?>
+									</button>
 								<?php endforeach; ?>
 							</div>
 
