@@ -22,17 +22,22 @@ final class DesignerAssets {
 			return;
 		}
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only presentation routing.
-		if ( 'templates' !== $tab ) {
+		if ( ! in_array( $tab, [ 'overview', 'templates' ], true ) ) {
 			return;
 		}
 
-		DesignEditorAssets::enqueue();
 		wp_enqueue_style(
 			self::STYLE_HANDLE,
 			CB_CORE_URL . 'assets/css/pages/mail-designer.css',
 			[],
 			CB_CORE_VERSION
 		);
+
+		if ( 'templates' !== $tab ) {
+			return;
+		}
+
+		DesignEditorAssets::enqueue();
 		wp_enqueue_script_module(
 			self::MODULE_ID,
 			CB_CORE_URL . 'assets/js/features/mail-designer.js',
