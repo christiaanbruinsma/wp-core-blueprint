@@ -17,6 +17,7 @@ use CB\Core\Admin\PageRegistry;
 use CB\Core\RequestContext;
 use CB\Core\Mail\Admin\Actions;
 use CB\Core\Mail\Admin\DesignerAjax;
+use CB\Core\Mail\Admin\DesignerAssets;
 use CB\Core\Mail\Admin\FeatureActions;
 use CB\Core\Mail\Admin\LogsTab;
 use CB\Core\Mail\Admin\Page;
@@ -46,8 +47,7 @@ final class Bootstrap {
 		// delivery instead of Core Blueprint Delivery.
 		add_action( 'cb_core_register_pages', static function (): void {
 			PageRegistry::register_base( new Page(), [
-				'foundations' => [ 'design-editor' ],
-				'components'  => [ 'panels', 'state-badges', 'notices' ],
+				'components' => [ 'panels', 'state-badges', 'notices' ],
 			] );
 		} );
 		add_action( 'cb_core_logs_register_tabs', [ LogsTab::class, 'register' ] );
@@ -65,6 +65,7 @@ final class Bootstrap {
 			DesignerAjax::boot();
 		}
 		if ( RequestContext::is_admin_screen() ) {
+			add_action( 'admin_enqueue_scripts', [ DesignerAssets::class, 'enqueue' ], 20 );
 			add_action( 'admin_notices', [ __CLASS__, 'conflict_notice' ] );
 		}
 	}
