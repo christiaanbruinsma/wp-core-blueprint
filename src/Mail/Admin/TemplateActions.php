@@ -84,7 +84,7 @@ final class TemplateActions {
 	private static function redirect( string $template_id ): never {
 		$url = admin_url( 'admin.php?page=' . Page::SLUG . '&tab=templates' );
 		if ( '' !== $template_id ) {
-			$url = add_query_arg( 'template', rawurlencode( $template_id ), $url );
+			$url = add_query_arg( 'template', $template_id, $url );
 		}
 		wp_safe_redirect( $url );
 		exit;
