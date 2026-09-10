@@ -33,9 +33,11 @@ final class Emitter {
 	 */
 	public static function emit( string $provider, string $trigger_id, array $payload, ?string $event_id = null ): TriggerEvent|\WP_Error {
 		if ( ! CapabilityRegistry::is_ready() ) {
+			// This path is intentionally translation-free: callers can reach it
+			// before Base's init-time text-domain lifecycle has started.
 			return new \WP_Error(
 				'cb_core_automation_not_ready',
-				__( 'Automation capabilities are not available before all active plugins have loaded.', 'core-blueprint' )
+				'Automation capabilities are not available before the WordPress init lifecycle has completed.'
 			);
 		}
 
