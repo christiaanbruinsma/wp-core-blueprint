@@ -15,7 +15,7 @@ final readonly class RenderFragment {
 		private string $type,
 		private array $frame,
 		private string $payload,
-		private TextStyle|BoxStyle|null $style = null,
+		private TextStyle|BoxStyle|ImageStyle|null $style = null,
 	) {}
 
 	/** @param array<string,mixed> $frame */
@@ -28,8 +28,8 @@ final readonly class RenderFragment {
 	}
 
 	/** @param array<string,mixed> $frame */
-	public static function image( array $frame, string $data_uri ): self {
-		return new self( 'image', self::normalize_frame( $frame ), ImageDataUri::assert_valid( $data_uri ) );
+	public static function image( array $frame, string $data_uri, ?ImageStyle $style = null ): self {
+		return new self( 'image', self::normalize_frame( $frame ), ImageDataUri::assert_valid( $data_uri ), $style );
 	}
 
 	/** @param array<string,mixed> $frame */
@@ -41,7 +41,7 @@ final readonly class RenderFragment {
 	/** @return array{x:float,y:float,width:float,height:float} */
 	public function frame(): array { return $this->frame; }
 	public function payload(): string { return $this->payload; }
-	public function style(): TextStyle|BoxStyle|null { return $this->style; }
+	public function style(): TextStyle|BoxStyle|ImageStyle|null { return $this->style; }
 
 	/** @param array<string,mixed> $frame @return array{x:float,y:float,width:float,height:float} */
 	private static function normalize_frame( array $frame ): array {
