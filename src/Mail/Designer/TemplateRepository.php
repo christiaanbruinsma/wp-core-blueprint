@@ -32,10 +32,10 @@ final class TemplateRepository {
 		$subject = isset( $override['subject'] ) && is_string( $override['subject'] ) ? $override['subject'] : (string) $definition['subject'];
 
 		return array_merge( $definition, [
-			'subject'        => $subject,
-			'project'        => $project,
-			'customized'     => [] !== $override,
-			'modified_at'    => isset( $override['modified_at'] ) ? (string) $override['modified_at'] : '',
+			'subject'          => $subject,
+			'project'          => $project,
+			'customized'       => [] !== $override,
+			'modified_at'      => isset( $override['modified_at'] ) ? (string) $override['modified_at'] : '',
 			'base_fingerprint' => isset( $override['base_fingerprint'] ) ? (string) $override['base_fingerprint'] : self::fingerprint( $definition ),
 		]);
 	}
@@ -58,13 +58,22 @@ final class TemplateRepository {
 		}
 
 		$overrides = self::overrides();
-		$overrides[ $template_id ] = [
+		$entry = [
 			'subject'          => $subject,
 			'project'          => $project,
 			'base_fingerprint' => self::fingerprint( $definition ),
 			'modified_at'      => gmdate( 'Y-m-d H:i:s' ),
 		];
-		return update_option( self::OPTION, $overrides, false );
+		$overrides[ $template_id ] = $entry;
+		$changed = update_option( self::OPTION, $overrides, false );
+		if ( $changed ) {
+			return true;
+		}
+
+		// update_option() also returns false for a successful no-op. Verify the
+		// persisted entry so clicking Save twice never surfaces a false failure.
+		$stored = self::overrides();
+		return isset( $stored[ $template_id ] ) && $entry === $stored[ $template_id ];
 	}
 
 	public static function reset( string $template_id ): bool {
@@ -76,7 +85,8 @@ final class TemplateRepository {
 			return true;
 		}
 		unset( $overrides[ $template_id ] );
-		return update_option( self::OPTION, $overrides, false );
+		$changed = update_option( self::OPTION, $overrides, false );
+		return $changed || ! isset( self::overrides()[ $template_id ] );
 	}
 
 	/** @return array<string,array<string,mixed>> */
