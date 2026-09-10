@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CB\Core\Admin;
 
+use CB\Core\Design\Editor\Assets as DesignEditorAssets;
 use CB\Core\UI\Assets as UiAssets;
 
 defined( 'ABSPATH' ) || exit;
@@ -49,6 +50,7 @@ final class PageRegistry {
 		'capability-picker',
 		'choice-group',
 		'clipboard',
+		'design-editor',
 		'icon-picker',
 		'icons',
 		'modal',
@@ -364,6 +366,9 @@ final class PageRegistry {
 				break;
 			case 'clipboard':
 				UiAssets::enqueue_clipboard( UiAssets::CLIPBOARD_PRESENTATION_CORE );
+				break;
+			case 'design-editor':
+				DesignEditorAssets::enqueue();
 				break;
 			case 'time-picker':
 				UiAssets::enqueue_time_picker( UiAssets::TIME_PICKER_PRESENTATION_CORE );

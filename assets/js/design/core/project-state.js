@@ -21,9 +21,14 @@ export class ProjectState {
 	#project;
 	#revision = 0;
 	#listeners = new Set();
+	#validate;
 
-	constructor(project) {
-		this.#project = normalizeProject(project);
+	constructor(project, { validate = null } = {}) {
+		if (null !== validate && typeof validate !== 'function') {
+			throw new TypeError('ProjectState validate must be a function or null.');
+		}
+		this.#validate = validate;
+		this.#project = this.#normalize(project);
 	}
 
 	get revision() {
@@ -39,7 +44,7 @@ export class ProjectState {
 	}
 
 	replace(project, { source = 'editor' } = {}) {
-		const next = normalizeProject(project);
+		const next = this.#normalize(project);
 		this.#project = next;
 		this.#revision += 1;
 		const event = Object.freeze({ revision: this.#revision, source: String(source || 'editor') });
@@ -51,5 +56,11 @@ export class ProjectState {
 		if (typeof listener !== 'function') throw new TypeError('ProjectState listeners must be functions.');
 		this.#listeners.add(listener);
 		return () => this.#listeners.delete(listener);
+	}
+
+	#normalize(project) {
+		const normalized = normalizeProject(project);
+		if (this.#validate) this.#validate(normalized);
+		return normalized;
 	}
 }
