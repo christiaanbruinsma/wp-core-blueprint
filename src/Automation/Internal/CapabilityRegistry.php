@@ -31,17 +31,18 @@ final class CapabilityRegistry {
 	private static bool $collected = false;
 
 	/**
-	 * Whether all active plugin files have loaded and capability collection is safe.
+	 * Whether the canonical Base init lifecycle has completed.
 	 *
-	 * Automation discovery must never freeze during top-level plugin loading: a
-	 * later plugin in the same request may not yet have attached its registration
-	 * callbacks. `plugins_loaded` is the first safe cross-plugin collection gate.
+	 * ExtensionRegistry is collected on `init` priority 5. Automation Foundation
+	 * must not pull that collection forward during plugin loading or an earlier
+	 * init callback. AF1 therefore becomes discoverable only after `init` has
+	 * finished, preserving the existing extension-registration contract exactly.
 	 */
 	public static function is_ready(): bool {
-		return self::$collected || did_action( 'plugins_loaded' ) > 0 || doing_action( 'plugins_loaded' );
+		return self::$collected || ( did_action( 'init' ) > 0 && ! doing_action( 'init' ) );
 	}
 
-	/** Collect registered capabilities once all active plugins have loaded. */
+	/** Collect registered capabilities once Base's canonical init lifecycle completed. */
 	public static function collect(): bool {
 		if ( self::$collected ) {
 			return true;
@@ -54,9 +55,9 @@ final class CapabilityRegistry {
 		// registration lifecycle twice in one request.
 		self::$collected = true;
 
-		// Provider identity must exist before capabilities are accepted. At this
-		// point every active plugin file has loaded, so collecting ExtensionRegistry
-		// cannot starve a provider that would have registered later in load order.
+		// ExtensionRegistry has already completed its canonical init collection.
+		// Calling collect() again is idempotent and protects tests/manual contexts
+		// without changing normal runtime timing.
 		ExtensionRegistry::collect();
 		do_action( 'cb_core_register_automation_capabilities' );
 		return true;
