@@ -30,20 +30,36 @@ final class CapabilityRegistry {
 	private static array $actions = [];
 	private static bool $collected = false;
 
-	public static function collect(): void {
+	/**
+	 * Whether all active plugin files have loaded and capability collection is safe.
+	 *
+	 * Automation discovery must never freeze during top-level plugin loading: a
+	 * later plugin in the same request may not yet have attached its registration
+	 * callbacks. `plugins_loaded` is the first safe cross-plugin collection gate.
+	 */
+	public static function is_ready(): bool {
+		return self::$collected || did_action( 'plugins_loaded' ) > 0 || doing_action( 'plugins_loaded' );
+	}
+
+	/** Collect registered capabilities once all active plugins have loaded. */
+	public static function collect(): bool {
 		if ( self::$collected ) {
-			return;
+			return true;
+		}
+		if ( ! self::is_ready() ) {
+			return false;
 		}
 
 		// Freeze before dispatch so recursive discovery cannot fire the public
 		// registration lifecycle twice in one request.
 		self::$collected = true;
 
-		// Provider identity must exist before capabilities are accepted. Collecting
-		// extensions explicitly also makes early (pre-init) automation emission
-		// deterministic for plugins that already attached their registration hooks.
+		// Provider identity must exist before capabilities are accepted. At this
+		// point every active plugin file has loaded, so collecting ExtensionRegistry
+		// cannot starve a provider that would have registered later in load order.
 		ExtensionRegistry::collect();
 		do_action( 'cb_core_register_automation_capabilities' );
+		return true;
 	}
 
 	/** @param array<string,mixed> $definition */
