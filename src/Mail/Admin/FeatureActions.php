@@ -15,6 +15,8 @@ use CB\Core\Mail\DesignerState;
 defined( 'ABSPATH' ) || exit;
 
 final class FeatureActions {
+	private const RESULT_PREFIX = 'cb_core_mail_result_';
+
 	public static function boot(): void {
 		add_action( 'admin_post_cb_core_mail_features_save', [ __CLASS__, 'save' ] );
 	}
@@ -37,12 +39,20 @@ final class FeatureActions {
 			DeliveryState::set_enabled( $delivery, $actor );
 			DesignerState::set_enabled( $designer, $actor );
 		} catch ( \Throwable $exception ) {
-			Actions::set_public_result( 'error', __( 'Mail capability settings could not be saved.', 'core-blueprint' ) );
+			self::set_result( 'error', __( 'Mail capability settings could not be saved.', 'core-blueprint' ) );
 			self::redirect();
 		}
 
-		Actions::set_public_result( 'success', __( 'Mail capabilities saved.', 'core-blueprint' ) );
+		self::set_result( 'success', __( 'Mail capabilities saved.', 'core-blueprint' ) );
 		self::redirect();
+	}
+
+	private static function set_result( string $type, string $message ): void {
+		set_transient(
+			self::RESULT_PREFIX . get_current_user_id(),
+			[ 'type' => $type, 'message' => $message ],
+			MINUTE_IN_SECONDS
+		);
 	}
 
 	private static function redirect(): void {
