@@ -34,6 +34,7 @@ final class Actions {
 
 	public static function save(): void {
 		self::guard( 'cb_core_mail_save' );
+		self::guard_delivery_mutation();
 
 		$current = Settings::all();
 		$next    = $current;
@@ -113,7 +114,7 @@ final class Actions {
 			AuditLog::log( 'mail_settings_updated', 'notice', [ 'changed' => $changed ] );
 		}
 
-		$message = DeliveryState::is_enabled() && ConflictDetector::has_conflict()
+		$message = ConflictDetector::has_conflict()
 			? __( 'Mail delivery settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.', 'core-blueprint' )
 			: __( 'Mail delivery settings saved.', 'core-blueprint' );
 
@@ -194,7 +195,7 @@ final class Actions {
 	}
 
 	private static function validate( array $settings ): string {
-		return empty( $settings['delivery_enabled'] ) ? '' : Settings::activation_error( $settings );
+		return Settings::activation_error( $settings );
 	}
 
 	private static function changed_keys( array $before, array $after ): array {
@@ -223,6 +224,17 @@ final class Actions {
 			);
 		}
 		check_admin_referer( $action );
+	}
+
+	private static function guard_delivery_mutation(): void {
+		if ( DeliveryState::is_enabled() ) {
+			return;
+		}
+		wp_die(
+			esc_html__( 'Mail Delivery is disabled. Enable it from Mail Overview before changing delivery settings.', 'core-blueprint' ),
+			esc_html__( 'Mail Delivery disabled', 'core-blueprint' ),
+			[ 'response' => 409 ]
+		);
 	}
 
 	private static function set_result( string $type, string $message ): void {
