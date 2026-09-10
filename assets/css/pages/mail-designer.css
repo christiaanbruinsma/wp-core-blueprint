@@ -1,0 +1,366 @@
+/**
+ * Core Blueprint Mail Designer.
+ * Base-owned composition only; colors/spacing resolve through Design System tokens.
+ */
+
+.cb-core-mail-feature-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-4);
+	margin-top: var(--cb-space-5);
+	max-width: 1100px;
+}
+
+.cb-core-mail-feature-card {
+	margin: 0 !important;
+}
+
+.cb-core-mail-feature-card__heading {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: var(--cb-space-4);
+	margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-mail-feature-card__heading h2,
+.cb-core-mail-feature-card__heading p {
+	margin-top: 0;
+}
+
+.cb-core-mail-designer-disabled {
+	max-width: 760px;
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-mail-designer {
+	display: grid;
+	grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+	gap: var(--cb-space-5);
+	align-items: start;
+	margin-top: var(--cb-space-5);
+}
+
+.cb-core-mail-designer__templates,
+.cb-core-mail-designer__palette,
+.cb-core-mail-designer__inspector,
+.cb-core-mail-designer__canvas-panel,
+.cb-core-mail-designer__preview-section {
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-lg);
+	background: var(--cb-surface);
+}
+
+.cb-core-mail-designer__templates {
+	position: sticky;
+	top: 48px;
+	padding: var(--cb-space-3);
+}
+
+.cb-core-mail-designer__group-title {
+	margin: var(--cb-space-3) var(--cb-space-2) var(--cb-space-2);
+	font-size: var(--cb-fs-xs);
+	font-weight: var(--cb-fw-semibold);
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-mail-designer__group-title:first-child {
+	margin-top: var(--cb-space-1);
+}
+
+.cb-core-mail-designer__template-list {
+	display: grid;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-mail-designer__template-link {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: var(--cb-space-2) var(--cb-space-3);
+	border-radius: var(--cb-radius-md);
+	color: var(--cb-text);
+	text-decoration: none;
+}
+
+.cb-core-mail-designer__template-link:hover,
+.cb-core-mail-designer__template-link:focus-visible,
+.cb-core-mail-designer__template-link.is-active {
+	background: var(--cb-surface-hover);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-mail-designer__template-link.is-active {
+	box-shadow: inset 3px 0 0 var(--cb-accent);
+}
+
+.cb-core-mail-designer__template-link small {
+	color: var(--cb-text-muted);
+}
+
+.cb-core-mail-designer__workspace {
+	min-width: 0;
+}
+
+.cb-core-mail-designer__header,
+.cb-core-mail-designer__toolbar,
+.cb-core-mail-designer__preview-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-4);
+}
+
+.cb-core-mail-designer__header {
+	margin-bottom: var(--cb-space-4);
+}
+
+.cb-core-mail-designer__header h2,
+.cb-core-mail-designer__header p,
+.cb-core-mail-designer__preview-heading h3 {
+	margin-top: 0;
+}
+
+.cb-core-mail-template-state {
+	flex: 0 0 auto;
+	padding: var(--cb-space-1) var(--cb-space-2);
+	border: 1px solid var(--cb-border);
+	border-radius: 999px;
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-xs);
+}
+
+.cb-core-mail-designer__subject {
+	max-width: none;
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-mail-designer__toolbar {
+	padding: var(--cb-space-3) 0;
+	margin-bottom: var(--cb-space-3);
+	border-top: 1px solid var(--cb-border);
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-mail-designer__toolbar-group {
+	display: flex;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-mail-designer__toolbar .is-active {
+	box-shadow: inset 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-mail-designer__editor-grid {
+	display: grid;
+	grid-template-columns: minmax(180px, 220px) minmax(280px, 1fr) minmax(220px, 280px);
+	gap: var(--cb-space-3);
+	align-items: start;
+}
+
+.cb-core-mail-designer__palette,
+.cb-core-mail-designer__inspector,
+.cb-core-mail-designer__canvas-panel {
+	padding: var(--cb-space-3);
+	min-height: 420px;
+}
+
+.cb-core-mail-designer__palette,
+.cb-core-mail-designer__inspector {
+	position: sticky;
+	top: 48px;
+}
+
+.cb-core-mail-designer__palette h3,
+.cb-core-mail-designer__inspector h3 {
+	margin-top: 0;
+}
+
+.cb-core-mail-designer__palette-list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--cb-space-2);
+	margin-bottom: var(--cb-space-5);
+}
+
+.cb-core-mail-designer__element {
+	display: flex !important;
+	flex-direction: column;
+	align-items: flex-start !important;
+	justify-content: center !important;
+	min-height: 52px;
+	white-space: normal !important;
+}
+
+.cb-core-mail-designer__element small {
+	font-size: 10px;
+	color: var(--cb-text-muted);
+}
+
+.cb-core-mail-designer__bindings {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--cb-space-1);
+	margin-top: var(--cb-space-3);
+}
+
+.cb-core-mail-binding {
+	padding: 3px 7px;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: var(--cb-surface-subtle);
+	color: var(--cb-text);
+	font: inherit;
+	font-family: var(--cb-font-mono);
+	font-size: 11px;
+	cursor: pointer;
+}
+
+.cb-core-mail-binding:hover,
+.cb-core-mail-binding:focus-visible {
+	border-color: var(--cb-accent);
+}
+
+.cb-core-mail-designer__canvas {
+	display: grid;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-mail-node {
+	position: relative;
+	padding: var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-subtle);
+	cursor: pointer;
+}
+
+.cb-core-mail-node:hover,
+.cb-core-mail-node:focus-visible,
+.cb-core-mail-node.is-selected {
+	border-color: var(--cb-accent);
+	outline: none;
+}
+
+.cb-core-mail-node.is-selected {
+	box-shadow: 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-mail-node__meta {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--cb-space-2);
+}
+
+.cb-core-mail-node__meta small,
+.cb-core-mail-node p {
+	color: var(--cb-text-muted);
+}
+
+.cb-core-mail-node p {
+	margin: var(--cb-space-2) 0 0;
+}
+
+.cb-core-mail-node__actions {
+	display: flex;
+	gap: var(--cb-space-1);
+	margin-top: var(--cb-space-2);
+}
+
+.cb-core-mail-inspector-field {
+	margin-bottom: var(--cb-space-3);
+}
+
+.cb-core-mail-inspector-field input,
+.cb-core-mail-inspector-field select,
+.cb-core-mail-inspector-field textarea {
+	width: 100%;
+	max-width: none;
+}
+
+.cb-core-mail-inspector-remove {
+	margin-top: var(--cb-space-3) !important;
+}
+
+.cb-core-mail-designer__preview-section {
+	margin-top: var(--cb-space-4);
+	padding: var(--cb-space-3);
+}
+
+.cb-core-mail-designer__preview-heading span {
+	color: var(--cb-text-muted);
+	font-size: var(--cb-fs-sm);
+}
+
+.cb-core-mail-designer__preview-heading span.is-error {
+	color: var(--cb-danger);
+}
+
+.cb-core-mail-designer__preview-frame {
+	width: 100%;
+	max-width: 900px;
+	margin: 0 auto;
+	padding: var(--cb-space-3);
+	box-sizing: border-box;
+	background: var(--cb-surface-subtle);
+	border-radius: var(--cb-radius-md);
+	transition: max-width .15s ease;
+}
+
+.cb-core-mail-designer__preview-frame.is-mobile {
+	max-width: 430px;
+}
+
+.cb-core-mail-designer__preview-frame iframe {
+	display: block;
+	width: 100%;
+	min-height: 640px;
+	border: 0;
+	background: #fff;
+}
+
+.cb-core-mail-designer__reset-form {
+	margin-top: var(--cb-space-4);
+	padding-top: var(--cb-space-4);
+	border-top: 1px solid var(--cb-border);
+}
+
+@media (max-width: 1280px) {
+	.cb-core-mail-designer__editor-grid {
+		grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+	}
+
+	.cb-core-mail-designer__inspector {
+		position: static;
+		grid-column: 1 / -1;
+		min-height: 0;
+	}
+}
+
+@media (max-width: 900px) {
+	.cb-core-mail-feature-grid,
+	.cb-core-mail-designer,
+	.cb-core-mail-designer__editor-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.cb-core-mail-designer__templates,
+	.cb-core-mail-designer__palette {
+		position: static;
+	}
+
+	.cb-core-mail-designer__templates,
+	.cb-core-mail-designer__palette,
+	.cb-core-mail-designer__canvas-panel,
+	.cb-core-mail-designer__inspector {
+		min-height: 0;
+	}
+
+	.cb-core-mail-designer__header,
+	.cb-core-mail-designer__toolbar {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+}
