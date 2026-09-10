@@ -50,6 +50,9 @@ jobs:
       - name: Document Flow JavaScript contract
         run: node --test tests/js/design-document-flow.test.mjs tests/js/design-document-flow-boundary.test.mjs
 
+      - name: Mail Design JavaScript contract
+        run: node --test tests/js/design-mail-profile.test.mjs
+
       - name: PHP syntax
         run: bash tests/bin/php-lint.sh
 
