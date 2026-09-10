@@ -3,6 +3,11 @@ declare(strict_types=1);
 /**
  * Mail module settings repository.
  *
+ * Delivery and presentation are intentionally independent capabilities. The
+ * legacy `enabled` state remains as an aggregate compatibility flag so existing
+ * Dashboard/module integrations continue to work while new code uses the
+ * explicit delivery/designer accessors.
+ *
  * @package Core_Blueprint
  * @since   1.0.0
  */
@@ -22,6 +27,8 @@ final class Settings {
 	public static function defaults(): array {
 		return [
 			'enabled'            => false,
+			'delivery_enabled'   => false,
+			'designer_enabled'   => false,
 			'provider'           => 'brevo',
 			'from_email'         => sanitize_email( (string) get_option( 'admin_email', '' ) ),
 			'from_name'          => sanitize_text_field( (string) get_bloginfo( 'name' ) ),
@@ -40,30 +47,51 @@ final class Settings {
 		];
 	}
 
+	/** Aggregate compatibility state used by the existing module registry. */
 	public static function enabled(): bool {
-		$enabled = get_option( self::ENABLED_OPTION, null );
-		if ( null !== $enabled ) {
-			return (bool) $enabled;
-		}
+		$settings = self::all();
+		return ! empty( $settings['delivery_enabled'] ) || ! empty( $settings['designer_enabled'] );
+	}
 
-		// One-time migration for installs where enabled lived only inside the
-		// cold credential/configuration document.
-		$stored  = get_option( self::OPTION, [] );
-		$enabled = is_array( $stored ) && ! empty( $stored['enabled'] );
-		add_option( self::ENABLED_OPTION, $enabled ? '1' : '0', '', true );
-		return $enabled;
+	public static function delivery_enabled(): bool {
+		return ! empty( self::all()['delivery_enabled'] );
+	}
+
+	public static function designer_enabled(): bool {
+		return ! empty( self::all()['designer_enabled'] );
 	}
 
 	public static function all(): array {
 		$stored = get_option( self::OPTION, [] );
 		$stored = is_array( $stored ) ? $stored : [];
-		return array_merge( self::defaults(), $stored );
+
+		// Legacy installs used `enabled` (and the hot enabled option) as the
+		// transport switch. Until the first save after this split, preserve that
+		// exact behaviour by treating the legacy state as delivery-enabled only.
+		if ( ! array_key_exists( 'delivery_enabled', $stored ) ) {
+			$legacy_hot = get_option( self::ENABLED_OPTION, null );
+			$legacy_enabled = null !== $legacy_hot
+				? (bool) $legacy_hot
+				: ! empty( $stored['enabled'] );
+			$stored['delivery_enabled'] = $legacy_enabled;
+		}
+		if ( ! array_key_exists( 'designer_enabled', $stored ) ) {
+			$stored['designer_enabled'] = false;
+		}
+
+		$settings = array_merge( self::defaults(), $stored );
+		$settings['enabled'] = ! empty( $settings['delivery_enabled'] ) || ! empty( $settings['designer_enabled'] );
+		return $settings;
 	}
 
 	public static function save( array $settings ): bool {
 		$settings = array_merge( self::defaults(), $settings );
+		$settings['delivery_enabled'] = ! empty( $settings['delivery_enabled'] );
+		$settings['designer_enabled'] = ! empty( $settings['designer_enabled'] );
+		$settings['enabled'] = $settings['delivery_enabled'] || $settings['designer_enabled'];
+
 		$config_changed = update_option( self::OPTION, $settings, false );
-		$state_changed  = update_option( self::ENABLED_OPTION, ! empty( $settings['enabled'] ) ? '1' : '0', true );
+		$state_changed  = update_option( self::ENABLED_OPTION, $settings['enabled'] ? '1' : '0', true );
 		return $config_changed || $state_changed;
 	}
 
@@ -95,12 +123,7 @@ final class Settings {
 	}
 
 	/**
-	 * Return a translation-free activation error code for runtime/bootstrap use.
-	 *
-	 * Mail runtime boots on `plugins_loaded` so transport conflict detection sees
-	 * the complete active-plugin set. WordPress 6.7+ forbids resolving this
-	 * plugin's textdomain before `init`, therefore early runtime validation must
-	 * never construct translated presentation strings.
+	 * Return a translation-free activation error code for the delivery runtime.
 	 */
 	public static function activation_error_code( ?array $settings = null ): string {
 		$settings = is_array( $settings ) ? array_merge( self::defaults(), $settings ) : self::all();
@@ -121,16 +144,10 @@ final class Settings {
 		return '';
 	}
 
-	/**
-	 * Return a human-readable reason why the supplied/current settings cannot
-	 * activate Mail yet, or an empty string when activation is ready.
-	 *
-	 * Call from `init` or later; early runtime code must use
-	 * activation_error_code() instead.
-	 */
+	/** Human-readable delivery activation error. Call from init or later. */
 	public static function activation_error( ?array $settings = null ): string {
 		return match ( self::activation_error_code( $settings ) ) {
-			'invalid_from_email'        => __( 'A valid From Email is required before Mail can be enabled.', 'core-blueprint' ),
+			'invalid_from_email'        => __( 'A valid From Email is required before Mail Delivery can be enabled.', 'core-blueprint' ),
 			'missing_brevo_api_key'     => __( 'A Brevo API key is required before the Brevo transport can be enabled.', 'core-blueprint' ),
 			'missing_smtp_host'         => __( 'An SMTP host is required before the SMTP transport can be enabled.', 'core-blueprint' ),
 			'missing_smtp_credentials'  => __( 'SMTP username and password are required when authentication is enabled.', 'core-blueprint' ),
