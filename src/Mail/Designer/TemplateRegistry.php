@@ -27,6 +27,10 @@ final class TemplateRegistry {
 		}
 		self::$booted = true;
 
+		// Component providers register their node type/provider pairs before any
+		// extension template is validated. This lets domain plugins contribute
+		// custom blocks without coupling the Design Foundation to their domain.
+		ComponentRegistry::boot();
 		WordPressTemplates::register();
 		/** Fires once so extensions can register Mail Designer templates. */
 		do_action( 'cb_core_register_mail_templates' );
