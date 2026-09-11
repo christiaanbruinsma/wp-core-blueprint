@@ -129,6 +129,7 @@ export const createDesignerShell = (root, {
 		fullscreenState = false;
 		if (activeFullscreenExit === exitFullscreenInternal) activeFullscreenExit = null;
 		document.removeEventListener('keydown', handleFullscreenKeydown, true);
+		document.removeEventListener('focusin', handleFullscreenFocusin, true);
 		root.classList.remove(FULLSCREEN_ROOT_CLASS);
 		document.documentElement?.classList?.remove(FULLSCREEN_DOCUMENT_CLASS);
 		restoreRootTabIndex();
@@ -151,6 +152,7 @@ export const createDesignerShell = (root, {
 		root.classList.add(FULLSCREEN_ROOT_CLASS);
 		document.documentElement?.classList?.add(FULLSCREEN_DOCUMENT_CLASS);
 		document.addEventListener('keydown', handleFullscreenKeydown, true);
+		document.addEventListener('focusin', handleFullscreenFocusin, true);
 		syncFullscreenControl();
 		focusInside();
 		dispatchFullscreenChange();
@@ -160,6 +162,13 @@ export const createDesignerShell = (root, {
 	const exitFullscreen = () => exitFullscreenInternal();
 	const toggleFullscreen = () => fullscreenState ? exitFullscreen() : enterFullscreen();
 	const isFullscreen = () => fullscreenState;
+
+	function handleFullscreenFocusin() {
+		if (!fullscreenState) return;
+		const active = document.activeElement;
+		if (active && root.contains(active)) return;
+		focusInside();
+	}
 
 	function handleFullscreenKeydown(event) {
 		if (!fullscreenState || event.defaultPrevented) return;
