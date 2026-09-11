@@ -13,6 +13,17 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+// Some Lucide glyphs in this curated set are derived from Feather Icons.
+// Copyright (c) 2013-present Cole Bemis
+// MIT License: permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation files to
+// deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, subject to inclusion of the copyright
+// and permission notice. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY
+// OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 const ICONS = Object.freeze({
 	'undo-2': Object.freeze([
