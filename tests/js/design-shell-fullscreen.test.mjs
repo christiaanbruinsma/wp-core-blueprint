@@ -260,6 +260,19 @@ test('fullscreen control toggles state and keyboard focus stays inside the visib
 	assert.equal(shell.isFullscreen(), false);
 });
 
+test('fullscreen redirects focus that moves outside the visible shell', () => {
+	const outside = new FakeButton(document);
+	const { root, fullscreen } = buildShell();
+	const shell = createDesignerShell(root);
+
+	fullscreen.focus();
+	assert.equal(shell.enterFullscreen(), true);
+	outside.focus();
+	document.dispatchEvent(new Event('focusin'));
+	assert.equal(document.activeElement, fullscreen);
+	assert.equal(shell.exitFullscreen(), true);
+});
+
 test('Escape inside a same-origin descendant iframe exits shared fullscreen state', () => {
 	const { root, fullscreen, frame } = buildShell({ withFrame: true });
 	const shell = createDesignerShell(root);
@@ -316,4 +329,5 @@ test('shared fullscreen CSS owns fixed viewport composition and document scroll 
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*\{[\s\S]*inset:\s*0/);
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*\{[\s\S]*height:\s*100dvh/);
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*>\s*\.cb-core-design-shell__workspace/);
+	assert.match(css, /palette--tabbed\s*>\s*\.cb-core-design-shell__panel:not\(\[hidden\]\)[\s\S]*overflow:\s*auto/);
 });
