@@ -14,6 +14,7 @@ namespace CB\Core\Mail\Admin;
 
 use CB\Core\Admin\PageBase;
 use CB\Core\Admin\TabNav;
+use CB\Core\Brand\CoreBlueprintMark;
 use CB\Core\Mail\ConflictDetector;
 use CB\Core\Mail\DeliveryState;
 use CB\Core\Mail\Designer\BindingRegistry;
@@ -156,10 +157,9 @@ final class Page extends PageBase {
 			'cb-core-designer-launch',
 			'cbCoreDesignerLaunch',
 			[
-				'label'       => __( 'Design with Core Blueprint', 'core-blueprint' ),
-				'ariaLabel'   => __( 'Open Designer Mode', 'core-blueprint' ),
-				'tabletLabel' => __( 'Tablet', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
-				'iconUrl'     => CB_CORE_URL . 'assets/core-blueprint-icon.svg',
+				'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),
+				'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),
+				'iconUrl'   => CoreBlueprintMark::data_uri(),
 			]
 		);
 	}

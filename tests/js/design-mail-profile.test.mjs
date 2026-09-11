@@ -123,8 +123,9 @@ test('mail Designer Mode chrome parses as a classic script and delegates fullscr
 	assert.doesNotThrow(() => new Function(source));
 	assert.match(source, /fullscreen\.click\(\)/);
 	assert.match(source, /cb:design-shell:fullscreenchange/);
-	assert.match(source, /cbMailViewport\s*=\s*['"]tablet['"]/);
+	assert.match(source, /\[data-cb-mail-viewport="tablet"\]/);
 	assert.match(source, /cb-core-design-shell__toolbar--designer/);
+	assert.doesNotMatch(source, /setViewportState/);
 	assert.doesNotMatch(source, /createDesignerShell/);
 	assert.doesNotMatch(source, /requestFullscreen/);
 });

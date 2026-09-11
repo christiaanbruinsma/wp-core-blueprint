@@ -23,17 +23,36 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( "[data-cb-design-shell-redo]", $launch );
 		self::assertStringContainsString( "[data-cb-design-shell-fullscreen]", $launch );
 		self::assertStringContainsString( "button[type=\"submit\"]", $launch );
-		self::assertStringContainsString( "tablet.dataset.cbMailViewport = 'tablet';", $launch );
+		self::assertStringContainsString( "[data-cb-mail-viewport=\"tablet\"]", $launch );
+		self::assertStringNotContainsString( 'setViewportState', $launch );
 		self::assertStringContainsString( 'cb-core-design-shell__toolbar--designer', $launch );
 		self::assertStringContainsString( 'grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);', $shell_css );
 		self::assertStringContainsString( '.cb-core-mail-designer__preview-frame.is-tablet iframe', $mail_css );
 		self::assertStringContainsString( 'max-width: 782px;', $mail_css );
 	}
 
-	public function test_tablet_label_uses_wordpress_platform_vocabulary(): void {
-		$page = (string) file_get_contents( dirname( __DIR__, 2 ) . '/src/Mail/Admin/Page.php' );
+	public function test_tablet_viewport_is_owned_by_mail_and_uses_wordpress_platform_vocabulary(): void {
+		$root = dirname( __DIR__, 2 );
+		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
+		$feature = (string) file_get_contents( $root . '/assets/js/features/mail-designer.js' );
 
-		self::assertStringContainsString( "'tabletLabel' => __( 'Tablet', 'default' )", $page );
-		self::assertStringNotContainsString( "'Tablet', 'core-blueprint'", $page );
+		self::assertStringContainsString( "\$tablet_label = __( 'Tablet', 'default' )", $template );
+		self::assertStringContainsString( 'data-cb-mail-viewport="tablet"', $template );
+		self::assertStringNotContainsString( "'Tablet', 'core-blueprint'", $template );
+		self::assertStringContainsString( "value === 'tablet'", $feature );
+		self::assertStringContainsString( "classList.toggle('is-tablet'", $feature );
+	}
+	public function test_designer_mode_and_hud_share_the_canonical_core_blueprint_mark(): void {
+		$root = dirname( __DIR__, 2 );
+		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
+		$hud = (string) file_get_contents( $root . '/src/HUD/Brand/CoreBlueprint.php' );
+		$mark = (string) file_get_contents( $root . '/src/Brand/CoreBlueprintMark.php' );
+
+		self::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $page );
+		self::assertStringContainsString( 'CoreBlueprintMark::svg()', $hud );
+		self::assertStringContainsString( '#00FFDD', $mark );
+		self::assertStringContainsString( '#0037FF', $mark );
+		self::assertStringContainsString( '#131648', $mark );
+		self::assertStringNotContainsString( 'assets/core-blueprint-icon.svg', $page );
 	}
 }

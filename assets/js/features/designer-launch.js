@@ -51,7 +51,6 @@
 		const fullscreen = toolbar.querySelector('[data-cb-design-shell-fullscreen]');
 		const save = toolbar.querySelector('button[type="submit"]');
 		const status = toolbar.querySelector('[data-cb-mail-preview-status]');
-		const previewFrame = root.querySelector('[data-cb-mail-preview-frame]');
 		if (!historyGroup || !viewportGroup || !fullscreen || !save) return;
 
 		const historyHeading = historyGroup.querySelector('.cb-core-mail-designer__toolbar-label');
@@ -81,41 +80,17 @@
 		iconize(save, 'save', saveLabel);
 
 		const desktop = viewportGroup.querySelector('[data-cb-mail-viewport="desktop"]');
+		const tablet = viewportGroup.querySelector('[data-cb-mail-viewport="tablet"]');
 		const mobile = viewportGroup.querySelector('[data-cb-mail-viewport="mobile"]');
-		let tablet = viewportGroup.querySelector('[data-cb-mail-viewport="tablet"]');
-		if (!tablet) {
-			tablet = document.createElement('button');
-			tablet.type = 'button';
-			tablet.className = 'button cb-core-button';
-			tablet.dataset.cbMailViewport = 'tablet';
-			tablet.textContent = String(config.tabletLabel || 'Tablet');
-		}
+		if (!desktop || !tablet || !mobile) return;
 
-		const desktopLabel = String(desktop?.textContent || 'Desktop').trim();
-		const mobileLabel = String(mobile?.textContent || 'Mobile').trim();
-		const tabletLabel = String(config.tabletLabel || tablet.textContent || 'Tablet').trim();
+		const desktopLabel = String(desktop.textContent || 'Desktop').trim();
+		const tabletLabel = String(tablet.textContent || 'Tablet').trim();
+		const mobileLabel = String(mobile.textContent || 'Mobile').trim();
 		iconize(mobile, 'mobile', mobileLabel);
 		iconize(tablet, 'tablet', tabletLabel);
 		iconize(desktop, 'desktop', desktopLabel);
-		viewportGroup.replaceChildren(...[mobile, tablet, desktop].filter(Boolean));
-
-		const viewportButtons = Array.from(viewportGroup.querySelectorAll('[data-cb-mail-viewport]'));
-		const setViewportState = (value, activeButton) => {
-			previewFrame?.classList.toggle('is-mobile', value === 'mobile');
-			previewFrame?.classList.toggle('is-tablet', value === 'tablet');
-			viewportButtons.forEach((button) => {
-				const active = button === activeButton;
-				button.classList.toggle('is-active', active);
-				button.setAttribute('aria-pressed', active ? 'true' : 'false');
-			});
-		};
-		viewportButtons.forEach((button) => {
-			button.addEventListener('click', () => {
-				setViewportState(String(button.dataset.cbMailViewport || 'desktop'), button);
-			});
-		});
-		const activeViewport = viewportButtons.find((button) => button.classList.contains('is-active')) || desktop || viewportButtons.at(-1);
-		if (activeViewport) setViewportState(String(activeViewport.dataset.cbMailViewport || 'desktop'), activeViewport);
+		viewportGroup.replaceChildren(mobile, tablet, desktop);
 
 		const start = document.createElement('div');
 		start.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--start';
