@@ -122,31 +122,42 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
-test('mail Designer Mode chrome consumes shared Lucide/sidebar contracts and delegates fullscreen ownership', async () => {
+test('shared Designer Mode owns reusable chrome and viewport state without Mail semantics', async () => {
 	const source = await readFile(new URL('../../assets/js/features/designer-launch.js', import.meta.url), 'utf8');
 	assert.doesNotThrow(() => new Function(source));
 	assert.match(source, /fullscreen\.click\(\)/);
 	assert.match(source, /cb:design-shell:fullscreenchange/);
-	assert.match(source, /\[data-cb-mail-viewport="tablet"\]/);
+	assert.match(source, /cb:design-shell:viewportchange/);
+	assert.match(source, /\[data-cb-design-shell-viewport\]/);
+	assert.match(source, /VIEWPORT_ORDER\s*=\s*Object\.freeze\(\['mobile', 'tablet', 'desktop'\]\)/);
+	assert.match(source, /shell\.dataset\.cbDesignShellViewport\s*=\s*value/);
 	assert.match(source, /cb-core-design-shell__toolbar--designer/);
 	assert.match(source, /shellApi\.icons\.decorate\(undo, 'undo-2'/);
 	assert.match(source, /shellApi\.icons\.decorate\(redo, 'redo-2'/);
 	assert.match(source, /shellApi\.configureSidebar\(shell/);
-	assert.match(source, /inspector:\s*'inspector'/);
-	assert.match(source, /layers:\s*'structure'/);
-	assert.match(source, /settings:\s*'email'/);
-	assert.match(source, /activeRole:\s*'inspector'/);
+	assert.match(source, /discoverSidebarRoles/);
+	assert.doesNotMatch(source, /data-cb-mail-/);
+	assert.doesNotMatch(source, /layers:\s*'structure'/);
+	assert.doesNotMatch(source, /settings:\s*'email'/);
 	assert.doesNotMatch(source, /const ICONS/);
 	assert.doesNotMatch(source, /createElementNS/);
-	assert.doesNotMatch(source, /setViewportState/);
 	assert.doesNotMatch(source, /createDesignerShell/);
 	assert.doesNotMatch(source, /requestFullscreen/);
 });
 
-test('mail designer template exposes one fullwidth shared shell with independent left and right tab sets', async () => {
+test('mail designer template exposes shared Designer capabilities and declarative sidebar roles', async () => {
 	const source = await readFile(new URL('../../templates/mail-designer.php', import.meta.url), 'utf8');
 	assert.match(source, /data-cb-mail-template-select/);
+	assert.match(source, /data-cb-design-launch-root/);
+	assert.match(source, /data-cb-design-launch-context/);
 	assert.match(source, /data-cb-design-shell/);
+	assert.match(source, /data-cb-design-shell-viewport="desktop"/);
+	assert.match(source, /data-cb-design-shell-viewport="tablet"/);
+	assert.match(source, /data-cb-design-shell-viewport="mobile"/);
+	assert.match(source, /data-cb-design-shell-primary-action/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="inspector"/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="layers"/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="settings"/);
 	assert.match(source, /cb-core-design-shell__workspace/);
 	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="elements"/);
 	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="dynamic-data"/);
