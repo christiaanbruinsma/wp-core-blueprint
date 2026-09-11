@@ -58,6 +58,8 @@ final class CB_Base_Automation_State_Capability_Contract_Test extends WP_UnitTes
 		self::assertTrue( $this->registration_results['state'] ?? false );
 		self::assertFalse( $this->registration_results['duplicate_state'] ?? true );
 		self::assertFalse( $this->registration_results['empty_output'] ?? true );
+		self::assertFalse( $this->registration_results['object_output'] ?? true );
+		self::assertFalse( $this->registration_results['invalid_resolver'] ?? true );
 		self::assertFalse( $this->registration_results['reserved_provider'] ?? true );
 		self::assertArrayHasKey( self::PROVIDER . '::invoice.current', $states );
 	}
@@ -76,40 +78,6 @@ final class CB_Base_Automation_State_Capability_Contract_Test extends WP_UnitTes
 
 	public function test_af2_public_state_registration_is_refused_outside_controlled_lifecycle(): void {
 		self::assertFalse( StateRegistry::register( $this->state_definition() ) );
-	}
-
-	public function test_af2_state_contract_rejects_mutation_shaped_or_unbounded_definitions(): void {
-		add_action(
-			'cb_core_register_automation_capabilities',
-			static function (): void {
-				self::assertFalse( StateRegistry::register( [
-					'provider'            => self::PROVIDER,
-					'id'                  => 'invoice.object',
-					'label'               => 'Object state',
-					'description'         => '',
-					'schema_version'      => '1',
-					'input_schema'        => [],
-					'output_schema'       => [ 'invoice' => [ 'type' => 'object' ] ],
-					'required_capability' => 'read',
-					'resolver'            => static fn (): array => [],
-				] ) );
-
-				self::assertFalse( StateRegistry::register( [
-					'provider'            => self::PROVIDER,
-					'id'                  => 'invoice.noresolver',
-					'label'               => 'Missing resolver',
-					'description'         => '',
-					'schema_version'      => '1',
-					'input_schema'        => [],
-					'output_schema'       => [ 'status' => [ 'type' => 'string' ] ],
-					'required_capability' => 'read',
-					'resolver'            => 'definitely_not_a_callable',
-				] ) );
-			},
-			20
-		);
-
-		StateRegistry::all();
 	}
 
 	public function test_af2_base_owned_state_uses_reserved_provider_path(): void {
@@ -159,6 +127,28 @@ final class CB_Base_Automation_State_Capability_Contract_Test extends WP_UnitTes
 			'output_schema'       => [],
 			'required_capability' => 'read',
 			'resolver'            => static fn (): array => [],
+		] );
+		$this->registration_results['object_output'] = StateRegistry::register( [
+			'provider'            => self::PROVIDER,
+			'id'                  => 'invoice.object',
+			'label'               => 'Object state',
+			'description'         => '',
+			'schema_version'      => '1',
+			'input_schema'        => [],
+			'output_schema'       => [ 'invoice' => [ 'type' => 'object' ] ],
+			'required_capability' => 'read',
+			'resolver'            => static fn (): array => [],
+		] );
+		$this->registration_results['invalid_resolver'] = StateRegistry::register( [
+			'provider'            => self::PROVIDER,
+			'id'                  => 'invoice.noresolver',
+			'label'               => 'Missing resolver',
+			'description'         => '',
+			'schema_version'      => '1',
+			'input_schema'        => [],
+			'output_schema'       => [ 'status' => [ 'type' => 'string' ] ],
+			'required_capability' => 'read',
+			'resolver'            => 'definitely_not_a_callable',
 		] );
 		$this->registration_results['reserved_provider'] = StateRegistry::register( [
 			'provider'            => 'core-blueprint',
