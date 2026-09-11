@@ -22,6 +22,7 @@ const focusableElements = (root) => elements(root, FOCUSABLE_SELECTOR).filter((c
 	if (candidate.disabled === true || candidate.hidden === true) return false;
 	if (candidate.getAttribute?.('aria-hidden') === 'true') return false;
 	if (candidate.closest?.('[hidden]')) return false;
+	if (typeof candidate.getClientRects === 'function' && candidate.getClientRects().length === 0) return false;
 	return typeof candidate.focus === 'function';
 });
 
@@ -59,7 +60,6 @@ export const createDesignerShell = (root, {
 	let fullscreenState = false;
 	let focusReturnTarget = null;
 	let temporaryRootTabIndex = null;
-	let controller = null;
 
 	const groupIdFor = (node) => normalizeGroupId(node?.dataset?.cbDesignShellGroup);
 	const group = (groupId = DEFAULT_GROUP) => {
@@ -268,7 +268,7 @@ export const createDesignerShell = (root, {
 	syncHistory();
 	syncFullscreenControl();
 
-	controller = Object.freeze({
+	return Object.freeze({
 		root,
 		activatePanel,
 		syncHistory,
@@ -286,5 +286,4 @@ export const createDesignerShell = (root, {
 			return group(groupId).panels.find((candidate) => candidate.dataset.cbDesignShellPanel === String(id || '')) ?? null;
 		},
 	});
-	return controller;
 };
