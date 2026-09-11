@@ -63,6 +63,7 @@ final class Bootstrap {
 		}
 		if ( RequestContext::is_ajax() ) {
 			DesignerAjax::boot();
+			TemplateActions::boot();
 		}
 		if ( RequestContext::is_admin_screen() ) {
 			add_action( 'admin_enqueue_scripts', [ DesignerAssets::class, 'enqueue' ], 20 );
