@@ -3,9 +3,9 @@ declare(strict_types=1);
 /**
  * Internal storage and collection lifecycle for Automation Foundation.
  *
- * Public consumers use TriggerRegistry and ActionRegistry. This class keeps one
- * collection pass so a provider can register triggers and actions from a single
- * callback without duplicate lifecycle dispatch.
+ * Public consumers use TriggerRegistry, ActionRegistry and StateRegistry. This
+ * class keeps one collection pass so a provider can register all automation
+ * capabilities from a single callback without duplicate lifecycle dispatch.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -28,6 +28,8 @@ final class CapabilityRegistry {
 	private static array $triggers = [];
 	/** @var array<string,array<string,mixed>> */
 	private static array $actions = [];
+	/** @var array<string,array<string,mixed>> */
+	private static array $states = [];
 	private static bool $collected = false;
 
 	/**
@@ -35,8 +37,8 @@ final class CapabilityRegistry {
 	 *
 	 * ExtensionRegistry is collected on `init` priority 5. Automation Foundation
 	 * must not pull that collection forward during plugin loading or an earlier
-	 * init callback. AF1 therefore becomes discoverable only after `init` has
-	 * finished, preserving the existing extension-registration contract exactly.
+	 * init callback. The Foundation therefore becomes discoverable only after
+	 * `init` has finished, preserving the existing extension-registration contract.
 	 */
 	public static function is_ready(): bool {
 		return self::$collected || ( did_action( 'init' ) > 0 && ! doing_action( 'init' ) );
@@ -107,6 +109,28 @@ final class CapabilityRegistry {
 		return true;
 	}
 
+	/** @param array<string,mixed> $definition */
+	public static function register_state( array $definition, bool $base_owned ): bool {
+		if ( ! $base_owned && ! doing_action( 'cb_core_register_automation_capabilities' ) ) {
+			self::diagnostic( 'State registration refused outside cb_core_register_automation_capabilities.' );
+			return false;
+		}
+
+		$normalized = self::normalize_state( $definition, $base_owned );
+		if ( null === $normalized ) {
+			return false;
+		}
+
+		$key = self::key( $normalized['provider'], $normalized['id'] );
+		if ( isset( self::$states[ $key ] ) ) {
+			self::diagnostic( sprintf( 'Duplicate automation state capability refused: %s.', $key ) );
+			return false;
+		}
+
+		self::$states[ $key ] = $normalized;
+		return true;
+	}
+
 	/** @return array<string,array<string,mixed>> */
 	public static function triggers(): array {
 		self::collect();
@@ -116,13 +140,13 @@ final class CapabilityRegistry {
 	/** @return array<string,array<string,mixed>> */
 	public static function actions(): array {
 		self::collect();
-		$out = [];
-		foreach ( self::$actions as $key => $definition ) {
-			$public = $definition;
-			unset( $public['executor'] );
-			$out[ $key ] = $public;
-		}
-		return $out;
+		return self::without_callback( self::$actions, 'executor' );
+	}
+
+	/** @return array<string,array<string,mixed>> */
+	public static function states(): array {
+		self::collect();
+		return self::without_callback( self::$states, 'resolver' );
 	}
 
 	/** @return array<string,mixed>|null */
@@ -136,29 +160,33 @@ final class CapabilityRegistry {
 	public static function action( string $provider, string $id ): ?array {
 		self::collect();
 		$key = self::key_if_valid( $provider, $id );
-		if ( null === $key || ! isset( self::$actions[ $key ] ) ) {
-			return null;
-		}
-		$public = self::$actions[ $key ];
-		unset( $public['executor'] );
-		return $public;
+		return self::public_definition( self::$actions, $key, 'executor' );
+	}
+
+	/** @return array<string,mixed>|null */
+	public static function state( string $provider, string $id ): ?array {
+		self::collect();
+		$key = self::key_if_valid( $provider, $id );
+		return self::public_definition( self::$states, $key, 'resolver' );
 	}
 
 	/** @internal Future orchestration runtime boundary; not public API in AF1. */
 	public static function executor( string $provider, string $id ): ?callable {
 		self::collect();
-		$key = self::key_if_valid( $provider, $id );
-		if ( null === $key || ! isset( self::$actions[ $key ]['executor'] ) ) {
-			return null;
-		}
-		$executor = self::$actions[ $key ]['executor'];
-		return is_callable( $executor ) ? $executor : null;
+		return self::callback( self::$actions, self::key_if_valid( $provider, $id ), 'executor' );
+	}
+
+	/** @internal Future orchestration runtime boundary; not public API in AF2. */
+	public static function state_resolver( string $provider, string $id ): ?callable {
+		self::collect();
+		return self::callback( self::$states, self::key_if_valid( $provider, $id ), 'resolver' );
 	}
 
 	/** @internal */
 	public static function reset_for_tests(): void {
 		self::$triggers = [];
 		self::$actions = [];
+		self::$states = [];
 		self::$collected = false;
 	}
 
@@ -193,17 +221,14 @@ final class CapabilityRegistry {
 			: null;
 		$output_raw = $definition['output_schema'] ?? [];
 		$output = is_array( $output_raw ) ? Schema::normalize( $output_raw ) : null;
-		$capability = isset( $definition['required_capability'] ) && is_string( $definition['required_capability'] )
-			? trim( $definition['required_capability'] )
-			: '';
+		$capability = self::normalize_required_capability( $definition );
 		$executor = $definition['executor'] ?? null;
 
 		if (
 			null === $common
 			|| null === $input
 			|| null === $output
-			|| '' === $capability
-			|| sanitize_key( $capability ) !== $capability
+			|| null === $capability
 			|| ! is_callable( $executor )
 		) {
 			return null;
@@ -214,6 +239,40 @@ final class CapabilityRegistry {
 			'output_schema'       => $output,
 			'required_capability' => $capability,
 			'executor'            => $executor,
+		];
+	}
+
+	/** @param array<string,mixed> $definition @return array<string,mixed>|null */
+	private static function normalize_state( array $definition, bool $base_owned ): ?array {
+		$allowed = [ 'provider', 'id', 'label', 'description', 'schema_version', 'input_schema', 'output_schema', 'required_capability', 'resolver' ];
+		if ( [] !== array_diff( array_keys( $definition ), $allowed ) ) {
+			return null;
+		}
+
+		$common = self::normalize_common( $definition, $base_owned );
+		$input_raw = $definition['input_schema'] ?? [];
+		$output_raw = $definition['output_schema'] ?? null;
+		$input = is_array( $input_raw ) ? Schema::normalize( $input_raw ) : null;
+		$output = is_array( $output_raw ) ? Schema::normalize( $output_raw ) : null;
+		$capability = self::normalize_required_capability( $definition );
+		$resolver = $definition['resolver'] ?? null;
+
+		if (
+			null === $common
+			|| null === $input
+			|| null === $output
+			|| [] === $output
+			|| null === $capability
+			|| ! is_callable( $resolver )
+		) {
+			return null;
+		}
+
+		return $common + [
+			'input_schema'        => $input,
+			'output_schema'       => $output,
+			'required_capability' => $capability,
+			'resolver'            => $resolver,
 		];
 	}
 
@@ -263,6 +322,14 @@ final class CapabilityRegistry {
 		];
 	}
 
+	/** @param array<string,mixed> $definition */
+	private static function normalize_required_capability( array $definition ): ?string {
+		$capability = isset( $definition['required_capability'] ) && is_string( $definition['required_capability'] )
+			? trim( $definition['required_capability'] )
+			: '';
+		return '' !== $capability && sanitize_key( $capability ) === $capability ? $capability : null;
+	}
+
 	private static function key( string $provider, string $id ): string {
 		return $provider . '::' . $id;
 	}
@@ -277,6 +344,42 @@ final class CapabilityRegistry {
 			return null;
 		}
 		return self::key( $provider, $id );
+	}
+
+	/**
+	 * @param array<string,array<string,mixed>> $definitions
+	 * @return array<string,array<string,mixed>>
+	 */
+	private static function without_callback( array $definitions, string $callback_key ): array {
+		$out = [];
+		foreach ( $definitions as $key => $definition ) {
+			$public = $definition;
+			unset( $public[ $callback_key ] );
+			$out[ $key ] = $public;
+		}
+		return $out;
+	}
+
+	/**
+	 * @param array<string,array<string,mixed>> $definitions
+	 * @return array<string,mixed>|null
+	 */
+	private static function public_definition( array $definitions, ?string $key, string $callback_key ): ?array {
+		if ( null === $key || ! isset( $definitions[ $key ] ) ) {
+			return null;
+		}
+		$public = $definitions[ $key ];
+		unset( $public[ $callback_key ] );
+		return $public;
+	}
+
+	/** @param array<string,array<string,mixed>> $definitions */
+	private static function callback( array $definitions, ?string $key, string $callback_key ): ?callable {
+		if ( null === $key || ! isset( $definitions[ $key ][ $callback_key ] ) ) {
+			return null;
+		}
+		$callback = $definitions[ $key ][ $callback_key ];
+		return is_callable( $callback ) ? $callback : null;
 	}
 
 	private static function diagnostic( string $message ): void {
