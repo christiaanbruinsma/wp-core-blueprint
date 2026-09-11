@@ -157,9 +157,15 @@ final class Page extends PageBase {
 			'cb-core-designer-launch',
 			'cbCoreDesignerLaunch',
 			[
-				'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),
-				'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),
-				'iconUrl'   => CoreBlueprintMark::data_uri(),
+				'label'         => __( 'Design with Core Blueprint', 'core-blueprint' ),
+				'ariaLabel'     => __( 'Open Designer Mode', 'core-blueprint' ),
+				'iconUrl'       => CoreBlueprintMark::data_uri(),
+				'sidebarLabels' => [
+					'inspector' => __( 'Inspector', 'core-blueprint' ),
+					// WordPress editor vocabulary intentionally uses the default text domain.
+					'layers'    => __( 'Layers', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
+					'settings'  => __( 'Settings', 'core-blueprint' ),
+				],
 			]
 		);
 	}
