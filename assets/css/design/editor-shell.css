@@ -21,6 +21,7 @@ html.cb-core-design-shell-focus-mode body {
 	display: flex;
 	flex-direction: column;
 	width: auto;
+	height: 100vh;
 	height: 100dvh;
 	min-height: 0;
 	padding: var(--cb-space-3);
