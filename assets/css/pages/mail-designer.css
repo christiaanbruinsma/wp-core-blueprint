@@ -208,6 +208,10 @@
 	transition: max-width .15s ease;
 }
 
+.cb-core-mail-designer__preview-frame.is-tablet iframe {
+	max-width: 782px;
+}
+
 .cb-core-mail-designer__preview-frame.is-mobile iframe {
 	max-width: 430px;
 }
