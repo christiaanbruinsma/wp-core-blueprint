@@ -64,6 +64,14 @@ test('public editor delegates validation to profile APIs and exposes Mail withou
 	assert.doesNotMatch(source, /profile\.id\s*===\s*['"]document-(?:fixed|flow)['"]/);
 });
 
+test('shared Designer Shell supports independent named tab groups', async () => {
+	const source = await readFile(new URL('../../assets/js/design/shell/index.js', import.meta.url), 'utf8');
+	assert.match(source, /data\.cbDesignShellGroup/);
+	assert.match(source, /activePanelFor\(groupId\)/);
+	assert.match(source, /defaultPanels/);
+	assert.match(source, /group:\s*state\.id/);
+});
+
 test('mail designer uses the canonical live preview as its editable canvas', async () => {
 	const source = await readFile(new URL('../../assets/js/features/mail-designer.js', import.meta.url), 'utf8');
 	assert.match(source, /\[data-cb-mail-editor-node\]/);
@@ -83,14 +91,19 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
-test('mail designer template exposes one fullwidth shared shell with contextual template selection', async () => {
+test('mail designer template exposes one fullwidth shared shell with independent left and right tab sets', async () => {
 	const source = await readFile(new URL('../../templates/mail-designer.php', import.meta.url), 'utf8');
 	assert.match(source, /data-cb-mail-template-select/);
 	assert.match(source, /data-cb-design-shell/);
 	assert.match(source, /cb-core-design-shell__workspace/);
+	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="elements"/);
+	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="dynamic-data"/);
+	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-panel="elements"/);
+	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-panel="dynamic-data"/);
 	assert.match(source, /data-cb-design-shell-tab="email"/);
 	assert.match(source, /data-cb-design-shell-tab="structure"/);
 	assert.match(source, /data-cb-design-shell-tab="inspector"/);
+	assert.match(source, /cb-core-design-shell__tab/);
 	assert.match(source, /data-cb-mail-preview-frame/);
 	assert.match(source, /sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"/);
 	assert.doesNotMatch(source, /cb-core-mail-designer__templates/);
