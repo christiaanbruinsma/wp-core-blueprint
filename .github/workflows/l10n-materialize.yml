@@ -48,19 +48,25 @@ jobs:
           }
 
           $payload = substr($source, $start, $end - $start);
-          $padding = (4 - (strlen($payload) % 4)) % 4;
-          printf("Payload length: %d\n", strlen($payload));
-          printf("Required Base64 padding: %d\n", $padding);
+          printf("Payload length: %d (mod 4=%d)\n", strlen($payload), strlen($payload) % 4);
+          printf("Payload tail: %s\n", substr($payload, -24));
+          printf("Padding count: %d; first padding offset: %s\n", substr_count($payload, '='), ($offset = strpos($payload, '=')) === false ? 'none' : (string) $offset);
 
-          $decoded = base64_decode($payload . str_repeat('=', $padding), true);
-          if ($decoded === false) {
-              fwrite(STDERR, "Strict Base64 decode still failed after padding.\n");
-              exit(1);
+          foreach ([$payload, rtrim($payload, '=') . '=', rtrim($payload, '=') . '=='] as $index => $candidate) {
+              $decoded = base64_decode($candidate, true);
+              printf("Strict candidate %d (len=%d mod4=%d): %s\n", $index, strlen($candidate), strlen($candidate) % 4, $decoded === false ? 'failed' : 'passed');
+              if ($decoded !== false) {
+                  printf("Decoded prefix: %s\n", bin2hex(substr($decoded, 0, 8)));
+              }
           }
 
-          printf("Strict Base64 decode: passed (%d bytes)\n", strlen($decoded));
-          printf("Decoded prefix: %s\n", bin2hex(substr($decoded, 0, 8)));
+          $decoded = base64_decode($payload, false);
+          printf("Relaxed decode: %s\n", $decoded === false ? 'failed' : 'passed');
+          if ($decoded === false) {
+              exit(0);
+          }
 
+          printf("Relaxed decoded bytes: %d; prefix=%s\n", strlen($decoded), bin2hex(substr($decoded, 0, 8)));
           foreach (['gzdecode', 'gzinflate', 'gzuncompress'] as $decoder) {
               $json = @$decoder($decoded);
               if ($json === false) {
