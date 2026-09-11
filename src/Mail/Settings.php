@@ -85,13 +85,35 @@ final class Settings {
 	}
 
 	public static function save( array $settings ): bool {
+		$previous_config = get_option( self::OPTION, null );
+		$previous_state  = get_option( self::ENABLED_OPTION, null );
+
 		$settings = array_merge( self::defaults(), $settings );
 		$settings['delivery_enabled'] = ! empty( $settings['delivery_enabled'] );
 		$settings['designer_enabled'] = ! empty( $settings['designer_enabled'] );
 		$settings['enabled'] = $settings['delivery_enabled'] || $settings['designer_enabled'];
+		$expected_state = $settings['enabled'] ? '1' : '0';
 
 		$config_changed = update_option( self::OPTION, $settings, false );
-		$state_changed  = update_option( self::ENABLED_OPTION, $settings['enabled'] ? '1' : '0', true );
+		$state_changed  = update_option( self::ENABLED_OPTION, $expected_state, true );
+
+		$persisted_config = get_option( self::OPTION, null );
+		$persisted_state  = get_option( self::ENABLED_OPTION, null );
+		if ( $settings !== $persisted_config || $expected_state !== (string) $persisted_state ) {
+			if ( null === $previous_config ) {
+				delete_option( self::OPTION );
+			} else {
+				update_option( self::OPTION, $previous_config, false );
+			}
+
+			if ( null === $previous_state ) {
+				delete_option( self::ENABLED_OPTION );
+			} else {
+				update_option( self::ENABLED_OPTION, $previous_state, true );
+			}
+			return false;
+		}
+
 		return $config_changed || $state_changed;
 	}
 

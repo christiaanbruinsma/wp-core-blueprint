@@ -21,7 +21,7 @@ final class WordPressTemplates {
 			__( 'Password reset email sent to a user.', 'core-blueprint' ),
 			__( 'Reset your password for {{site.name}}', 'core-blueprint' ),
 			__( 'Reset your password', 'core-blueprint' ),
-			__( 'Hi {{user.display_name}},\n\nWe received a request to reset the password for your account. If this was you, use the button below. If not, you can ignore this email.', 'core-blueprint' ),
+			__( "Hi {{user.display_name}},\n\nWe received a request to reset the password for your account. If this was you, use the button below. If not, you can ignore this email.", 'core-blueprint' ),
 			__( 'Reset password', 'core-blueprint' ),
 			'{{action.url}}'
 		);
@@ -32,7 +32,7 @@ final class WordPressTemplates {
 			__( 'Welcome email sent to a newly created WordPress user.', 'core-blueprint' ),
 			__( 'Your account at {{site.name}}', 'core-blueprint' ),
 			__( 'Welcome to {{site.name}}', 'core-blueprint' ),
-			__( 'Hi {{user.display_name}},\n\nAn account has been created for you. Your username is {{user.login}}. Use the button below to set your password and sign in.', 'core-blueprint' ),
+			__( "Hi {{user.display_name}},\n\nAn account has been created for you. Your username is {{user.login}}. Use the button below to set your password and sign in.", 'core-blueprint' ),
 			__( 'Set your password', 'core-blueprint' ),
 			'{{action.url}}'
 		);
@@ -43,7 +43,7 @@ final class WordPressTemplates {
 			__( 'Notification sent to the site administrator when a user is created.', 'core-blueprint' ),
 			__( 'New user registration on {{site.name}}', 'core-blueprint' ),
 			__( 'New user registration', 'core-blueprint' ),
-			__( 'A new user has been registered on {{site.name}}.\n\nUsername: {{user.login}}\nEmail: {{user.email}}', 'core-blueprint' )
+			__( "A new user has been registered on {{site.name}}.\n\nUsername: {{user.login}}\nEmail: {{user.email}}", 'core-blueprint' )
 		);
 
 		self::add(
@@ -52,7 +52,7 @@ final class WordPressTemplates {
 			__( 'Security notification sent when a user password changes.', 'core-blueprint' ),
 			__( 'Your password was changed on {{site.name}}', 'core-blueprint' ),
 			__( 'Your password was changed', 'core-blueprint' ),
-			__( 'Hi {{user.display_name}},\n\nThe password for your account {{user.login}} was changed. If you did not make this change, contact the site administrator at {{site.admin_email}}.', 'core-blueprint' )
+			__( "Hi {{user.display_name}},\n\nThe password for your account {{user.login}} was changed. If you did not make this change, contact the site administrator at {{site.admin_email}}.", 'core-blueprint' )
 		);
 
 		self::add(
@@ -61,7 +61,7 @@ final class WordPressTemplates {
 			__( 'Security notification sent to the previous address after an email change.', 'core-blueprint' ),
 			__( 'Your email address was changed on {{site.name}}', 'core-blueprint' ),
 			__( 'Your email address was changed', 'core-blueprint' ),
-			__( 'Hi {{user.display_name}},\n\nThe email address for your account {{user.login}} was changed. If you did not make this change, contact the site administrator at {{site.admin_email}}.', 'core-blueprint' )
+			__( "Hi {{user.display_name}},\n\nThe email address for your account {{user.login}} was changed. If you did not make this change, contact the site administrator at {{site.admin_email}}.", 'core-blueprint' )
 		);
 
 		self::add(

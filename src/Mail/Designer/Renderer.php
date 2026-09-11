@@ -49,7 +49,7 @@ final class Renderer {
 		$subject = null !== $subject ? sanitize_text_field( $subject ) : (string) $template['subject'];
 		try {
 			$bindings = BindingRegistry::preview_values();
-			$html = ( new HtmlRenderer() )->render( $project, $bindings );
+			$html = ( new HtmlRenderer() )->render( $project, $bindings, [ 'editor_markers' => true ] );
 			return [ 'subject' => self::interpolate( $subject, $bindings ), 'html' => $html ];
 		} catch ( \Throwable $exception ) {
 			return null;
