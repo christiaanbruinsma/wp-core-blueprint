@@ -64,6 +64,16 @@ run_mail_designer_option_stage() {
   if ! output="$(WP_CORE_DIR="$WP_CORE_DIR" php -r '
 $stage = isset($argv[1]) ? (string) $argv[1] : "";
 $wp_core_dir = rtrim((string) getenv("WP_CORE_DIR"), "/\\");
+$_SERVER["HTTP_HOST"] = "cb-a3-uninstall.local";
+$_SERVER["SERVER_NAME"] = "cb-a3-uninstall.local";
+$_SERVER["REQUEST_URI"] = "/";
+$_SERVER["REQUEST_METHOD"] = "GET";
+$_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
+$_SERVER["REMOTE_ADDR"] = "127.0.0.1";
+$_SERVER["SERVER_PORT"] = "80";
+$_SERVER["SCRIPT_NAME"] = "/index.php";
+$_SERVER["PHP_SELF"] = "/index.php";
+$_SERVER["SCRIPT_FILENAME"] = $wp_core_dir . "/index.php";
 require $wp_core_dir . "/wp-load.php";
 $key = "cb_core_mail_template_overrides";
 
