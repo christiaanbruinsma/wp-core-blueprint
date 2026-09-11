@@ -189,9 +189,35 @@ type
 required
 sensitive
 items
+semantic_type
 ```
 
 `items` is required only for `array` fields and may be `string`, `integer`, `number` or `boolean`.
+
+`semantic_type` is optional interoperability metadata. It gives a scalar or flat-list value a stable domain meaning without changing the primitive transport type or runtime payload representation. Use it when primitive type alone is too broad to describe safe binding compatibility.
+
+Semantic types use stable dotted identifiers such as:
+
+```text
+wp.user_id
+acme-reservations.reservation_id
+core-blueprint.source_title
+```
+
+The first segment identifies the owning/shared namespace; subsequent segments describe the semantic value. Provider-specific semantics should use the provider's stable namespace. Shared cross-plugin semantics may use a shared namespace only when the meaning is intentionally reusable across providers.
+
+A semantic type is part of the interoperability contract, not a PHP/runtime type. A field declared as:
+
+```php
+[
+    'type'          => 'integer',
+    'semantic_type' => 'wp.user_id',
+]
+```
+
+still carries a normal integer at runtime. `semantic_type` is used by automation consumers for discovery and binding compatibility; `Schema::validate()` continues to validate the primitive transport value.
+
+Legacy field schemas without `semantic_type` remain valid. Adding a semantic type narrows the intended binding meaning of that field, so providers should treat semantic identity changes with the same care as other contract changes and update `schema_version` when compatibility would be affected.
 
 Nested objects, `WP_User`, `WP_Post`, arbitrary domain objects, resources and nested arrays are rejected. Prefer stable IDs and necessary immutable facts over copied domain records.
 
