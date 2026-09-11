@@ -13,6 +13,18 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringNotContainsString( 'requestFullscreen', $launch );
 	}
 
+	public function test_designer_launch_retries_until_shared_editor_module_is_available(): void {
+		$root = dirname( __DIR__, 2 );
+		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
+
+		self::assertStringContainsString( 'const BOOT_RETRY_DELAY_MS = 50;', $launch );
+		self::assertStringContainsString( 'const BOOT_RETRY_LIMIT = 200;', $launch );
+		self::assertStringContainsString( "window.addEventListener('cb:design-editor:ready', attemptBoot)", $launch );
+		self::assertStringContainsString( 'retryTimer = window.setTimeout(() => {', $launch );
+		self::assertStringContainsString( 'if (boot()) {', $launch );
+		self::assertStringContainsString( "window.removeEventListener('cb:design-editor:ready', attemptBoot)", $launch );
+	}
+
 	public function test_designer_header_preserves_existing_controls_and_adds_tablet_viewport(): void {
 		$root = dirname( __DIR__, 2 );
 		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
