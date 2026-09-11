@@ -4,9 +4,9 @@ declare(strict_types=1);
  * Public Automation Foundation state-capability registration and discovery.
  *
  * State capabilities describe provider-owned, read-only live-state queries.
- * Resolvers are intentionally withheld from public discovery. AF2 defines the
- * interoperability contract only; invocation authority belongs to the future
- * orchestration runtime and the provider remains the final domain boundary.
+ * Resolvers are intentionally withheld from public discovery. Governed
+ * resolution is available only through StateInvoker; direct callback access
+ * remains an internal Foundation implementation detail.
  *
  * @package Core_Blueprint
  * @since   1.0.0

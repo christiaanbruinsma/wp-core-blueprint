@@ -9,9 +9,9 @@ Automation Foundation is intentionally not a workflow engine.
 - Domain plugins own business semantics and decide when a trigger is true.
 - Domain plugins own action implementations and their mutation rules.
 - Domain plugins own read-only live-state resolution for their own records and services.
-- Base owns registration, validation, provider identity, discovery and the thin trigger-delivery boundary.
+- Base owns registration, validation, provider identity, discovery, the thin trigger-delivery boundary and governed state/action invocation.
 - Core Blueprint Automations, when installed, owns workflows, conditions/operators, persistence, scheduling, retries, concurrency and run history.
-- Base does not persist emitted automation events and does not guarantee retry delivery.
+- Base does not persist emitted automation events or invocation runs and does not guarantee retry delivery.
 
 The architectural rule is:
 
@@ -46,6 +46,7 @@ Attach one callback during plugin loading. Automation Foundation invokes it once
 
 ```php
 use CB\Core\Automation\ActionRegistry;
+use CB\Core\Automation\InvocationContext;
 use CB\Core\Automation\StateRegistry;
 use CB\Core\Automation\TriggerRegistry;
 
@@ -86,9 +87,9 @@ add_action( 'cb_core_register_automation_capabilities', static function (): void
         ],
         'output_schema'       => [],
         'required_capability' => 'edit_posts',
-        'executor'            => static function ( array $input ): array {
+        'executor'            => static function ( array $input, InvocationContext $context ): array {
             // Call the plugin's own public/domain service here.
-            // Do not bypass its authorization or persistence rules.
+            // Do not bypass its domain authorization or persistence rules.
             return [];
         },
     ] );
@@ -116,7 +117,7 @@ add_action( 'cb_core_register_automation_capabilities', static function (): void
             ],
         ],
         'required_capability' => 'read',
-        'resolver'            => static function ( array $input ): array {
+        'resolver'            => static function ( array $input, InvocationContext $context ): array {
             // Query the plugin's own read model/service. Do not mutate state.
             return [
                 'status'         => 'confirmed',
@@ -126,6 +127,8 @@ add_action( 'cb_core_register_automation_capabilities', static function (): void
     ] );
 } );
 ```
+
+The second `InvocationContext` callback argument is optional for existing provider callbacks. Userland callbacks that declare only the original input argument remain valid; context-aware providers may declare the second argument when they need correlation or execution metadata.
 
 Malformed, duplicate and unknown-provider definitions fail closed instead of overwriting an existing capability.
 
@@ -170,7 +173,7 @@ Every trigger, action and state capability declares a positive integer schema ve
 
 Increase it when the transport contract changes incompatibly. A label or description change alone does not require a schema-version change.
 
-Automation consumers must persist the expected schema version with the capability reference and must not silently reinterpret a workflow configured for an incompatible contract version.
+Automation consumers must persist the expected schema version with the capability reference and must not silently reinterpret a workflow configured for an incompatible contract version. `ActionInvoker` and `StateInvoker` compare that expected version with the currently registered contract before entering provider code.
 
 ## Transport schemas
 
@@ -305,13 +308,32 @@ Action:   mail.send_reminder
 
 The provider owns `invoice.current`. The Automations product owns operators such as equals, contains, greater-than and branching logic.
 
+## Governed invocation context
+
+State and action invocation require an explicit immutable `CB\Core\Automation\InvocationContext`. The launch contract carries:
+
+```text
+principal_user_id()
+source()
+correlation_id()
+run_id()
+step_id()
+attempt()
+workflow_id()        // optional
+workflow_revision()  // optional
+```
+
+`principal_user_id` is the WordPress user whose authority the orchestration consumer is deliberately using for this execution. Base does **not** use `current_user_can()` as the authority boundary, because background execution may run without an ambient logged-in user. Each invocation re-checks the explicit principal with WordPress `user_can()`.
+
+Invocation fails closed when the principal is missing, no longer exists, or no longer has the capability declared by the provider. Persisting or selecting the principal is an orchestration concern; Base does not create service accounts or delegated identities in this contract.
+
+`source`, workflow and correlation values are execution metadata, not proof of authority. Providers must not treat a caller-supplied source string as a security credential.
+
 ## State capability boundary
 
 State resolvers are **read-only domain queries**. They must not create records, update status, send mail or perform other mutations.
 
-AF2 registers and retains the provider-owned resolver but deliberately does **not** expose a public resolution method on `StateRegistry`.
-
-Public discovery exposes only:
+Public discovery continues to expose only:
 
 ```text
 provider
@@ -324,20 +346,81 @@ output_schema
 required_capability
 ```
 
-The resolver remains internal until the orchestration runtime establishes and tests:
+The resolver itself remains private. Official orchestration consumers resolve state only through `CB\Core\Automation\StateInvoker`:
 
-- execution principal/delegation semantics;
-- capability enforcement;
-- input and output validation at invocation time;
-- privacy-safe handling of sensitive values;
-- failure behavior and bounded resource use;
-- audit/correlation semantics.
+```php
+use CB\Core\Automation\InvocationContext;
+use CB\Core\Automation\StateInvoker;
+
+$context = new InvocationContext(
+    $principal_user_id,
+    'automations',
+    $correlation_id,
+    $run_id,
+    $step_id,
+    $attempt,
+    $workflow_id,
+    $workflow_revision
+);
+
+$result = StateInvoker::resolve(
+    'acme-reservations',
+    'reservation.current',
+    '1',
+    [ 'reservation_id' => 481 ],
+    $context
+);
+```
+
+Before the resolver runs, Base verifies the registered schema version, explicit principal, required capability and input schema. After it runs, Base validates the output schema. Provider `WP_Error` results and thrown `Throwable` failures are normalized to a safe machine-readable failure without exposing provider/exception details.
 
 External code must not use reflection or internal Foundation classes to obtain a resolver.
 
-## Early emission and discovery
+## Action execution boundary
 
-The Foundation intentionally refuses trigger emission before the WordPress `init` lifecycle has completed. It returns:
+The executor itself remains private. Official orchestration consumers invoke actions only through `CB\Core\Automation\ActionInvoker`:
+
+```php
+use CB\Core\Automation\ActionInvoker;
+
+$result = ActionInvoker::invoke(
+    'acme-reservations',
+    'reservation.add_note',
+    '1',
+    [
+        'reservation_id' => 481,
+        'note'           => 'Follow up next week.',
+    ],
+    $context
+);
+```
+
+Before the executor runs, Base verifies the registered schema version, explicit principal, required capability and input schema. After it runs, Base validates the output schema. Provider `WP_Error` results and thrown `Throwable` failures are normalized; exception messages and provider error data are not returned across the normal invocation boundary.
+
+Base does not retry, queue, schedule, deduplicate or persist the action. Those concerns remain with the orchestration runtime and provider/domain design. External code must not use reflection or internal Foundation classes to obtain an executor.
+
+### Invocation errors
+
+Governed invocation failures use stable `WP_Error` codes so orchestration consumers can persist machine-readable outcomes:
+
+```text
+cb_core_automation_not_ready
+cb_core_automation_unknown_action
+cb_core_automation_unknown_state
+cb_core_automation_schema_mismatch
+cb_core_automation_principal_missing
+cb_core_automation_principal_invalid
+cb_core_automation_permission_denied
+cb_core_automation_invalid_input
+cb_core_automation_execution_failed
+cb_core_automation_invalid_output
+```
+
+When a provider deliberately returns `WP_Error`, Base returns `cb_core_automation_execution_failed` with only the sanitized provider error code in `provider_error_code`. Provider messages/data and thrown exception details are not propagated.
+
+## Early emission, discovery and invocation
+
+The Foundation intentionally refuses trigger emission and governed invocation before the WordPress `init` lifecycle has completed. It returns:
 
 ```text
 cb_core_automation_not_ready
@@ -365,29 +448,13 @@ $action  = ActionRegistry::get( 'acme-reservations', 'reservation.add_note' );
 $state   = StateRegistry::get( 'acme-reservations', 'reservation.current' );
 ```
 
-Public action discovery excludes the executor. Public state discovery excludes the resolver. Discovery is metadata, not execution authority.
-
-## Action execution boundary
-
-The Foundation accepts and retains an action executor so the capability has an owner-controlled implementation, but it does **not** expose a public action-invocation API yet.
-
-That omission is deliberate. The Automations runtime must first establish and test:
-
-- configuration authority;
-- execution authority;
-- execution principal semantics;
-- input and output validation at invocation time;
-- idempotency and correlation identifiers;
-- audit and privacy behavior;
-- failure and retry semantics.
-
-External code must not use reflection or internal Foundation classes to obtain an executor. Until the orchestration execution contract is finalized, actions are registration/discovery capabilities only.
+Public action discovery excludes the executor. Public state discovery excludes the resolver. Discovery is metadata, not execution authority. `ActionInvoker` and `StateInvoker` are the governed execution boundaries.
 
 ## No hard dependency on Core Blueprint Automations
 
 A plugin may implement Automation Foundation support with only Core Blueprint Base installed. If the optional Automations plugin is absent, trigger/action/state registration remains harmless and ordinary plugin behavior must continue normally.
 
-Do not require, import or call classes from `wp-core-blueprint-automations` merely to expose capabilities.
+Do not require, import or call classes from `wp-core-blueprint-automations` merely to expose capabilities. The invocation context is a Base value object and does not depend on an Automations class.
 
 ## Non-goals of Base
 
@@ -402,7 +469,7 @@ Automation Foundation does not provide:
 - branching or loops;
 - concurrency control;
 - run history;
-- public action execution or state resolution;
+- direct public access to provider executors/resolvers;
 - webhooks or external connectors.
 
 Those concerns belong to the optional orchestration product, not to Base.
