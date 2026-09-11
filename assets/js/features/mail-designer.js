@@ -7,7 +7,8 @@ if (root) {
 	const projectField = root.querySelector('[data-cb-mail-project]');
 	const componentField = root.querySelector('[data-cb-mail-components]');
 	const subjectField = root.querySelector('[data-cb-mail-subject]');
-	const canvas = root.querySelector('[data-cb-mail-canvas]');
+	const emailInspector = root.querySelector('[data-cb-mail-email-inspector]');
+	const structure = root.querySelector('[data-cb-mail-structure]');
 	const inspector = root.querySelector('[data-cb-mail-inspector]');
 	const preview = root.querySelector('[data-cb-mail-preview]');
 	const previewFrame = root.querySelector('[data-cb-mail-preview-frame]');
@@ -30,13 +31,17 @@ if (root) {
 	const components = parseJson(componentField, {});
 	const componentDefinitions = Object.values(components).filter((item) => item && typeof item === 'object');
 
-	if (!form || !projectField || !subjectField || !canvas || !inspector || !preview || !project) {
+	if (!form || !projectField || !subjectField || !emailInspector || !structure || !inspector || !preview || !project) {
 		throw new Error('Mail Designer could not initialize because its editor payload is incomplete.');
 	}
 
 	let previewTimer = 0;
 	let previewController = null;
 	let dragPath = null;
+
+	const pathKey = (path) => JSON.stringify(Array.isArray(path) ? path : []);
+	const samePath = (left, right) => pathKey(left) === pathKey(right);
+	const parentPath = (path) => Array.isArray(path) ? path.slice(0, -1) : [];
 
 	const definitionForNode = (node) => componentDefinitions.find(
 		(definition) => definition.node_type === node?.type && definition.provider === node?.provider
@@ -78,6 +83,88 @@ if (root) {
 		if (!previewStatus) return;
 		previewStatus.textContent = message;
 		previewStatus.classList.toggle('is-error', Boolean(isError));
+	};
+
+	const activateSidePanel = (panelId) => {
+		root.querySelectorAll('[data-cb-mail-side-tab]').forEach((button) => {
+			const active = button.dataset.cbMailSideTab === panelId;
+			button.classList.toggle('is-active', active);
+			button.setAttribute('aria-selected', active ? 'true' : 'false');
+		});
+		root.querySelectorAll('[data-cb-mail-side-panel]').forEach((panel) => {
+			panel.hidden = panel.dataset.cbMailSidePanel !== panelId;
+		});
+	};
+
+	const markerPath = (marker) => {
+		try {
+			const path = JSON.parse(marker?.dataset?.cbMailPath || 'null');
+			return Array.isArray(path) && path.every((index) => Number.isInteger(index) && index >= 0) ? path : null;
+		} catch (error) {
+			return null;
+		}
+	};
+
+	const syncPreviewHeight = () => {
+		const doc = preview.contentDocument;
+		if (!doc?.documentElement) return;
+		const height = Math.min(1600, Math.max(680, doc.documentElement.scrollHeight + 2));
+		preview.style.height = `${height}px`;
+	};
+
+	const syncPreviewSelection = () => {
+		const doc = preview.contentDocument;
+		if (!doc) return;
+		const selected = session.editorState.selection.primary();
+		doc.querySelectorAll('[data-cb-mail-editor-node]').forEach((marker) => {
+			const path = markerPath(marker);
+			if (selected && path && samePath(path, selected)) marker.dataset.cbMailSelected = 'true';
+			else delete marker.dataset.cbMailSelected;
+		});
+	};
+
+	const renderSelectionViews = ({ openInspector = false } = {}) => {
+		renderStructure();
+		renderInspector();
+		syncPreviewSelection();
+		if (openInspector) activateSidePanel('inspector');
+	};
+
+	const selectPath = (path, { openInspector = true } = {}) => {
+		if (!Array.isArray(path) || !nodeAt(session.project(), path)) return false;
+		session.editorState.selection.select(path);
+		renderSelectionViews({ openInspector });
+		return true;
+	};
+
+	const bindPreviewInteractions = () => {
+		const doc = preview.contentDocument;
+		if (!doc) return;
+
+		doc.addEventListener('click', (event) => {
+			const target = event.target instanceof Element ? event.target : null;
+			const marker = target?.closest('[data-cb-mail-editor-node]');
+			if (!marker) return;
+			const path = markerPath(marker);
+			if (!path) return;
+			event.preventDefault();
+			event.stopPropagation();
+			selectPath(path);
+		}, true);
+
+		doc.addEventListener('pointermove', (event) => {
+			const target = event.target instanceof Element ? event.target : null;
+			const marker = target?.closest('[data-cb-mail-editor-node]');
+			doc.querySelectorAll('[data-cb-mail-hovered]').forEach((node) => { delete node.dataset.cbMailHovered; });
+			if (marker) marker.dataset.cbMailHovered = 'true';
+		}, { passive: true });
+
+		doc.addEventListener('pointerleave', () => {
+			doc.querySelectorAll('[data-cb-mail-hovered]').forEach((node) => { delete node.dataset.cbMailHovered; });
+	});
+
+		syncPreviewSelection();
+		syncPreviewHeight();
 	};
 
 	const refreshPreview = async () => {
@@ -167,11 +254,38 @@ if (root) {
 		return wrapper;
 	};
 
-	const renderRootInspector = () => {
-		inspector.replaceChildren();
+	const createRootField = (field) => {
+		const wrapper = document.createElement('div');
+		wrapper.className = 'cb-core-field cb-core-mail-inspector-field';
+		const id = `cb-mail-root-${field.key}`;
+		const label = document.createElement('label');
+		label.className = 'cb-core-field__label';
+		label.htmlFor = id;
+		label.textContent = field.label;
+		const input = document.createElement('input');
+		input.id = id;
+		input.type = field.type;
+		input.value = field.value;
+		if (field.type === 'number') {
+			input.min = String(field.min);
+			input.max = String(field.max);
+			input.step = String(field.step);
+		}
+		input.addEventListener('change', () => {
+			session.execute(commands.setProperty([], field.propertyPath, fieldValue(input, field.type)));
+		});
+		wrapper.append(label, input);
+		return wrapper;
+	};
+
+	const renderEmailInspector = () => {
+		emailInspector.replaceChildren();
 		const heading = document.createElement('h3');
 		heading.textContent = 'Email style';
-		inspector.append(heading);
+		const description = document.createElement('p');
+		description.className = 'description';
+		description.textContent = 'Global presentation settings for this mail template.';
+		emailInspector.append(heading, description);
 
 		const rootProperties = session.project()?.root?.properties || {};
 		const layout = rootProperties.layout || {};
@@ -183,147 +297,165 @@ if (root) {
 			{ key: 'textColor', label: 'Default text color', type: 'color', propertyPath: ['layout', 'textColor'], value: layout.textColor || '#1f2937' },
 			{ key: 'accentColor', label: 'Accent color', type: 'color', propertyPath: ['layout', 'accentColor'], value: layout.accentColor || '#2563eb' },
 		];
-
-		fields.forEach((field) => {
-			const wrapper = document.createElement('div');
-			wrapper.className = 'cb-core-field cb-core-mail-inspector-field';
-			const id = `cb-mail-root-${field.key}`;
-			const label = document.createElement('label');
-			label.className = 'cb-core-field__label';
-			label.htmlFor = id;
-			label.textContent = field.label;
-			const input = document.createElement('input');
-			input.id = id;
-			input.type = field.type;
-			input.value = field.value;
-			if (field.type === 'number') {
-				input.min = String(field.min);
-				input.max = String(field.max);
-				input.step = String(field.step);
-			}
-			input.addEventListener('change', () => {
-				const value = fieldValue(input, field.type);
-				session.execute(commands.setProperty([], field.propertyPath, value));
-			});
-			wrapper.append(label, input);
-			inspector.append(wrapper);
-		});
+		fields.forEach((field) => emailInspector.append(createRootField(field)));
 	};
 
 	const renderInspector = () => {
+		inspector.replaceChildren();
 		const selectedPath = session.editorState.selection.primary();
 		if (!selectedPath) {
-			renderRootInspector();
+			const heading = document.createElement('h3');
+			heading.textContent = 'Element inspector';
+			const description = document.createElement('p');
+			description.className = 'description';
+			description.textContent = 'Select an element on the canvas or in Structure to edit it.';
+			inspector.append(heading, description);
 			return;
 		}
+
 		const node = nodeAt(session.project(), selectedPath);
+		if (!node) return;
 		const definition = definitionForNode(node);
-		if (!node || !definition) {
-			renderRootInspector();
-			return;
+		const heading = document.createElement('h3');
+		heading.textContent = definition?.label || node.type || 'Selected element';
+		inspector.append(heading);
+
+		if (definition && Array.isArray(definition.inspector) && definition.inspector.length) {
+			definition.inspector.forEach((field) => {
+				inspector.append(createInspectorField(field, node.properties?.[field.key], selectedPath));
+			});
+		} else {
+			const description = document.createElement('p');
+			description.className = 'description';
+			description.textContent = 'This element does not expose editable properties.';
+			inspector.append(description);
 		}
 
-		inspector.replaceChildren();
-		const heading = document.createElement('h3');
-		heading.textContent = definition.label || node.type;
-		inspector.append(heading);
-		(definition.inspector || []).forEach((field) => {
-			inspector.append(createInspectorField(field, node.properties?.[field.key], selectedPath));
-		});
-
-		const remove = document.createElement('button');
-		remove.type = 'button';
-		remove.className = 'button cb-core-button cb-core-mail-inspector-remove';
-		remove.textContent = 'Remove element';
-		remove.addEventListener('click', () => session.execute(commands.removeNode(selectedPath)));
-		inspector.append(remove);
+		if (node.type !== 'mail.section') {
+			const remove = document.createElement('button');
+			remove.type = 'button';
+			remove.className = 'button cb-core-button cb-core-mail-inspector-remove';
+			remove.textContent = 'Remove element';
+			remove.addEventListener('click', () => {
+				session.execute(commands.removeNode(selectedPath));
+				session.editorState.selection.clear();
+				renderSelectionViews();
+			});
+			inspector.append(remove);
+		}
 	};
 
 	const nodeSummary = (node, definition) => {
 		const properties = node?.properties || {};
 		const source = properties.text || properties.label || properties.alt || properties.url || '';
 		const text = String(source).replace(/\s+/g, ' ').trim();
-		return text ? text.slice(0, 90) : (definition?.label || node?.type || 'Element');
+		return text ? text.slice(0, 70) : (definition?.label || node?.type || 'Element');
 	};
 
-	const renderCanvas = () => {
-		canvas.replaceChildren();
-		const section = primarySection();
-		if (!section) {
-			const empty = document.createElement('p');
-			empty.textContent = 'This template does not contain an editable mail section.';
-			canvas.append(empty);
-			return;
+	const moveNode = (path, toIndex) => {
+		if (!Array.isArray(path) || !path.length) return false;
+		const parent = parentPath(path);
+		const fromIndex = path.at(-1);
+		if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex) || fromIndex === toIndex) return false;
+		session.execute(commands.reorderNode(parent, fromIndex, toIndex));
+		return true;
+	};
+
+	const createStructureRow = (node, path, depth, siblingCount) => {
+		const row = document.createElement('div');
+		row.className = 'cb-core-mail-structure__row';
+		row.style.setProperty('--cb-mail-depth', String(depth));
+		row.draggable = path.length > 0;
+		if (samePath(path, session.editorState.selection.primary())) row.classList.add('is-selected');
+
+		const select = document.createElement('button');
+		select.type = 'button';
+		select.className = 'cb-core-mail-structure__select';
+		const definition = definitionForNode(node);
+		const label = document.createElement('span');
+		label.className = 'cb-core-mail-structure__label';
+		label.textContent = definition?.label || (node.type === 'mail.section' ? 'Section' : node.type || 'Element');
+		const meta = document.createElement('span');
+		meta.className = 'cb-core-mail-structure__meta';
+		meta.textContent = nodeSummary(node, definition);
+		select.append(label, meta);
+		select.addEventListener('click', () => selectPath(path));
+
+		const actions = document.createElement('div');
+		actions.className = 'cb-core-mail-structure__actions';
+		const index = path.at(-1);
+		const addMoveButton = (symbol, targetIndex, disabled, ariaLabel) => {
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'button cb-core-button';
+			button.textContent = symbol;
+			button.disabled = disabled;
+			button.setAttribute('aria-label', ariaLabel);
+			button.addEventListener('click', () => moveNode(path, targetIndex));
+			actions.append(button);
+		};
+		if (path.length > 0 && Number.isInteger(index)) {
+			addMoveButton('↑', Math.max(0, index - 1), index === 0, 'Move element up');
+			addMoveButton('↓', Math.min(siblingCount - 1, index + 1), index === siblingCount - 1, 'Move element down');
 		}
 
-		const selectedKey = JSON.stringify(session.editorState.selection.primary());
-		section.node.children.forEach((node, index) => {
-			const path = [section.index, index];
-			const definition = definitionForNode(node);
-			const card = document.createElement('div');
-			card.className = 'cb-core-mail-node';
-			card.tabIndex = 0;
-			card.draggable = true;
-			card.dataset.path = JSON.stringify(path);
-			if (JSON.stringify(path) === selectedKey) card.classList.add('is-selected');
-
-			const meta = document.createElement('div');
-			meta.className = 'cb-core-mail-node__meta';
-			const label = document.createElement('strong');
-			label.textContent = definition?.label || node.type;
-			const provider = document.createElement('small');
-			provider.textContent = node.provider === 'core' ? 'Core Blueprint' : node.provider;
-			meta.append(label, provider);
-
-			const summary = document.createElement('p');
-			summary.textContent = nodeSummary(node, definition);
-
-			const actions = document.createElement('div');
-			actions.className = 'cb-core-mail-node__actions';
-			const move = (labelText, toIndex, disabled) => {
-				const button = document.createElement('button');
-				button.type = 'button';
-				button.className = 'button cb-core-button';
-				button.textContent = labelText;
-				button.disabled = disabled;
-				button.addEventListener('click', (event) => {
-					event.stopPropagation();
-					session.execute(commands.reorderNode([section.index], index, toIndex));
-				});
-				return button;
-			};
-			actions.append(
-				move('↑', Math.max(0, index - 1), index === 0),
-				move('↓', Math.min(section.node.children.length - 1, index + 1), index === section.node.children.length - 1)
-			);
-
-			card.append(meta, summary, actions);
-			card.addEventListener('click', () => {
-				session.editorState.selection.select(path);
-				renderCanvas();
-				renderInspector();
-			});
-			card.addEventListener('keydown', (event) => {
-				if (event.key === 'Enter' || event.key === ' ') {
-					event.preventDefault();
-					card.click();
-				}
-			});
-			card.addEventListener('dragstart', () => { dragPath = path; });
-			card.addEventListener('dragover', (event) => event.preventDefault());
-			card.addEventListener('drop', (event) => {
-				event.preventDefault();
-				if (!Array.isArray(dragPath) || dragPath[0] !== section.index || dragPath[1] === index) return;
-				session.execute(commands.reorderNode([section.index], dragPath[1], index));
-				dragPath = null;
-			});
-			canvas.append(card);
+		row.addEventListener('dragstart', (event) => {
+			dragPath = [...path];
+			if (event.dataTransfer) {
+				event.dataTransfer.effectAllowed = 'move';
+				event.dataTransfer.setData('text/plain', pathKey(path));
+			}
 		});
+		row.addEventListener('dragover', (event) => {
+			if (!Array.isArray(dragPath) || !samePath(parentPath(dragPath), parentPath(path))) return;
+			event.preventDefault();
+			if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+		});
+		row.addEventListener('drop', (event) => {
+			event.preventDefault();
+			if (!Array.isArray(dragPath) || !samePath(parentPath(dragPath), parentPath(path))) return;
+			const fromIndex = dragPath.at(-1);
+			const toIndex = path.at(-1);
+			if (Number.isInteger(fromIndex) && Number.isInteger(toIndex) && fromIndex !== toIndex) {
+				session.execute(commands.reorderNode(parentPath(path), fromIndex, toIndex));
+			}
+			dragPath = null;
+		});
+		row.addEventListener('dragend', () => { dragPath = null; });
+
+		row.append(select, actions);
+		return row;
+	};
+
+	const renderStructure = () => {
+		structure.replaceChildren();
+		const tree = document.createElement('div');
+		tree.className = 'cb-core-mail-structure';
+		const projectRoot = session.project()?.root;
+		const renderChildren = (children, parent, depth) => {
+			if (!Array.isArray(children)) return;
+			children.forEach((node, index) => {
+				if (!node || typeof node !== 'object') return;
+				const path = [...parent, index];
+				tree.append(createStructureRow(node, path, depth, children.length));
+				renderChildren(node.children, path, depth + 1);
+			});
+		};
+		renderChildren(projectRoot?.children, [], 0);
+		if (!tree.children.length) {
+			const empty = document.createElement('p');
+			empty.className = 'description';
+			empty.textContent = 'This mail template does not contain editable elements.';
+			structure.append(empty);
+			return;
+		}
+		structure.append(tree);
 	};
 
 	const render = () => {
 		updateSerializedProject();
-		renderCanvas();
+		renderEmailInspector();
+		renderStructure();
 		renderInspector();
 		updateHistoryButtons();
 		schedulePreview();
@@ -340,7 +472,10 @@ if (root) {
 			const definition = components[button.dataset.cbMailAdd || ''];
 			const section = primarySection();
 			if (!definition || !section) return;
-			session.execute(commands.insertNode([section.index], section.node.children.length, makeNode(definition)));
+			const newIndex = section.node.children.length;
+			session.execute(commands.insertNode([section.index], newIndex, makeNode(definition)));
+			session.editorState.selection.select([section.index, newIndex]);
+			renderSelectionViews({ openInspector: true });
 		});
 	});
 
@@ -357,6 +492,10 @@ if (root) {
 				button.focus();
 			}
 		});
+	});
+
+	root.querySelectorAll('[data-cb-mail-side-tab]').forEach((button) => {
+		button.addEventListener('click', () => activateSidePanel(button.dataset.cbMailSideTab || 'email'));
 	});
 
 	undoButton?.addEventListener('click', () => {
@@ -376,6 +515,7 @@ if (root) {
 		});
 	});
 
+	preview.addEventListener('load', bindPreviewInteractions);
 	subjectField.addEventListener('input', schedulePreview);
 	form.addEventListener('submit', updateSerializedProject);
 
@@ -384,5 +524,11 @@ if (root) {
 		session.dispose();
 	}, { once: true });
 
-	render();
+	renderEmailInspector();
+	renderStructure();
+	renderInspector();
+	updateSerializedProject();
+	updateHistoryButtons();
+	if (preview.contentDocument?.readyState === 'complete') bindPreviewInteractions();
+	else schedulePreview();
 }
