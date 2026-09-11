@@ -21,7 +21,8 @@ if (root) {
 		if (!form || !ajaxUrl) return;
 
 		saveController?.abort();
-		saveController = new AbortController();
+		const controller = new AbortController();
+		saveController = controller;
 		announceSaveState('saving');
 
 		try {
@@ -29,7 +30,7 @@ if (root) {
 				method: 'POST',
 				credentials: 'same-origin',
 				body: new FormData(form),
-				signal: saveController.signal,
+				signal: controller.signal,
 			});
 			const payload = await response.json();
 			if (!response.ok || payload?.success !== true) {
@@ -40,7 +41,7 @@ if (root) {
 			if (error?.name === 'AbortError') return;
 			announceSaveState('error', error?.message || 'The mail template could not be saved.');
 		} finally {
-			saveController = null;
+			if (saveController === controller) saveController = null;
 		}
 	};
 
