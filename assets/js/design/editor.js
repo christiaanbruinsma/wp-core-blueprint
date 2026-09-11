@@ -165,6 +165,12 @@ export const createSession = ({
 };
 
 export const profiles = PROFILE_APIS;
+export const commands = Object.freeze({
+	insertNode: insertNodeCommand,
+	removeNode: removeNodeCommand,
+	reorderNode: reorderNodeCommand,
+	setProperty: setPropertyCommand,
+});
 export {
 	CommandHistory,
 	EditorState,
@@ -182,12 +188,7 @@ const publicApi = Object.freeze({
 	shell: Object.freeze({
 		create: createDesignerShell,
 	}),
-	commands: Object.freeze({
-		insertNode: insertNodeCommand,
-		removeNode: removeNodeCommand,
-		reorderNode: reorderNodeCommand,
-		setProperty: setPropertyCommand,
-	}),
+	commands,
 });
 
 if (typeof window !== 'undefined') {
