@@ -9,6 +9,8 @@ $project_json = is_array( $current_template )
 $project_json = is_string( $project_json ) ? $project_json : '{}';
 $components_json = wp_json_encode( $components ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 $components_json = is_string( $components_json ) ? $components_json : '{}';
+/* translators: WordPress core owns this generic admin UI label in the default text domain. */
+$fullscreen_label = __( 'Fullscreen mode', 'default' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
 $template_groups = [];
 foreach ( (array) $templates as $definition ) {
 	if ( ! is_array( $definition ) ) {
@@ -100,6 +102,9 @@ foreach ( (array) $templates as $definition ) {
 								<span class="cb-core-mail-designer__toolbar-label"><?php esc_html_e( 'Canvas', 'core-blueprint' ); ?></span>
 								<button type="button" class="button cb-core-button is-active" data-cb-mail-viewport="desktop"><?php esc_html_e( 'Desktop', 'core-blueprint' ); ?></button>
 								<button type="button" class="button cb-core-button" data-cb-mail-viewport="mobile"><?php esc_html_e( 'Mobile', 'core-blueprint' ); ?></button>
+							</div>
+							<div class="cb-core-design-shell__toolbar-group">
+								<button type="button" class="button cb-core-button" data-cb-design-shell-fullscreen aria-pressed="false" aria-label="<?php echo esc_attr( $fullscreen_label ); ?>"><?php echo esc_html( $fullscreen_label ); ?></button>
 							</div>
 							<div class="cb-core-mail-designer__toolbar-status" data-cb-mail-preview-status aria-live="polite"></div>
 							<button type="submit" class="button button-primary cb-core-button cb-core-button--primary"><?php esc_html_e( 'Save template', 'core-blueprint' ); ?></button>
