@@ -33,11 +33,8 @@ jobs:
           path = Path('tools/l10n-mail-md15-sync.php')
           source = path.read_text(encoding='utf-8')
 
-          key_needle = r'''            foreach ($value as $source => $translation) {
-                if (!is_string($source) || !is_string($translation)) {'''
-          key_replacement = r'''            foreach ($value as $source => $translation) {
-                $source = is_int($source) ? (string) $source : $source;
-                if (!is_string($source) || !is_string($translation)) {'''
+          key_needle = '                if (!is_string($source) || !is_string($translation)) {'
+          key_replacement = '                $source = is_int($source) ? (string) $source : $source;\n' + key_needle
           if key_needle not in source:
               raise SystemExit('Expected serializer key guard was not found.')
           source = source.replace(key_needle, key_replacement, 1)
