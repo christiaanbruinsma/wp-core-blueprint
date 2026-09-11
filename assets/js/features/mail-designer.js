@@ -1,9 +1,11 @@
-import { createSession, commands } from '@cb-core/design-editor';
+import { createDesignerShell, createSession, commands } from '@cb-core/design-editor';
 
 const root = document.querySelector('[data-cb-mail-designer]');
 
 if (root) {
 	const form = root.querySelector('[data-cb-mail-designer-form]');
+	const shellRoot = root.querySelector('[data-cb-design-shell]');
+	const templateSelect = root.querySelector('[data-cb-mail-template-select]');
 	const projectField = root.querySelector('[data-cb-mail-project]');
 	const componentField = root.querySelector('[data-cb-mail-components]');
 	const subjectField = root.querySelector('[data-cb-mail-subject]');
@@ -13,8 +15,6 @@ if (root) {
 	const preview = root.querySelector('[data-cb-mail-preview]');
 	const previewFrame = root.querySelector('[data-cb-mail-preview-frame]');
 	const previewStatus = root.querySelector('[data-cb-mail-preview-status]');
-	const undoButton = root.querySelector('[data-cb-mail-undo]');
-	const redoButton = root.querySelector('[data-cb-mail-redo]');
 	const ajaxUrl = root.dataset.ajaxUrl || '';
 	const nonce = root.dataset.previewNonce || '';
 	const templateId = root.dataset.templateId || '';
@@ -31,13 +31,14 @@ if (root) {
 	const components = parseJson(componentField, {});
 	const componentDefinitions = Object.values(components).filter((item) => item && typeof item === 'object');
 
-	if (!form || !projectField || !subjectField || !emailInspector || !structure || !inspector || !preview || !project) {
+	if (!form || !shellRoot || !projectField || !subjectField || !emailInspector || !structure || !inspector || !preview || !project) {
 		throw new Error('Mail Designer could not initialize because its editor payload is incomplete.');
 	}
 
 	let previewTimer = 0;
 	let previewController = null;
 	let dragPath = null;
+	let shell = null;
 
 	const pathKey = (path) => JSON.stringify(Array.isArray(path) ? path : []);
 	const samePath = (left, right) => pathKey(left) === pathKey(right);
@@ -74,26 +75,10 @@ if (root) {
 		projectField.value = JSON.stringify(session.snapshot());
 	};
 
-	const updateHistoryButtons = () => {
-		if (undoButton) undoButton.disabled = !session.history.canUndo;
-		if (redoButton) redoButton.disabled = !session.history.canRedo;
-	};
-
 	const setPreviewStatus = (message, isError = false) => {
 		if (!previewStatus) return;
 		previewStatus.textContent = message;
 		previewStatus.classList.toggle('is-error', Boolean(isError));
-	};
-
-	const activateSidePanel = (panelId) => {
-		root.querySelectorAll('[data-cb-mail-side-tab]').forEach((button) => {
-			const active = button.dataset.cbMailSideTab === panelId;
-			button.classList.toggle('is-active', active);
-			button.setAttribute('aria-selected', active ? 'true' : 'false');
-		});
-		root.querySelectorAll('[data-cb-mail-side-panel]').forEach((panel) => {
-			panel.hidden = panel.dataset.cbMailSidePanel !== panelId;
-		});
 	};
 
 	const markerPath = (marker) => {
@@ -127,7 +112,7 @@ if (root) {
 		renderStructure();
 		renderInspector();
 		syncPreviewSelection();
-		if (openInspector) activateSidePanel('inspector');
+		if (openInspector) shell?.activatePanel('inspector');
 	};
 
 	const selectPath = (path, { openInspector = true } = {}) => {
@@ -161,7 +146,7 @@ if (root) {
 
 		doc.addEventListener('pointerleave', () => {
 			doc.querySelectorAll('[data-cb-mail-hovered]').forEach((node) => { delete node.dataset.cbMailHovered; });
-	});
+		});
 
 		syncPreviewSelection();
 		syncPreviewHeight();
@@ -457,7 +442,7 @@ if (root) {
 		renderEmailInspector();
 		renderStructure();
 		renderInspector();
-		updateHistoryButtons();
+		shell?.syncHistory();
 		schedulePreview();
 	};
 
@@ -465,6 +450,11 @@ if (root) {
 		project,
 		profile: 'mail',
 		onChange: render,
+	});
+
+	shell = createDesignerShell(shellRoot, {
+		session,
+		defaultPanel: 'email',
 	});
 
 	root.querySelectorAll('[data-cb-mail-add]').forEach((button) => {
@@ -494,17 +484,9 @@ if (root) {
 		});
 	});
 
-	root.querySelectorAll('[data-cb-mail-side-tab]').forEach((button) => {
-		button.addEventListener('click', () => activateSidePanel(button.dataset.cbMailSideTab || 'email'));
-	});
-
-	undoButton?.addEventListener('click', () => {
-		session.undo();
-		render();
-	});
-	redoButton?.addEventListener('click', () => {
-		session.redo();
-		render();
+	templateSelect?.addEventListener('change', () => {
+		const url = String(templateSelect.value || '').trim();
+		if (url) window.location.assign(url);
 	});
 
 	root.querySelectorAll('[data-cb-mail-viewport]').forEach((button) => {
@@ -528,7 +510,7 @@ if (root) {
 	renderStructure();
 	renderInspector();
 	updateSerializedProject();
-	updateHistoryButtons();
+	shell.syncHistory();
 	if (preview.contentDocument?.readyState === 'complete') bindPreviewInteractions();
 	else schedulePreview();
 }
