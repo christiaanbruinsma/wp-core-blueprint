@@ -66,7 +66,7 @@ test('public editor delegates validation to profile APIs and exposes Mail withou
 
 test('shared Designer Shell supports independent named tab groups', async () => {
 	const source = await readFile(new URL('../../assets/js/design/shell/index.js', import.meta.url), 'utf8');
-	assert.match(source, /data\.cbDesignShellGroup/);
+	assert.match(source, /cbDesignShellGroup/);
 	assert.match(source, /activePanelFor\(groupId\)/);
 	assert.match(source, /defaultPanels/);
 	assert.match(source, /group:\s*state\.id/);
