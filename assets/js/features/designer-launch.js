@@ -2,6 +2,8 @@
 	'use strict';
 
 	const config = window.cbCoreDesignerLaunch || {};
+	const BOOT_RETRY_DELAY_MS = 50;
+	const BOOT_RETRY_LIMIT = 200;
 
 	const sharedShellApi = () => window.cbCore?.designEditor?.shell ?? null;
 
@@ -169,8 +171,43 @@
 	};
 
 	const start = () => {
-		if (boot()) return;
-		window.addEventListener('cb:design-editor:ready', boot, { once: true });
+		let attempts = 0;
+		let retryTimer = 0;
+		let settled = false;
+
+		const stop = () => {
+			if (settled) return;
+			settled = true;
+			if (retryTimer) {
+				window.clearTimeout(retryTimer);
+				retryTimer = 0;
+			}
+			window.removeEventListener('cb:design-editor:ready', attemptBoot);
+		};
+
+		const attemptBoot = () => {
+			if (settled) return;
+			if (boot()) {
+				stop();
+				return;
+			}
+
+			attempts += 1;
+			if (attempts >= BOOT_RETRY_LIMIT) {
+				stop();
+				return;
+			}
+
+			if (!retryTimer) {
+				retryTimer = window.setTimeout(() => {
+					retryTimer = 0;
+					attemptBoot();
+				}, BOOT_RETRY_DELAY_MS);
+			}
+		};
+
+		window.addEventListener('cb:design-editor:ready', attemptBoot);
+		attemptBoot();
 	};
 
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
