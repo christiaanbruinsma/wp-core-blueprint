@@ -17,8 +17,16 @@ defined( 'ABSPATH' ) || exit;
 final class Assets {
 
 	public const MODULE_ID = '@cb-core/design-editor';
+	public const SHELL_STYLE = 'cb-core-design-editor-shell';
 
 	public static function enqueue(): void {
+		wp_enqueue_style(
+			self::SHELL_STYLE,
+			CB_CORE_URL . 'assets/css/design/editor-shell.css',
+			[ 'cb-core-css-tokens' ],
+			CB_CORE_VERSION
+		);
+
 		wp_enqueue_script_module(
 			self::MODULE_ID,
 			CB_CORE_URL . 'assets/js/design/editor.js',

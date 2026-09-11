@@ -1,0 +1,155 @@
+/**
+ * Shared Core Blueprint Designer shell.
+ *
+ * Composition only. Profiles/consumers own canvas semantics and component UI.
+ */
+
+.cb-core-design-shell {
+	width: 100%;
+	min-width: 0;
+}
+
+.cb-core-design-shell__toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--cb-space-3);
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--cb-space-3);
+	margin-bottom: var(--cb-space-3);
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-design-shell__toolbar-group {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-core-design-shell__workspace {
+	display: grid;
+	grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(240px, 300px);
+	gap: var(--cb-space-3);
+	align-items: start;
+	width: 100%;
+	min-width: 0;
+}
+
+.cb-core-design-shell__palette,
+.cb-core-design-shell__canvas,
+.cb-core-design-shell__sidebar {
+	min-width: 0;
+	box-sizing: border-box;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-1);
+}
+
+.cb-core-design-shell__palette,
+.cb-core-design-shell__sidebar {
+	position: sticky;
+	top: 48px;
+}
+
+.cb-core-design-shell__palette {
+	padding: var(--cb-space-3);
+}
+
+.cb-core-design-shell__palette--tabbed {
+	padding: 0;
+	overflow: hidden;
+}
+
+.cb-core-design-shell__canvas {
+	overflow: hidden;
+}
+
+.cb-core-design-shell__tabs,
+.cb-core-design-shell__sidebar-tabs {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-core-design-shell__tab,
+.cb-core-design-shell__sidebar-tab {
+	appearance: none;
+	min-width: 0;
+	padding: var(--cb-space-3) var(--cb-space-2);
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	color: var(--cb-text-muted);
+	font: inherit;
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	cursor: pointer;
+}
+
+.cb-core-design-shell__tab:hover,
+.cb-core-design-shell__tab:focus-visible,
+.cb-core-design-shell__tab.is-active,
+.cb-core-design-shell__sidebar-tab:hover,
+.cb-core-design-shell__sidebar-tab:focus-visible,
+.cb-core-design-shell__sidebar-tab.is-active {
+	color: var(--cb-text-strong);
+}
+
+.cb-core-design-shell__tab.is-active,
+.cb-core-design-shell__sidebar-tab.is-active {
+	border-bottom-color: var(--cb-accent);
+}
+
+.cb-core-design-shell__tab:focus-visible,
+.cb-core-design-shell__sidebar-tab:focus-visible {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: -2px;
+}
+
+.cb-core-design-shell__panel,
+.cb-core-design-shell__sidebar-panel {
+	padding: var(--cb-space-3);
+	min-height: 360px;
+}
+
+.cb-core-design-shell__panel[hidden],
+.cb-core-design-shell__sidebar-panel[hidden] {
+	display: none !important;
+}
+
+@media (max-width: 1280px) {
+	.cb-core-design-shell__workspace {
+		grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+	}
+
+	.cb-core-design-shell__sidebar {
+		position: static;
+		grid-column: 1 / -1;
+	}
+
+	.cb-core-design-shell__panel,
+	.cb-core-design-shell__sidebar-panel {
+		min-height: 0;
+	}
+}
+
+@media (max-width: 900px) {
+	.cb-core-design-shell__toolbar {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.cb-core-design-shell__workspace {
+		grid-template-columns: 1fr;
+	}
+
+	.cb-core-design-shell__palette,
+	.cb-core-design-shell__sidebar {
+		position: static;
+	}
+}

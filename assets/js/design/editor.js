@@ -12,6 +12,7 @@ import {
 import * as fixedProfile from './document/fixed/index.js';
 import * as flowProfile from './document/flow/index.js';
 import * as mailProfile from './mail/index.js';
+import { createDesignerShell } from './shell/index.js';
 
 const PROFILE_APIS = Object.freeze({
 	'document-fixed': Object.freeze({ ...fixedProfile }),
@@ -164,10 +165,17 @@ export const createSession = ({
 };
 
 export const profiles = PROFILE_APIS;
+export const commands = Object.freeze({
+	insertNode: insertNodeCommand,
+	removeNode: removeNodeCommand,
+	reorderNode: reorderNodeCommand,
+	setProperty: setPropertyCommand,
+});
 export {
 	CommandHistory,
 	EditorState,
 	ProjectState,
+	createDesignerShell,
 	insertNodeCommand,
 	removeNodeCommand,
 	reorderNodeCommand,
@@ -177,12 +185,10 @@ export {
 const publicApi = Object.freeze({
 	createSession,
 	profiles,
-	commands: Object.freeze({
-		insertNode: insertNodeCommand,
-		removeNode: removeNodeCommand,
-		reorderNode: reorderNodeCommand,
-		setProperty: setPropertyCommand,
+	shell: Object.freeze({
+		create: createDesignerShell,
 	}),
+	commands,
 });
 
 if (typeof window !== 'undefined') {

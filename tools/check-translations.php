@@ -65,10 +65,23 @@ function literal_translation_value( array $tokens ): ?string {
 }
 
 function translation_placeholders( string $value ): array {
-    preg_match_all( '/%(?:\d+\$)?[-+0 #\'\.\d]*[bcdeEfFgGosuxX]/', str_replace( '%%', '', $value ), $matches );
+    preg_match_all( "/%(?:\\d+\\$)?[-+0 #'\\.\\d]*[bcdeEfFgGosuxX]/", str_replace( '%%', '', $value ), $matches );
     $items = $matches[0] ?? [];
     sort( $items );
     return $items;
+}
+
+function translation_key_list( array $entries ): string {
+    if ( [] === $entries ) {
+        return '(none)';
+    }
+
+    $keys = array_map(
+        static fn ( string $key ): string => str_replace( "\4", ' [context] ', $key ),
+        array_keys( $entries )
+    );
+    sort( $keys, SORT_STRING );
+    return implode( ' | ', $keys );
 }
 
 $files = [];
@@ -176,8 +189,8 @@ foreach ( $files as $file ) {
     }
 }
 
-if ( 3216 !== count( $source ) ) {
-    fail_translation_check( 'Expected 3216 canonical source keys, found ' . count( $source ) . '.' );
+if ( 3344 !== count( $source ) ) {
+    fail_translation_check( 'Expected 3344 canonical source keys, found ' . count( $source ) . '.' );
 }
 
 if ( in_array( '--export-source', $argv ?? [], true ) ) {
@@ -217,7 +230,14 @@ foreach ( $locales as $locale ) {
     $extra = array_diff_key( $messages, $source );
     if ( [] !== $missing || [] !== $extra ) {
         fail_translation_check(
-            sprintf( '%s catalog/source mismatch: %d missing, %d extra.', $locale, count( $missing ), count( $extra ) )
+            sprintf(
+                '%s catalog/source mismatch: %d missing, %d extra. Missing keys: %s. Extra keys: %s.',
+                $locale,
+                count( $missing ),
+                count( $extra ),
+                translation_key_list( $missing ),
+                translation_key_list( $extra )
+            )
         );
     }
 
