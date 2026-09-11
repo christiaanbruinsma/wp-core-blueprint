@@ -34,16 +34,23 @@
 			label.textContent = String(config.label || 'Design with Core Blueprint');
 			button.append(label);
 
+			const setDesignerMode = (active) => {
+				wrapper.hidden = active;
+				shell.hidden = !active;
+			};
+
 			button.addEventListener('click', () => {
+				setDesignerMode(true);
 				if (fullscreen.getAttribute('aria-pressed') !== 'true') fullscreen.click();
 			});
 
 			shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
-				wrapper.hidden = Boolean(event.detail?.fullscreen);
+				setDesignerMode(Boolean(event.detail?.fullscreen));
 			});
 
 			wrapper.append(button);
 			context.insertAdjacentElement('afterend', wrapper);
+			setDesignerMode(false);
 		});
 	};
 
