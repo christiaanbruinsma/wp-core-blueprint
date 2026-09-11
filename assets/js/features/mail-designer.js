@@ -1,4 +1,4 @@
-import { createDesignerShell, createSession, commands } from '@cb-core/design-editor';
+import { createDesignerShell, createSession, commands, profiles } from '@cb-core/design-editor';
 
 const root = document.querySelector('[data-cb-mail-designer]');
 
@@ -18,6 +18,7 @@ if (root) {
 	const ajaxUrl = root.dataset.ajaxUrl || '';
 	const nonce = root.dataset.previewNonce || '';
 	const templateId = root.dataset.templateId || '';
+	const mailProfile = profiles.mail;
 
 	const parseJson = (field, fallback) => {
 		try {
@@ -30,9 +31,21 @@ if (root) {
 	const project = parseJson(projectField, null);
 	const components = parseJson(componentField, {});
 	const componentDefinitions = Object.values(components).filter((item) => item && typeof item === 'object');
+	const sectionDefinition = Object.freeze({
+		label: 'Section',
+		node_type: 'mail.section',
+		provider: 'core',
+		inspector: Object.freeze([
+			Object.freeze({ key: 'background', label: 'Background', type: 'color' }),
+			Object.freeze({ key: 'padding', label: 'Padding', type: 'number', min: 0, max: 80, step: 1 }),
+		]),
+	});
 
 	if (!form || !shellRoot || !projectField || !subjectField || !emailInspector || !structure || !inspector || !preview || !project) {
 		throw new Error('Mail Designer could not initialize because its editor payload is incomplete.');
+	}
+	if (!mailProfile || typeof mailProfile.normalizeMailLayout !== 'function' || !Array.isArray(mailProfile.MAIL_FONT_FAMILIES)) {
+		throw new Error('Mail Designer could not initialize because the Mail profile styling contract is unavailable.');
 	}
 
 	let previewTimer = 0;
@@ -44,9 +57,14 @@ if (root) {
 	const samePath = (left, right) => pathKey(left) === pathKey(right);
 	const parentPath = (path) => Array.isArray(path) ? path.slice(0, -1) : [];
 
-	const definitionForNode = (node) => componentDefinitions.find(
-		(definition) => definition.node_type === node?.type && definition.provider === node?.provider
-	) || null;
+	const definitionForNode = (node) => {
+		if (node?.type === sectionDefinition.node_type && node?.provider === sectionDefinition.provider) {
+			return sectionDefinition;
+		}
+		return componentDefinitions.find(
+			(definition) => definition.node_type === node?.type && definition.provider === node?.provider
+		) || null;
+	};
 
 	const nodeAt = (projectValue, path) => {
 		let node = projectValue?.root;
@@ -199,6 +217,15 @@ if (root) {
 		return input.value;
 	};
 
+	const appendSelectOptions = (input, options) => {
+		Object.entries(options || {}).forEach(([optionValue, optionLabel]) => {
+			const option = document.createElement('option');
+			option.value = optionValue;
+			option.textContent = optionLabel;
+			input.append(option);
+		});
+	};
+
 	const createInspectorField = (field, value, path) => {
 		const wrapper = document.createElement('div');
 		wrapper.className = 'cb-core-field cb-core-mail-inspector-field';
@@ -215,12 +242,7 @@ if (root) {
 			input.rows = 5;
 		} else if (field.type === 'select') {
 			input = document.createElement('select');
-			Object.entries(field.options || {}).forEach(([optionValue, optionLabel]) => {
-				const option = document.createElement('option');
-				option.value = optionValue;
-				option.textContent = optionLabel;
-				input.append(option);
-			});
+			appendSelectOptions(input, field.options);
 		} else {
 			input = document.createElement('input');
 			input.type = ['number', 'color', 'url'].includes(field.type) ? field.type : 'text';
@@ -247,15 +269,21 @@ if (root) {
 		label.className = 'cb-core-field__label';
 		label.htmlFor = id;
 		label.textContent = field.label;
-		const input = document.createElement('input');
-		input.id = id;
-		input.type = field.type;
-		input.value = field.value;
-		if (field.type === 'number') {
-			input.min = String(field.min);
-			input.max = String(field.max);
-			input.step = String(field.step);
+		let input;
+		if (field.type === 'select') {
+			input = document.createElement('select');
+			appendSelectOptions(input, field.options);
+		} else {
+			input = document.createElement('input');
+			input.type = ['number', 'color', 'url'].includes(field.type) ? field.type : 'text';
+			if (field.type === 'number') {
+				input.min = String(field.min);
+				input.max = String(field.max);
+				input.step = String(field.step);
+			}
 		}
+		input.id = id;
+		input.value = field.value;
 		input.addEventListener('change', () => {
 			session.execute(commands.setProperty([], field.propertyPath, fieldValue(input, field.type)));
 		});
@@ -273,14 +301,16 @@ if (root) {
 		emailInspector.append(heading, description);
 
 		const rootProperties = session.project()?.root?.properties || {};
-		const layout = rootProperties.layout || {};
+		const layout = mailProfile.normalizeMailLayout(rootProperties.layout || {});
+		const fontOptions = Object.fromEntries(mailProfile.MAIL_FONT_FAMILIES.map((fontFamily) => [fontFamily, fontFamily.split(',')[0].trim()]));
 		const fields = [
 			{ key: 'preheader', label: 'Preheader', type: 'text', propertyPath: ['preheader'], value: rootProperties.preheader || '' },
-			{ key: 'width', label: 'Content width', type: 'number', min: 320, max: 800, step: 1, propertyPath: ['layout', 'width'], value: layout.width ?? 600 },
-			{ key: 'background', label: 'Page background', type: 'color', propertyPath: ['layout', 'background'], value: layout.background || '#f3f4f6' },
-			{ key: 'contentBackground', label: 'Content background', type: 'color', propertyPath: ['layout', 'contentBackground'], value: layout.contentBackground || '#ffffff' },
-			{ key: 'textColor', label: 'Default text color', type: 'color', propertyPath: ['layout', 'textColor'], value: layout.textColor || '#1f2937' },
-			{ key: 'accentColor', label: 'Accent color', type: 'color', propertyPath: ['layout', 'accentColor'], value: layout.accentColor || '#2563eb' },
+			{ key: 'width', label: 'Content width', type: 'number', min: 320, max: 800, step: 1, propertyPath: ['layout', 'width'], value: layout.width },
+			{ key: 'fontFamily', label: 'Font family', type: 'select', options: fontOptions, propertyPath: ['layout', 'fontFamily'], value: layout.fontFamily },
+			{ key: 'background', label: 'Page background', type: 'color', propertyPath: ['layout', 'background'], value: layout.background },
+			{ key: 'contentBackground', label: 'Content background', type: 'color', propertyPath: ['layout', 'contentBackground'], value: layout.contentBackground },
+			{ key: 'textColor', label: 'Default text color', type: 'color', propertyPath: ['layout', 'textColor'], value: layout.textColor },
+			{ key: 'accentColor', label: 'Accent color', type: 'color', propertyPath: ['layout', 'accentColor'], value: layout.accentColor },
 		];
 		fields.forEach((field) => emailInspector.append(createRootField(field)));
 	};
