@@ -1,0 +1,49 @@
+name: Designer viewport ownership materializer
+
+on:
+  push:
+    branches:
+      - design-foundation-designer-shell-fullscreen
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: design-foundation-designer-shell-fullscreen
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Synchronize viewport ownership
+        run: python3 tools/designer-viewport-owner-sync.py
+
+      - name: Validate Designer Mode JavaScript contract
+        run: node --test tests/js/design-mail-profile.test.mjs
+
+      - name: Validate PHP and translations
+        run: bash tests/bin/php-lint.sh
+
+      - name: Validate patch whitespace
+        run: git diff --check
+
+      - name: Commit synchronized source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/features/mail-designer.js assets/js/features/designer-launch.js templates/mail-designer.php src/Mail/Admin/Page.php tests/integration/DesignerModeHeaderTest.php tests/js/design-mail-profile.test.mjs
+          if git diff --cached --quiet; then
+            echo "Designer viewport ownership is already synchronized."
+            exit 0
+          fi
+          git commit -m "Designer Mode: centralize Mail viewport state"
+          git push origin HEAD:design-foundation-designer-shell-fullscreen
