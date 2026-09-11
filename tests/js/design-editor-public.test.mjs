@@ -66,9 +66,11 @@ const fixedProject = () => ({
 	}),
 });
 
-test('public facade exposes stable session and profile APIs without consumer private-path imports', () => {
+test('public facade exposes stable session, shell and profile APIs without consumer private-path imports', () => {
 	assert.equal(typeof publicEditor.createSession, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.createSession, 'function');
+	assert.equal(typeof publicEditor.createDesignerShell, 'function');
+	assert.equal(typeof window.cbCore?.designEditor?.shell?.create, 'function');
 	assert.equal(typeof publicEditor.profiles['document-flow'].normalizeFlowLayout, 'function');
 	assert.equal(typeof publicEditor.profiles['document-fixed'].translateFrame, 'function');
 });
