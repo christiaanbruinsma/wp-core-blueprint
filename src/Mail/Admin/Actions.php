@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * Admin POST handlers for Mail settings, test mail and log maintenance.
+ * Admin POST handlers for Mail delivery settings, test mail and log maintenance.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -11,13 +11,13 @@ namespace CB\Core\Mail\Admin;
 
 use CB\Core\Log\AuditLog;
 use CB\Core\Mail\ConflictDetector;
+use CB\Core\Mail\DeliveryState;
 use CB\Core\Mail\Log\Repository;
 use CB\Core\Mail\Runtime;
 use CB\Core\Mail\Secrets;
 use CB\Core\Mail\Sender;
 use CB\Core\Mail\SenderIdentityRegistry;
 use CB\Core\Mail\Settings;
-use CB\Core\Mail\State;
 use CB\Core\Mail\TestContext;
 
 defined( 'ABSPATH' ) || exit;
@@ -34,20 +34,11 @@ final class Actions {
 
 	public static function save(): void {
 		self::guard( 'cb_core_mail_save' );
-
-		if ( ! State::is_enabled() ) {
-			wp_die(
-				esc_html__( 'Core Blueprint Mail is disabled. Enable it from the Dashboard before changing transport settings.', 'core-blueprint' ),
-				esc_html__( 'Mail disabled', 'core-blueprint' ),
-				[ 'response' => 409 ]
-			);
-		}
+		self::guard_delivery_mutation();
 
 		$current = Settings::all();
 		$next    = $current;
 
-		// Module activation is owned by Dashboard/ActivationRegistry.
-		$next['enabled']          = ! empty( $current['enabled'] );
 		$provider                 = isset( $_POST['provider'] ) ? sanitize_key( wp_unslash( $_POST['provider'] ) ) : 'brevo';
 		$next['provider']         = in_array( $provider, Settings::PROVIDERS, true ) ? $provider : 'brevo';
 		$next['from_email']       = isset( $_POST['from_email'] ) ? sanitize_email( wp_unslash( $_POST['from_email'] ) ) : '';
@@ -123,9 +114,9 @@ final class Actions {
 			AuditLog::log( 'mail_settings_updated', 'notice', [ 'changed' => $changed ] );
 		}
 
-		$message = ! empty( $next['enabled'] ) && ConflictDetector::has_conflict()
-			? __( 'Mail settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.', 'core-blueprint' )
-			: __( 'Mail settings saved.', 'core-blueprint' );
+		$message = ConflictDetector::has_conflict()
+			? __( 'Mail delivery settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.', 'core-blueprint' )
+			: __( 'Mail delivery settings saved.', 'core-blueprint' );
 
 		self::set_result( 'success', $message );
 		self::redirect( 'settings' );
@@ -139,12 +130,12 @@ final class Actions {
 			self::set_result( 'error', __( 'Enter a valid test email address.', 'core-blueprint' ) );
 			self::redirect( 'test' );
 		}
-		if ( ! State::is_enabled() ) {
-			self::set_result( 'error', __( 'Enable Core Blueprint Mail before sending a test email.', 'core-blueprint' ) );
+		if ( ! DeliveryState::is_enabled() ) {
+			self::set_result( 'error', __( 'Enable Mail Delivery before sending a transport test email.', 'core-blueprint' ) );
 			self::redirect( 'test' );
 		}
 		if ( ConflictDetector::has_conflict() || ! Runtime::is_active() ) {
-			self::set_result( 'error', __( 'Core Blueprint Mail transport is inactive because another mail transport is active.', 'core-blueprint' ) );
+			self::set_result( 'error', __( 'Core Blueprint Mail transport is inactive because the selected delivery provider is unavailable or another mail transport is active.', 'core-blueprint' ) );
 			self::redirect( 'test' );
 		}
 
@@ -204,7 +195,7 @@ final class Actions {
 	}
 
 	private static function validate( array $settings ): string {
-		return empty( $settings['enabled'] ) ? '' : Settings::activation_error( $settings );
+		return Settings::activation_error( $settings );
 	}
 
 	private static function changed_keys( array $before, array $after ): array {
@@ -233,6 +224,17 @@ final class Actions {
 			);
 		}
 		check_admin_referer( $action );
+	}
+
+	private static function guard_delivery_mutation(): void {
+		if ( DeliveryState::is_enabled() ) {
+			return;
+		}
+		wp_die(
+			esc_html__( 'Mail Delivery is disabled. Enable it from Mail Overview before changing delivery settings.', 'core-blueprint' ),
+			esc_html__( 'Mail Delivery disabled', 'core-blueprint' ),
+			[ 'response' => 409 ]
+		);
 	}
 
 	private static function set_result( string $type, string $message ): void {

@@ -1,0 +1,152 @@
+<?php
+declare(strict_types=1);
+
+use CB\Core\Design\Profile\Mail\HtmlRenderer;
+use CB\Core\Design\Profile\Mail\Validator;
+use CB\Core\Mail\Designer\BindingRegistry;
+use CB\Core\Mail\Designer\Renderer;
+use CB\Core\Mail\Designer\TemplateRegistry;
+use CB\Core\Mail\Designer\WordPressIntegration;
+use CB\Core\Mail\Settings as MailSettings;
+
+final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
+	private mixed $original_settings;
+	private mixed $original_enabled;
+
+	public function set_up(): void {
+		parent::set_up();
+		$this->original_settings = get_option( MailSettings::OPTION, null );
+		$this->original_enabled = get_option( MailSettings::ENABLED_OPTION, null );
+		TemplateRegistry::_reset_for_testing();
+		BindingRegistry::_reset_for_testing();
+	}
+
+	public function tear_down(): void {
+		if ( null === $this->original_settings ) {
+			delete_option( MailSettings::OPTION );
+		} else {
+			update_option( MailSettings::OPTION, $this->original_settings, false );
+		}
+		if ( null === $this->original_enabled ) {
+			delete_option( MailSettings::ENABLED_OPTION );
+		} else {
+			update_option( MailSettings::ENABLED_OPTION, $this->original_enabled, true );
+		}
+		TemplateRegistry::_reset_for_testing();
+		BindingRegistry::_reset_for_testing();
+		parent::tear_down();
+	}
+
+	public function test_legacy_mail_enabled_state_migrates_to_delivery_only_in_memory(): void {
+		delete_option( MailSettings::OPTION );
+		delete_option( MailSettings::ENABLED_OPTION );
+		update_option( MailSettings::OPTION, [ 'enabled' => true ], false );
+		update_option( MailSettings::ENABLED_OPTION, '1', true );
+
+		$settings = MailSettings::all();
+		self::assertTrue( $settings['delivery_enabled'] );
+		self::assertFalse( $settings['designer_enabled'] );
+		self::assertTrue( MailSettings::enabled() );
+	}
+
+	public function test_designer_can_be_enabled_while_core_blueprint_delivery_is_disabled(): void {
+		$settings = MailSettings::defaults();
+		$settings['delivery_enabled'] = false;
+		$settings['designer_enabled'] = true;
+		MailSettings::save( $settings );
+
+		self::assertFalse( MailSettings::delivery_enabled() );
+		self::assertTrue( MailSettings::designer_enabled() );
+		self::assertTrue( MailSettings::enabled() );
+	}
+
+	public function test_wordpress_templates_use_the_single_mail_design_profile(): void {
+		$templates = TemplateRegistry::all();
+		self::assertArrayHasKey( 'wordpress.password-reset', $templates );
+		self::assertArrayHasKey( 'wordpress.new-user', $templates );
+		self::assertSame( 'mail-template', $templates['wordpress.password-reset']['project']['design_type'] );
+		self::assertSame( 'mail.root', $templates['wordpress.password-reset']['project']['root']['type'] );
+	}
+
+	public function test_mail_renderer_escapes_user_content_and_interpolates_scalar_bindings(): void {
+		$project = $this->project( [
+			$this->node( 'mail.text', [ 'text' => 'Hello {{user.display_name}} <script>alert(1)</script>' ] ),
+		] );
+		$diagnostics = ( new Validator() )->validate( $project );
+		self::assertFalse( $diagnostics->has_errors(), wp_json_encode( $diagnostics->to_array() ) );
+
+		$html = ( new HtmlRenderer() )->render( $project, [ 'user.display_name' => '<Jane>' ] );
+		self::assertStringContainsString( 'Hello &lt;Jane&gt; &lt;script&gt;alert(1)&lt;/script&gt;', $html );
+		self::assertStringNotContainsString( '<script>alert(1)</script>', $html );
+	}
+
+	public function test_registered_template_preview_renders_without_enabling_delivery(): void {
+		$settings = MailSettings::defaults();
+		$settings['delivery_enabled'] = false;
+		$settings['designer_enabled'] = true;
+		MailSettings::save( $settings );
+
+		$preview = Renderer::preview( 'wordpress.password-reset' );
+		self::assertIsArray( $preview );
+		self::assertStringContainsString( '<!doctype html>', $preview['html'] );
+		self::assertStringContainsString( 'Reset', $preview['subject'] );
+		self::assertFalse( MailSettings::delivery_enabled() );
+	}
+
+	public function test_wordpress_password_reset_adapter_preserves_recipient_and_replaces_presentation_only(): void {
+		$user_id = self::factory()->user->create( [
+			'user_login'   => 'mail_designer_user',
+			'user_email'   => 'mail-designer@example.test',
+			'display_name' => 'Mail Designer User',
+		] );
+		$user = get_user_by( 'id', $user_id );
+		self::assertInstanceOf( WP_User::class, $user );
+
+		$canonical = [
+			'to'      => 'mail-designer@example.test',
+			'subject' => 'Canonical subject',
+			'message' => 'Canonical body',
+			'headers' => '',
+		];
+		$rendered = WordPressIntegration::password_reset( $canonical, 'test-key', $user->user_login, $user );
+
+		self::assertSame( $canonical['to'], $rendered['to'] );
+		self::assertNotSame( $canonical['subject'], $rendered['subject'] );
+		self::assertStringContainsString( '<!doctype html>', $rendered['message'] );
+		self::assertContains( 'Content-Type: text/html; charset=UTF-8', $rendered['headers'] );
+		self::assertStringContainsString( 'test-key', $rendered['message'] );
+	}
+
+	/** @param list<array<string,mixed>> $children @return array<string,mixed> */
+	private function project( array $children ): array {
+		return [
+			'schema_version' => 0,
+			'design_type' => 'mail-template',
+			'root' => [
+				'type' => 'mail.root',
+				'provider' => 'core',
+				'properties' => [
+					'layout' => [
+						'width' => 600,
+						'background' => '#f3f4f6',
+						'contentBackground' => '#ffffff',
+						'fontFamily' => 'Arial, Helvetica, sans-serif',
+						'textColor' => '#1f2937',
+						'accentColor' => '#2563eb',
+					],
+				],
+				'children' => [ [
+					'type' => 'mail.section',
+					'provider' => 'core',
+					'properties' => [ 'padding' => 32, 'background' => '#ffffff' ],
+					'children' => $children,
+				] ],
+			],
+		];
+	}
+
+	/** @param array<string,mixed> $properties @return array<string,mixed> */
+	private function node( string $type, array $properties ): array {
+		return [ 'type' => $type, 'provider' => 'core', 'properties' => $properties, 'children' => [] ];
+	}
+}

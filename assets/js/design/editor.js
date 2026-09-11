@@ -11,10 +11,12 @@ import {
 } from './core/index.js';
 import * as fixedProfile from './document/fixed/index.js';
 import * as flowProfile from './document/flow/index.js';
+import * as mailProfile from './mail/index.js';
 
 const PROFILE_APIS = Object.freeze({
 	'document-fixed': Object.freeze({ ...fixedProfile }),
 	'document-flow': Object.freeze({ ...flowProfile }),
+	'mail': Object.freeze({ ...mailProfile }),
 });
 
 const resolveProfile = (profileId) => {
@@ -26,16 +28,10 @@ const resolveProfile = (profileId) => {
 };
 
 const validateProfileProject = (profile, project) => {
-	const layout = project?.root?.properties?.layout;
-	if (profile.id === 'document-fixed') {
-		profile.api.normalizePage(layout);
-		return;
+	if (typeof profile.api.validateProject !== 'function') {
+		throw new TypeError(`Design Foundation profile ${profile.id} does not expose validateProject().`);
 	}
-	if (profile.id === 'document-flow') {
-		profile.api.normalizeFlowLayout(layout);
-		return;
-	}
-	throw new RangeError(`Unsupported Design Foundation editor profile: ${profile.id}.`);
+	profile.api.validateProject(project);
 };
 
 const runValidation = (validate, project, context, editorState) => {
@@ -54,9 +50,9 @@ const runValidation = (validate, project, context, editorState) => {
 /**
  * Create one consumer-owned Design Foundation editor session.
  *
- * Base owns project/session/history mechanics and the selected document-profile
- * invariant. Consumers own their domain model, persistence, validation policy
- * and rendered editor UI.
+ * Base owns project/session/history mechanics and the selected profile invariant.
+ * Consumers own their domain model, persistence, validation policy and rendered
+ * editor UI. Profiles own their output-specific project validation.
  */
 export const createSession = ({
 	project,

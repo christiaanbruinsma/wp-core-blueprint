@@ -1,7 +1,12 @@
 <?php
 declare(strict_types=1);
 /**
- * Mail module master-switch state.
+ * Aggregate Mail module state used by the existing Dashboard activation card.
+ *
+ * Mail Delivery and Mail Designer are independent runtime capabilities. This
+ * compatibility state is enabled whenever either capability is enabled.
+ * Enabling the legacy module from Dashboard preserves historic behaviour by
+ * enabling Delivery; disabling it is an explicit master-off and disables both.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -10,8 +15,8 @@ declare(strict_types=1);
 namespace CB\Core\Mail;
 
 use CB\Core\Log\AuditLog;
-
 use CB\Core\Modules\ModuleStateInterface;
+
 defined( 'ABSPATH' ) || exit;
 
 final class State implements ModuleStateInterface {
@@ -19,31 +24,25 @@ final class State implements ModuleStateInterface {
 		return Settings::enabled();
 	}
 
-	/**
-	 * Persist the Mail module state. Enabling makes the functional Mail page
-	 * available; Runtime remains fail-closed until provider configuration is
-	 * complete and no competing mail transport is active.
-	 */
 	public static function set_enabled( bool $enabled, string $actor = 'unknown' ): void {
 		$current = Settings::all();
-		$was     = self::is_enabled();
+		$was = self::is_enabled();
 		if ( $was === $enabled ) {
 			return;
 		}
 
 		$previous = $current;
-		$current['enabled'] = $enabled;
+		if ( $enabled ) {
+			// Preserve the pre-split Dashboard meaning: activating Mail enables
+			// outbound delivery. Designer remains explicit opt-in.
+			$current['delivery_enabled'] = true;
+		} else {
+			$current['delivery_enabled'] = false;
+			$current['designer_enabled'] = false;
+		}
 		Settings::save( $current );
 
-		// Mail currently mirrors its master state into both the hot enabled option
-		// and the cold configuration document. B1 does not redesign that storage;
-		// it only requires both existing representations to agree before success is
-		// reported. If either write was refused, restore the exact pre-transition
-		// settings best-effort before surfacing a hard failure. No runtime hooks or
-		// transition audit have run yet, so this compensation is local and safe.
-		$config_enabled = ! empty( Settings::all()['enabled'] );
-		if ( self::is_enabled() !== $enabled || $config_enabled !== $enabled ) {
-			$previous['enabled'] = $was;
+		if ( self::is_enabled() !== $enabled ) {
 			Settings::save( $previous );
 			throw new \RuntimeException( __( 'Mail state could not be persisted consistently.', 'core-blueprint' ) );
 		}
@@ -52,7 +51,12 @@ final class State implements ModuleStateInterface {
 			AuditLog::log(
 				$enabled ? 'mail_subsystem_enabled' : 'mail_subsystem_disabled',
 				'notice',
-				[ 'actor' => $actor, 'provider' => Settings::provider() ]
+				[
+					'actor'    => $actor,
+					'provider' => Settings::provider(),
+					'delivery' => DeliveryState::is_enabled(),
+					'designer' => DesignerState::is_enabled(),
+				]
 			);
 		}
 	}

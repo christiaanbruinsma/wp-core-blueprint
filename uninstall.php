@@ -87,6 +87,7 @@ $foundation_options = [
 	'cb_core_mail_settings',
 	'cb_core_mail_enabled',
 	'cb_core_mail_log_db_version',
+	'cb_core_mail_template_overrides',
 	'cb_core_snippets_settings',
 	'cb_core_media_replace_enabled',
 	'cb_core_media_formats',
