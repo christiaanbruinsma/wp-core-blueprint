@@ -17,6 +17,92 @@ def replace_once(relative: str, old: str, new: str) -> None:
     print(f"{relative}: synchronized")
 
 
+def synchronize_brand_mark() -> None:
+    hud_path = ROOT / 'src/HUD/Brand/CoreBlueprint.php'
+    mark_path = ROOT / 'src/Brand/CoreBlueprintMark.php'
+    hud_source = hud_path.read_text()
+
+    if 'CoreBlueprintMark::svg()' in hud_source:
+        if not mark_path.exists():
+            raise RuntimeError('HUD delegates to CoreBlueprintMark but the shared mark source is missing')
+        print('src/Brand/CoreBlueprintMark.php: already synchronized')
+        print('src/HUD/Brand/CoreBlueprint.php: already synchronized')
+        return
+
+    method_token = "\tpublic function logo_svg(): string {"
+    method_start = hud_source.find(method_token)
+    if method_start < 0:
+        raise RuntimeError('src/HUD/Brand/CoreBlueprint.php: canonical logo_svg() method not found')
+
+    svg_start = hud_source.find('<svg', method_start)
+    svg_end = hud_source.find('\nSVG;', svg_start)
+    method_end_token = '\nSVG;\n\t}'
+    method_end = hud_source.find(method_end_token, svg_start)
+    if svg_start < 0 or svg_end < 0 or method_end < 0:
+        raise RuntimeError('src/HUD/Brand/CoreBlueprint.php: canonical static SVG heredoc could not be extracted')
+    method_end += len(method_end_token)
+
+    svg = hud_source[svg_start:svg_end]
+    if '#00FFDD' not in svg or '#0037FF' not in svg or '#131648' not in svg:
+        raise RuntimeError('src/HUD/Brand/CoreBlueprint.php: extracted SVG does not match canonical Core Blueprint palette')
+
+    mark_path.parent.mkdir(parents=True, exist_ok=True)
+    mark_path.write_text(
+        "<?php\n"
+        "declare(strict_types=1);\n"
+        "/**\n"
+        " * Canonical Core Blueprint brand mark.\n"
+        " *\n"
+        " * Shared Base-owned source for the static gradient roundel used across\n"
+        " * Core Blueprint product chrome. Consumers must reference this class\n"
+        " * instead of carrying private copies of the SVG.\n"
+        " *\n"
+        " * @package Core_Blueprint\n"
+        " * @since   1.0.0\n"
+        " */\n\n"
+        "namespace CB\\Core\\Brand;\n\n"
+        "defined( 'ABSPATH' ) || exit;\n\n"
+        "final class CoreBlueprintMark {\n\n"
+        "\tpublic static function svg(): string {\n"
+        "\t\treturn <<<'SVG'\n"
+        f"{svg}\n"
+        "SVG;\n"
+        "\t}\n\n"
+        "\t/**\n"
+        "\t * Return an embeddable image source without duplicating inline SVG ids.\n"
+        "\t */\n"
+        "\tpublic static function data_uri(): string {\n"
+        "\t\treturn 'data:image/svg+xml;base64,' . base64_encode( self::svg() );\n"
+        "\t}\n"
+        "}\n"
+    )
+
+    replacement = "\tpublic function logo_svg(): string {\n\t\treturn CoreBlueprintMark::svg();\n\t}"
+    hud_source = hud_source[:method_start] + replacement + hud_source[method_end:]
+    namespace_anchor = "namespace CB\\Core\\HUD\\Brand;\n\n"
+    if namespace_anchor not in hud_source:
+        raise RuntimeError('src/HUD/Brand/CoreBlueprint.php: namespace anchor not found')
+    hud_source = hud_source.replace(
+        namespace_anchor,
+        namespace_anchor + "use CB\\Core\\Brand\\CoreBlueprintMark;\n\n",
+        1,
+    )
+    hud_source = hud_source.replace(
+        ' * Logo: a simple geometric mark referencing Core Blueprint\'s "blueprint\n'
+        ' * grid + anchor" identity - three horizontal grid lines crossed by a\n'
+        ' * vertical anchor, all in currentColor so the brand\'s palette accent\n'
+        ' * applies. Compact 24x24 viewBox so it scales cleanly to any HUD button\n'
+        ' * size.\n',
+        ' * Logo: the canonical Core Blueprint gradient roundel supplied by the\n'
+        ' * shared Base brand boundary. HUD remains a consumer of that source so\n'
+        ' * product chrome never carries a private copy of the brand glyph.\n',
+        1,
+    )
+    hud_path.write_text(hud_source)
+    print('src/Brand/CoreBlueprintMark.php: synchronized')
+    print('src/HUD/Brand/CoreBlueprint.php: synchronized')
+
+
 replace_once(
     'templates/mail-designer.php',
     "/* translators: WordPress core owns this generic admin UI label in the default text domain. */\n$fullscreen_label = __( 'Fullscreen mode', 'default' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.\n",
@@ -49,8 +135,20 @@ replace_once(
 
 replace_once(
     'src/Mail/Admin/Page.php',
+    "use CB\\Core\\Admin\\TabNav;\n",
+    "use CB\\Core\\Admin\\TabNav;\nuse CB\\Core\\Brand\\CoreBlueprintMark;\n",
+)
+
+replace_once(
+    'src/Mail/Admin/Page.php',
     "\t\t\t\t'label'       => __( 'Design with Core Blueprint', 'core-blueprint' ),\n\t\t\t\t'ariaLabel'   => __( 'Open Designer Mode', 'core-blueprint' ),\n\t\t\t\t'tabletLabel' => __( 'Tablet', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.\n\t\t\t\t'iconUrl'     => CB_CORE_URL . 'assets/core-blueprint-icon.svg',\n",
-    "\t\t\t\t'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),\n\t\t\t\t'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),\n\t\t\t\t'iconUrl'   => CB_CORE_URL . 'assets/core-blueprint-icon.svg',\n",
+    "\t\t\t\t'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),\n\t\t\t\t'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),\n\t\t\t\t'iconUrl'   => CoreBlueprintMark::data_uri(),\n",
+)
+
+replace_once(
+    'assets/css/design/editor-shell.css',
+    ".cb-core-design-shell__brand-mark {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tjustify-content: center;\n\tflex: 0 0 30px;\n\twidth: 30px;\n\theight: 30px;\n\tborder-radius: var(--cb-radius-sm);\n\tbackground: var(--cb-accent);\n}\n\n.cb-core-design-shell__brand-mark img {\n\tdisplay: block;\n\twidth: 19px;\n\theight: 19px;\n\tobject-fit: contain;\n}\n",
+    ".cb-core-design-shell__brand-mark {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tjustify-content: center;\n\tflex: 0 0 30px;\n\twidth: 30px;\n\theight: 30px;\n\tborder-radius: 50%;\n\toverflow: hidden;\n}\n\n.cb-core-design-shell__brand-mark img {\n\tdisplay: block;\n\twidth: 30px;\n\theight: 30px;\n\tobject-fit: contain;\n}\n",
 )
 
 replace_once(
@@ -66,9 +164,17 @@ replace_once(
 )
 
 replace_once(
-    'tests/js/design-mail-profile.test.mjs',
-    "\tassert.match(source, /cbMailViewport\\s*=\\s*['\"]tablet['\"]/);\n\tassert.match(source, /cb-core-design-shell__toolbar--designer/);\n",
-    "\tassert.match(source, /querySelector\\(['\"]\\[data-cb-mail-viewport=\\\\\"tablet\\\\\"\\]['\"]\\)/);\n\tassert.match(source, /cb-core-design-shell__toolbar--designer/);\n\tassert.doesNotMatch(source, /setViewportState/);\n",
+    'tests/integration/DesignerModeHeaderTest.php',
+    "\n}\n",
+    "\n\tpublic function test_designer_mode_and_hud_share_the_canonical_core_blueprint_mark(): void {\n\t\t$root = dirname( __DIR__, 2 );\n\t\t$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );\n\t\t$hud = (string) file_get_contents( $root . '/src/HUD/Brand/CoreBlueprint.php' );\n\t\t$mark = (string) file_get_contents( $root . '/src/Brand/CoreBlueprintMark.php' );\n\n\t\tself::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $page );\n\t\tself::assertStringContainsString( 'CoreBlueprintMark::svg()', $hud );\n\t\tself::assertStringContainsString( '#00FFDD', $mark );\n\t\tself::assertStringContainsString( '#0037FF', $mark );\n\t\tself::assertStringContainsString( '#131648', $mark );\n\t\tself::assertStringNotContainsString( 'assets/core-blueprint-icon.svg', $page );\n\t}\n}\n",
 )
 
-print('PASS: Designer viewport ownership synchronized.')
+replace_once(
+    'tests/js/design-mail-profile.test.mjs',
+    "\tassert.match(source, /cbMailViewport\\s*=\\s*['\"]tablet['\"]/);\n\tassert.match(source, /cb-core-design-shell__toolbar--designer/);\n",
+    "\tassert.match(source, /\\[data-cb-mail-viewport=\"tablet\"\\]/);\n\tassert.match(source, /cb-core-design-shell__toolbar--designer/);\n\tassert.doesNotMatch(source, /setViewportState/);\n",
+)
+
+synchronize_brand_mark()
+
+print('PASS: Designer viewport ownership and canonical brand synchronized.')
