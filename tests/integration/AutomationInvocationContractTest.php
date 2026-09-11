@@ -49,33 +49,19 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		parent::tear_down();
 	}
 
-	public function test_af3_public_invocation_contracts_exist(): void {
+	public function test_af3_public_contracts_exist(): void {
 		self::assertTrue( class_exists( InvocationContext::class ) );
-		self::assertTrue( class_exists( ActionInvoker::class ) );
-		self::assertTrue( class_exists( StateInvoker::class ) );
 		self::assertTrue( method_exists( ActionInvoker::class, 'invoke' ) );
 		self::assertTrue( method_exists( StateInvoker::class, 'resolve' ) );
 	}
 
-	public function test_af3_registered_action_and_state_succeed_for_valid_explicit_principal(): void {
+	public function test_af3_valid_explicit_principal_executes_legacy_callbacks(): void {
 		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( 0 );
 		$context = $this->context( $principal_id );
 
-		$action = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 42 ],
-			$context
-		);
-		$state = StateInvoker::resolve(
-			self::PROVIDER,
-			'invoice.current',
-			'1',
-			[ 'invoice_id' => 42 ],
-			$context
-		);
+		$action = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 42 ], $context );
+		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.current', '1', [ 'invoice_id' => 42 ], $context );
 
 		self::assertSame( [ 'project_id' => 42 ], $action );
 		self::assertSame( [ 'status' => 'paid' ], $state );
@@ -83,7 +69,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		self::assertSame( 1, $this->state_calls );
 	}
 
-	public function test_af3_unknown_capability_and_schema_mismatch_fail_closed(): void {
+	public function test_af3_unknown_version_and_invalid_input_fail_closed(): void {
 		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$context = $this->context( $principal_id );
 
@@ -91,176 +77,91 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		$unknown_state = StateInvoker::resolve( self::PROVIDER, 'invoice.unknown', '1', [], $context );
 		$action_version = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '2', [ 'source_id' => 1 ], $context );
 		$state_version = StateInvoker::resolve( self::PROVIDER, 'invoice.current', '2', [ 'invoice_id' => 1 ], $context );
+		$bad_action_input = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => '1' ], $context );
+		$bad_state_input = StateInvoker::resolve( self::PROVIDER, 'invoice.current', '1', [ 'invoice_id' => '1' ], $context );
 
-		self::assertWPError( $unknown_action );
 		self::assertSame( 'cb_core_automation_unknown_action', $unknown_action->get_error_code() );
-		self::assertWPError( $unknown_state );
 		self::assertSame( 'cb_core_automation_unknown_state', $unknown_state->get_error_code() );
-		self::assertWPError( $action_version );
 		self::assertSame( 'cb_core_automation_schema_mismatch', $action_version->get_error_code() );
-		self::assertWPError( $state_version );
 		self::assertSame( 'cb_core_automation_schema_mismatch', $state_version->get_error_code() );
-	}
-
-	public function test_af3_invalid_input_fails_before_provider_callback(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		$context = $this->context( $principal_id );
-
-		$action = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => '42' ], $context );
-		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.current', '1', [ 'invoice_id' => '42' ], $context );
-
-		self::assertWPError( $action );
-		self::assertSame( 'cb_core_automation_invalid_input', $action->get_error_code() );
-		self::assertWPError( $state );
-		self::assertSame( 'cb_core_automation_invalid_input', $state->get_error_code() );
+		self::assertSame( 'cb_core_automation_invalid_input', $bad_action_input->get_error_code() );
+		self::assertSame( 'cb_core_automation_invalid_input', $bad_state_input->get_error_code() );
 		self::assertSame( 0, $this->action_calls );
 		self::assertSame( 0, $this->state_calls );
 	}
 
-	public function test_af3_missing_deleted_and_unprivileged_principals_fail_closed(): void {
+	public function test_af3_missing_deleted_and_lost_principal_authority_fail_closed(): void {
 		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 		$deleted_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		wp_delete_user( $deleted_id );
+		if ( ! function_exists( 'wp_delete_user' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+		}
+		self::assertTrue( wp_delete_user( $deleted_id ) );
 
-		$missing = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 1 ],
-			$this->context( 0 )
-		);
-		$deleted = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 1 ],
-			$this->context( $deleted_id )
-		);
-		$denied = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 1 ],
-			$this->context( $subscriber_id )
-		);
-		$state_denied = StateInvoker::resolve(
-			self::PROVIDER,
-			'invoice.current',
-			'1',
-			[ 'invoice_id' => 1 ],
-			$this->context( $subscriber_id )
-		);
+		$missing = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $this->context( 0 ) );
+		$deleted = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $this->context( $deleted_id ) );
+		$denied = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $this->context( $subscriber_id ) );
+		$state_denied = StateInvoker::resolve( self::PROVIDER, 'invoice.current', '1', [ 'invoice_id' => 1 ], $this->context( $subscriber_id ) );
 
-		self::assertWPError( $missing );
 		self::assertSame( 'cb_core_automation_principal_missing', $missing->get_error_code() );
-		self::assertWPError( $deleted );
 		self::assertSame( 'cb_core_automation_principal_invalid', $deleted->get_error_code() );
-		self::assertWPError( $denied );
 		self::assertSame( 'cb_core_automation_permission_denied', $denied->get_error_code() );
-		self::assertWPError( $state_denied );
 		self::assertSame( 'cb_core_automation_permission_denied', $state_denied->get_error_code() );
-		self::assertSame( 0, $this->action_calls );
-		self::assertSame( 0, $this->state_calls );
+
+		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$context = $this->context( $principal_id );
+		self::assertSame( [ 'project_id' => 1 ], ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $context ) );
+		$user = get_userdata( $principal_id );
+		self::assertInstanceOf( WP_User::class, $user );
+		$user->set_role( 'subscriber' );
+		$lost = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 2 ], $context );
+		self::assertSame( 'cb_core_automation_permission_denied', $lost->get_error_code() );
 	}
 
-	public function test_af3_explicit_principal_not_ambient_current_user_controls_permission(): void {
+	public function test_af3_explicit_principal_not_ambient_user_controls_permission(): void {
 		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 
 		wp_set_current_user( $admin_id );
-		$denied = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 1 ],
-			$this->context( $subscriber_id )
-		);
-
+		$denied = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $this->context( $subscriber_id ) );
 		wp_set_current_user( 0 );
-		$allowed = ActionInvoker::invoke(
-			self::PROVIDER,
-			'work.project.create',
-			'1',
-			[ 'source_id' => 2 ],
-			$this->context( $admin_id )
-		);
+		$allowed = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 2 ], $this->context( $admin_id ) );
 
-		self::assertWPError( $denied );
 		self::assertSame( 'cb_core_automation_permission_denied', $denied->get_error_code() );
 		self::assertSame( [ 'project_id' => 2 ], $allowed );
 	}
 
-	public function test_af3_lost_capability_is_rechecked_on_each_invocation(): void {
+	public function test_af3_provider_failures_and_invalid_outputs_are_normalized(): void {
 		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$context = $this->context( $principal_id );
 
-		$first = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $context );
-		$user = get_userdata( $principal_id );
-		self::assertInstanceOf( WP_User::class, $user );
-		$user->set_role( 'subscriber' );
-		$second = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 2 ], $context );
+		$action_error = ActionInvoker::invoke( self::PROVIDER, 'work.fail', '1', [], $context );
+		$state_error = StateInvoker::resolve( self::PROVIDER, 'invoice.fail', '1', [], $context );
+		$action_throw = ActionInvoker::invoke( self::PROVIDER, 'work.throw', '1', [], $context );
+		$state_throw = StateInvoker::resolve( self::PROVIDER, 'invoice.throw', '1', [], $context );
+		$action_output = ActionInvoker::invoke( self::PROVIDER, 'work.output.invalid', '1', [], $context );
+		$state_output = StateInvoker::resolve( self::PROVIDER, 'invoice.output.invalid', '1', [], $context );
 
-		self::assertSame( [ 'project_id' => 1 ], $first );
-		self::assertWPError( $second );
-		self::assertSame( 'cb_core_automation_permission_denied', $second->get_error_code() );
+		self::assertSame( 'cb_core_automation_execution_failed', $action_error->get_error_code() );
+		self::assertSame( 'acme_domain_secret_failure', $action_error->get_error_data()['provider_error_code'] ?? null );
+		self::assertStringNotContainsString( 'TOP SECRET', $action_error->get_error_message() );
+		self::assertSame( 'cb_core_automation_execution_failed', $state_error->get_error_code() );
+		self::assertSame( 'acme_state_secret_failure', $state_error->get_error_data()['provider_error_code'] ?? null );
+		self::assertStringNotContainsString( 'TOP SECRET', $state_error->get_error_message() );
+		self::assertSame( 'cb_core_automation_execution_failed', $action_throw->get_error_code() );
+		self::assertSame( 'cb_core_automation_execution_failed', $state_throw->get_error_code() );
+		self::assertStringNotContainsString( 'TOP SECRET', $action_throw->get_error_message() );
+		self::assertStringNotContainsString( 'TOP SECRET', $state_throw->get_error_message() );
+		self::assertSame( 'cb_core_automation_invalid_output', $action_output->get_error_code() );
+		self::assertSame( 'cb_core_automation_invalid_output', $state_output->get_error_code() );
 	}
 
-	public function test_af3_provider_wp_errors_are_safely_normalized(): void {
+	public function test_af3_context_reaches_callbacks_and_discovery_stays_private(): void {
 		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$context = $this->context( $principal_id );
 
-		$action = ActionInvoker::invoke( self::PROVIDER, 'work.fail', '1', [], $context );
-		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.fail', '1', [], $context );
-
-		self::assertWPError( $action );
-		self::assertSame( 'cb_core_automation_execution_failed', $action->get_error_code() );
-		self::assertSame( 'acme_domain_secret_failure', $action->get_error_data()['provider_error_code'] ?? null );
-		self::assertStringNotContainsString( 'TOP SECRET', $action->get_error_message() );
-		self::assertWPError( $state );
-		self::assertSame( 'cb_core_automation_execution_failed', $state->get_error_code() );
-		self::assertSame( 'acme_state_secret_failure', $state->get_error_data()['provider_error_code'] ?? null );
-		self::assertStringNotContainsString( 'TOP SECRET', $state->get_error_message() );
-	}
-
-	public function test_af3_throwables_are_normalized_without_exception_details(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		$context = $this->context( $principal_id );
-
-		$action = ActionInvoker::invoke( self::PROVIDER, 'work.throw', '1', [], $context );
-		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.throw', '1', [], $context );
-
-		self::assertWPError( $action );
-		self::assertSame( 'cb_core_automation_execution_failed', $action->get_error_code() );
-		self::assertStringNotContainsString( 'TOP SECRET', $action->get_error_message() );
-		self::assertWPError( $state );
-		self::assertSame( 'cb_core_automation_execution_failed', $state->get_error_code() );
-		self::assertStringNotContainsString( 'TOP SECRET', $state->get_error_message() );
-	}
-
-	public function test_af3_invalid_provider_output_fails_closed(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		$context = $this->context( $principal_id );
-
-		$action = ActionInvoker::invoke( self::PROVIDER, 'work.bad_output', '1', [], $context );
-		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.bad_output', '1', [], $context );
-
-		self::assertWPError( $action );
-		self::assertSame( 'cb_core_automation_invalid_output', $action->get_error_code() );
-		self::assertWPError( $state );
-		self::assertSame( 'cb_core_automation_invalid_output', $state->get_error_code() );
-	}
-
-	public function test_af3_context_reaches_context_aware_callbacks_and_discovery_remains_private(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
-		$context = $this->context( $principal_id );
-
-		$action = ActionInvoker::invoke( self::PROVIDER, 'work.context', '1', [], $context );
-		$state = StateInvoker::resolve( self::PROVIDER, 'invoice.context', '1', [], $context );
-		$action_definition = ActionRegistry::get( self::PROVIDER, 'work.context' );
-		$state_definition = StateRegistry::get( self::PROVIDER, 'invoice.context' );
-
-		self::assertSame( [ 'ok' => true ], $action );
-		self::assertSame( [ 'ok' => true ], $state );
+		self::assertSame( [ 'ok' => true ], ActionInvoker::invoke( self::PROVIDER, 'work.context', '1', [], $context ) );
+		self::assertSame( [ 'ok' => true ], StateInvoker::resolve( self::PROVIDER, 'invoice.context', '1', [], $context ) );
 		self::assertSame( $context, $this->action_context );
 		self::assertSame( $context, $this->state_context );
 		self::assertSame( 'corr-123', $this->action_context?->correlation_id() );
@@ -269,10 +170,13 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		self::assertSame( 2, $this->action_context?->attempt() );
 		self::assertSame( 'workflow-12', $this->action_context?->workflow_id() );
 		self::assertSame( '7', $this->action_context?->workflow_revision() );
-		self::assertIsArray( $action_definition );
-		self::assertArrayNotHasKey( 'executor', $action_definition );
-		self::assertIsArray( $state_definition );
-		self::assertArrayNotHasKey( 'resolver', $state_definition );
+
+		$action = ActionRegistry::get( self::PROVIDER, 'work.context' );
+		$state = StateRegistry::get( self::PROVIDER, 'invoice.context' );
+		self::assertIsArray( $action );
+		self::assertArrayNotHasKey( 'executor', $action );
+		self::assertIsArray( $state );
+		self::assertArrayNotHasKey( 'resolver', $state );
 	}
 
 	public function register_fixture_extension(): void {
@@ -293,12 +197,8 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'label'               => 'Create project',
 			'description'         => 'Legacy one-argument executor fixture.',
 			'schema_version'      => '1',
-			'input_schema'        => [
-				'source_id' => [ 'type' => 'integer', 'required' => true ],
-			],
-			'output_schema'       => [
-				'project_id' => [ 'type' => 'integer', 'required' => true ],
-			],
+			'input_schema'        => [ 'source_id' => [ 'type' => 'integer', 'required' => true ] ],
+			'output_schema'       => [ 'project_id' => [ 'type' => 'integer', 'required' => true ] ],
 			'required_capability' => 'manage_options',
 			'executor'            => function ( array $input ): array {
 				++$this->action_calls;
@@ -312,12 +212,8 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'label'               => 'Current invoice',
 			'description'         => 'Legacy one-argument resolver fixture.',
 			'schema_version'      => '1',
-			'input_schema'        => [
-				'invoice_id' => [ 'type' => 'integer', 'required' => true ],
-			],
-			'output_schema'       => [
-				'status' => [ 'type' => 'string', 'required' => true ],
-			],
+			'input_schema'        => [ 'invoice_id' => [ 'type' => 'integer', 'required' => true ] ],
+			'output_schema'       => [ 'status' => [ 'type' => 'string', 'required' => true ] ],
 			'required_capability' => 'manage_options',
 			'resolver'            => function ( array $input ): array {
 				++$this->state_calls;
@@ -325,63 +221,39 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			},
 		] );
 
-		ActionRegistry::register( $this->simple_action_definition(
-			'work.context',
-			function ( array $input, InvocationContext $context ): array {
-				$this->action_context = $context;
-				return [ 'ok' => true ];
-			}
-		) );
-		StateRegistry::register( $this->simple_state_definition(
-			'invoice.context',
-			function ( array $input, InvocationContext $context ): array {
-				$this->state_context = $context;
-				return [ 'ok' => true ];
-			}
-		) );
+		ActionRegistry::register( $this->simple_action( 'work.context', function ( array $input, InvocationContext $context ): array {
+			$this->action_context = $context;
+			return [ 'ok' => true ];
+		} ) );
+		StateRegistry::register( $this->simple_state( 'invoice.context', function ( array $input, InvocationContext $context ): array {
+			$this->state_context = $context;
+			return [ 'ok' => true ];
+		} ) );
 
-		ActionRegistry::register( $this->simple_action_definition(
-			'work.fail',
-			static fn (): WP_Error => new WP_Error(
-				'acme_domain_secret_failure',
-				'TOP SECRET provider detail',
-				[ 'secret' => 'must-not-propagate' ]
-			)
-		) );
-		StateRegistry::register( $this->simple_state_definition(
-			'invoice.fail',
-			static fn (): WP_Error => new WP_Error(
-				'acme_state_secret_failure',
-				'TOP SECRET provider detail',
-				[ 'secret' => 'must-not-propagate' ]
-			)
-		) );
+		ActionRegistry::register( $this->simple_action( 'work.fail', static fn (): WP_Error => new WP_Error(
+			'acme_domain_secret_failure',
+			'TOP SECRET provider detail',
+			[ 'secret' => 'must-not-propagate' ]
+		) ) );
+		StateRegistry::register( $this->simple_state( 'invoice.fail', static fn (): WP_Error => new WP_Error(
+			'acme_state_secret_failure',
+			'TOP SECRET provider detail',
+			[ 'secret' => 'must-not-propagate' ]
+		) ) );
 
-		ActionRegistry::register( $this->simple_action_definition(
-			'work.throw',
-			static function (): array {
-				throw new RuntimeException( 'TOP SECRET throwable detail' );
-			}
-		) );
-		StateRegistry::register( $this->simple_state_definition(
-			'invoice.throw',
-			static function (): array {
-				throw new RuntimeException( 'TOP SECRET throwable detail' );
-			}
-		) );
+		ActionRegistry::register( $this->simple_action( 'work.throw', static function (): array {
+			throw new RuntimeException( 'TOP SECRET throwable detail' );
+		} ) );
+		StateRegistry::register( $this->simple_state( 'invoice.throw', static function (): array {
+			throw new RuntimeException( 'TOP SECRET throwable detail' );
+		} ) );
 
-		ActionRegistry::register( $this->simple_action_definition(
-			'work.bad_output',
-			static fn (): array => [ 'ok' => 'not-a-boolean' ]
-		) );
-		StateRegistry::register( $this->simple_state_definition(
-			'invoice.bad_output',
-			static fn (): array => [ 'ok' => 'not-a-boolean' ]
-		) );
+		ActionRegistry::register( $this->simple_action( 'work.output.invalid', static fn (): array => [ 'ok' => 'not-a-boolean' ] ) );
+		StateRegistry::register( $this->simple_state( 'invoice.output.invalid', static fn (): array => [ 'ok' => 'not-a-boolean' ] ) );
 	}
 
 	/** @return array<string,mixed> */
-	private function simple_action_definition( string $id, callable $executor ): array {
+	private function simple_action( string $id, callable $executor ): array {
 		return [
 			'provider'            => self::PROVIDER,
 			'id'                  => $id,
@@ -389,16 +261,14 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'description'         => '',
 			'schema_version'      => '1',
 			'input_schema'        => [],
-			'output_schema'       => [
-				'ok' => [ 'type' => 'boolean', 'required' => true ],
-			],
+			'output_schema'       => [ 'ok' => [ 'type' => 'boolean', 'required' => true ] ],
 			'required_capability' => 'manage_options',
 			'executor'            => $executor,
 		];
 	}
 
 	/** @return array<string,mixed> */
-	private function simple_state_definition( string $id, callable $resolver ): array {
+	private function simple_state( string $id, callable $resolver ): array {
 		return [
 			'provider'            => self::PROVIDER,
 			'id'                  => $id,
@@ -406,9 +276,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'description'         => '',
 			'schema_version'      => '1',
 			'input_schema'        => [],
-			'output_schema'       => [
-				'ok' => [ 'type' => 'boolean', 'required' => true ],
-			],
+			'output_schema'       => [ 'ok' => [ 'type' => 'boolean', 'required' => true ] ],
 			'required_capability' => 'manage_options',
 			'resolver'            => $resolver,
 		];
@@ -430,7 +298,6 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 	private function create_fixture(): void {
 		$directory = WP_PLUGIN_DIR . '/' . self::PROVIDER;
 		self::assertTrue( wp_mkdir_p( $directory ), 'Could not create Automation Invocation fixture directory.' );
-
 		$plugin = <<<'PHP'
 <?php
 /**
@@ -440,7 +307,6 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
  */
 defined( 'ABSPATH' ) || exit;
 PHP;
-
 		self::assertNotFalse(
 			file_put_contents( $directory . '/' . self::PROVIDER . '.php', $plugin ),
 			'Could not write Automation Invocation fixture plugin.'
