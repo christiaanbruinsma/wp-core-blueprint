@@ -159,7 +159,7 @@ function cb_b3_assert_admin_post_contract(bool $enabled): void {
 
 /** @param array<string,mixed> $value @return array<string,mixed> */
 function cb_b3_without_enabled(array $value): array {
-    unset($value['enabled']);
+    unset($value['enabled'], $value['delivery_enabled'], $value['designer_enabled']);
     return $value;
 }
 
