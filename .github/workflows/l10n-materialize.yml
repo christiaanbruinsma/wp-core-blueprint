@@ -24,6 +24,36 @@ jobs:
           php-version: '8.4'
           coverage: none
 
+      - name: Diagnose localization payload
+        run: |
+          php <<'PHP'
+          <?php
+          $source = file_get_contents('tools/l10n-materialize.php');
+          if ($source === false || !preg_match("/\\$payload = '([^']*)';/s", $source, $matches)) {
+              fwrite(STDERR, "Could not locate localization payload.\n");
+              exit(1);
+          }
+
+          $payload = $matches[1];
+          printf("Payload length: %d\n", strlen($payload));
+          printf("Payload length modulo 4: %d\n", strlen($payload) % 4);
+
+          if (preg_match('/[^A-Za-z0-9+\\\/=]/', $payload, $invalid, PREG_OFFSET_CAPTURE)) {
+              printf("First invalid byte: 0x%02X at offset %d\n", ord($invalid[0][0]), $invalid[0][1]);
+          } else {
+              echo "Base64 alphabet: valid\n";
+          }
+
+          $decoded = base64_decode($payload, true);
+          if ($decoded === false) {
+              echo "Strict Base64 decode: failed\n";
+              exit(0);
+          }
+
+          echo "Strict Base64 decode: passed\n";
+          printf("Decoded prefix: %s\n", bin2hex(substr($decoded, 0, 8)));
+          PHP
+
       - name: Materialize localized catalogs
         run: php tools/l10n-materialize.php
 
