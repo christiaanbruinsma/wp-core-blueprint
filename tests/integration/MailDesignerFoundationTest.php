@@ -141,7 +141,7 @@ final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
 
 		self::assertStringContainsString( 'data-cb-design-shell-fullscreen', $template );
 		self::assertStringContainsString( 'aria-pressed="false"', $template );
-		self::assertStringContainsString( "esc_html_e( 'Fullscreen mode' );", $template );
+		self::assertStringContainsString( "__( 'Fullscreen mode', 'default' )", $template );
 		self::assertStringNotContainsString( "'Fullscreen mode', 'core-blueprint'", $template );
 		self::assertStringNotContainsString( 'toggleFullscreen', $feature );
 		self::assertStringNotContainsString( 'enterFullscreen', $feature );
