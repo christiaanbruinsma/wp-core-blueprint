@@ -101,8 +101,10 @@ test('mail designer consumes Mail profile styling and exposes section inspection
 	assert.match(source, /MAIL_FONT_FAMILIES/);
 	assert.match(source, /normalizeMailLayout/);
 	assert.match(source, /node_type:\s*['"]mail\.section['"]/);
+	assert.match(source, /defaults:\s*Object\.freeze\(\{\s*background:\s*['"]#ffffff['"],\s*padding:\s*28\s*\}\)/);
 	assert.match(source, /key:\s*['"]background['"]/);
 	assert.match(source, /key:\s*['"]padding['"]/);
+	assert.match(source, /node\.properties\?\.\[field\.key\]\s*\?\?\s*definition\.defaults\?\.\[field\.key\]/);
 	assert.doesNotMatch(componentRegistry, /'node_type'\s*=>\s*'mail\.section'/);
 });
 
