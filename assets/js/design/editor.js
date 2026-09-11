@@ -12,7 +12,14 @@ import {
 import * as fixedProfile from './document/fixed/index.js';
 import * as flowProfile from './document/flow/index.js';
 import * as mailProfile from './mail/index.js';
-import { createDesignerShell } from './shell/index.js';
+import {
+	DESIGNER_ICON_NAMES,
+	DESIGNER_SIDEBAR_ROLES,
+	configureDesignerSidebar,
+	createDesignerIcon,
+	createDesignerShell,
+	decorateDesignerControl,
+} from './shell/index.js';
 
 const PROFILE_APIS = Object.freeze({
 	'document-fixed': Object.freeze({ ...fixedProfile }),
@@ -173,9 +180,14 @@ export const commands = Object.freeze({
 });
 export {
 	CommandHistory,
+	DESIGNER_ICON_NAMES,
+	DESIGNER_SIDEBAR_ROLES,
 	EditorState,
 	ProjectState,
+	configureDesignerSidebar,
+	createDesignerIcon,
 	createDesignerShell,
+	decorateDesignerControl,
 	insertNodeCommand,
 	removeNodeCommand,
 	reorderNodeCommand,
@@ -187,6 +199,13 @@ const publicApi = Object.freeze({
 	profiles,
 	shell: Object.freeze({
 		create: createDesignerShell,
+		configureSidebar: configureDesignerSidebar,
+		sidebarRoles: DESIGNER_SIDEBAR_ROLES,
+		icons: Object.freeze({
+			names: DESIGNER_ICON_NAMES,
+			create: createDesignerIcon,
+			decorate: decorateDesignerControl,
+		}),
 	}),
 	commands,
 });
@@ -194,4 +213,7 @@ const publicApi = Object.freeze({
 if (typeof window !== 'undefined') {
 	window.cbCore = window.cbCore || {};
 	window.cbCore.designEditor = publicApi;
+	window.dispatchEvent(new CustomEvent('cb:design-editor:ready', {
+		detail: Object.freeze({ api: publicApi }),
+	}));
 }
