@@ -54,7 +54,7 @@ jobs:
               'Mail disabled',
               'Mail settings saved.',
               'Mail settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.',
-              'Review Mail settings.',
+              'Review Mail settings',
           ]
           stale_replacement = "$stale = json_decode(<<<'JSON'\n" + json.dumps(stale_values, ensure_ascii=False, indent=2) + "\nJSON, true, 512, JSON_THROW_ON_ERROR);"
           source = source[:stale_start] + stale_replacement + source[stale_end:]
