@@ -29,7 +29,7 @@ export const configureDesignerViewports = (root, {
 
 	const existing = viewportControllers.get(root);
 	if (existing) {
-		if (active) existing.activate(active, { emit: false });
+		existing.configure({ active, onChange });
 		return existing;
 	}
 
@@ -56,6 +56,7 @@ export const configureDesignerViewports = (root, {
 	if (group) group.append(...controls.sort((left, right) => orderIndex(left) - orderIndex(right)));
 
 	let activeViewport = '';
+	let changeHandler = typeof onChange === 'function' ? onChange : null;
 	const activate = (viewport, { emit = true } = {}) => {
 		const value = String(viewport || '').trim();
 		if (!value) return false;
@@ -69,7 +70,7 @@ export const configureDesignerViewports = (root, {
 			button.setAttribute('aria-pressed', selected ? 'true' : 'false');
 		});
 		if (emit) {
-			if (typeof onChange === 'function') onChange(value, target);
+			if (changeHandler) changeHandler(value, target);
 			root.dispatchEvent(new CustomEvent(VIEWPORT_EVENT, {
 				bubbles: true,
 				detail: Object.freeze({ viewport: value }),
@@ -93,6 +94,13 @@ export const configureDesignerViewports = (root, {
 		root,
 		controls: Object.freeze([...controls]),
 		activate,
+		configure(configuration = {}) {
+			if (Object.hasOwn(configuration, 'onChange')) {
+				changeHandler = typeof configuration.onChange === 'function' ? configuration.onChange : null;
+			}
+			if (configuration.active) activate(configuration.active, { emit: false });
+			return true;
+		},
 		get activeViewport() {
 			return activeViewport;
 		},
