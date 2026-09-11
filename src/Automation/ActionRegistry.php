@@ -4,8 +4,8 @@ declare(strict_types=1);
  * Public Automation Foundation action registration and discovery boundary.
  *
  * Action executors are intentionally withheld from public discovery snapshots.
- * AF1 defines capability metadata and ownership only; invocation authority and
- * execution context are finalized with the orchestration runtime.
+ * Governed execution is available only through ActionInvoker; direct callback
+ * access remains an internal Foundation implementation detail.
  *
  * @package Core_Blueprint
  * @since   1.0.0
