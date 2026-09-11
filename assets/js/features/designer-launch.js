@@ -165,6 +165,7 @@
 			button.append(label);
 
 			const setDesignerMode = (active) => {
+				root.classList.toggle('is-designer-mode-active', active);
 				wrapper.hidden = active;
 				shell.hidden = !active;
 			};
