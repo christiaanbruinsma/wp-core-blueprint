@@ -139,13 +139,24 @@ reservation.add_note
 reservation.current
 ```
 
-The provider and capability ID together form the effective identity:
+Within one capability kind, the provider and capability ID form the registry identity:
 
 ```text
 acme-reservations::reservation.confirmed
 ```
 
-Treat both parts as persistent API identifiers. Labels and descriptions may change; IDs should not be repurposed for new semantics.
+Capability kinds are separate namespaces. A provider may therefore expose the same dotted ID as a trigger, action and/or state capability when those contracts genuinely share a domain name.
+
+A persisted orchestration reference must consequently include the capability kind as well as provider, ID and expected schema version, for example:
+
+```text
+kind:           state
+provider:       acme-reservations
+id:             reservation.current
+schema_version: 1
+```
+
+Treat `kind + provider + id` as the persistent semantic identity. Labels and descriptions may change; an existing identity must not be repurposed for different semantics.
 
 ## Schema versions
 
@@ -159,7 +170,7 @@ Every trigger, action and state capability declares a positive integer schema ve
 
 Increase it when the transport contract changes incompatibly. A label or description change alone does not require a schema-version change.
 
-Automation consumers must not silently reinterpret a workflow configured for an incompatible contract version.
+Automation consumers must persist the expected schema version with the capability reference and must not silently reinterpret a workflow configured for an incompatible contract version.
 
 ## Transport schemas
 
