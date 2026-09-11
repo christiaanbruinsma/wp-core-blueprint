@@ -1,9 +1,18 @@
+import {
+	DESIGNER_ICON_NAMES,
+	createDesignerIcon,
+	decorateDesignerControl,
+} from './icons.js';
+
 const element = (root, selector) => root?.querySelector?.(selector) ?? null;
 const elements = (root, selector) => Array.from(root?.querySelectorAll?.(selector) ?? []);
 const DEFAULT_GROUP = 'default';
 const FULLSCREEN_ROOT_CLASS = 'is-fullscreen';
 const FULLSCREEN_DOCUMENT_CLASS = 'cb-core-design-shell-focus-mode';
 const FULLSCREEN_EVENT = 'cb:design-shell:fullscreenchange';
+const FULLSCREEN_ENTER_CLASS = 'is-entering';
+const FULLSCREEN_EXIT_CLASS = 'is-exiting';
+const FULLSCREEN_EXIT_MS = 130;
 const FOCUSABLE_SELECTOR = [
 	'a[href]',
 	'button:not([disabled])',
@@ -14,7 +23,23 @@ const FOCUSABLE_SELECTOR = [
 	'[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+export const DESIGNER_SIDEBAR_ROLES = Object.freeze(['inspector', 'layers', 'settings']);
+
+const SIDEBAR_ROLE_LABELS = Object.freeze({
+	inspector: 'Inspector',
+	layers: 'Layers',
+	settings: 'Settings',
+});
+
+const SIDEBAR_ROLE_ICONS = Object.freeze({
+	inspector: 'sliders-horizontal',
+	layers: 'layers',
+	settings: 'settings-2',
+});
+
 let activeFullscreenExit = null;
+const shellControllers = new WeakMap();
+const pendingSidebarConfigs = new WeakMap();
 
 const normalizeGroupId = (value) => String(value || DEFAULT_GROUP).trim() || DEFAULT_GROUP;
 
@@ -31,6 +56,35 @@ const focusTargetIsUsable = (target) => (
 	&& typeof target.focus === 'function'
 	&& target.isConnected !== false
 );
+
+const motionEnabled = () => {
+	if (typeof window === 'undefined') return false;
+	return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches !== true;
+};
+
+const scheduleAnimationFrame = (callback) => {
+	if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+		return window.requestAnimationFrame(callback);
+	}
+	callback();
+	return null;
+};
+
+/**
+ * Apply the canonical Designer sidebar roles to a shell root.
+ *
+ * Consumers map their own panel identifiers onto the shared semantic roles;
+ * Base owns order, iconography, labels and keyboard order.
+ */
+export const configureDesignerSidebar = (root, configuration = {}) => {
+	if (!(root instanceof Element)) {
+		throw new TypeError('Designer sidebar configuration requires a shell root Element.');
+	}
+	const controller = shellControllers.get(root);
+	if (controller?.configureSidebar) return controller.configureSidebar(configuration);
+	pendingSidebarConfigs.set(root, configuration);
+	return true;
+};
 
 /**
  * Shared Core Blueprint Designer shell.
@@ -59,8 +113,13 @@ export const createDesignerShell = (root, {
 	const frames = elements(root, 'iframe');
 	const groups = new Map();
 	let fullscreenState = false;
+	let exitPending = false;
+	let exitTimer = null;
+	let enterFrame = null;
 	let focusReturnTarget = null;
 	let temporaryRootTabIndex = null;
+	let initialized = false;
+	let sidebarDefaultPanel = null;
 
 	const groupIdFor = (node) => normalizeGroupId(node?.dataset?.cbDesignShellGroup);
 	const group = (groupId = DEFAULT_GROUP) => {
@@ -124,38 +183,93 @@ export const createDesignerShell = (root, {
 		temporaryRootTabIndex = null;
 	};
 
-	const exitFullscreenInternal = ({ restoreFocus = true } = {}) => {
-		if (!fullscreenState) return false;
-		fullscreenState = false;
-		if (activeFullscreenExit === exitFullscreenInternal) activeFullscreenExit = null;
-		document.removeEventListener('keydown', handleFullscreenKeydown, true);
-		document.removeEventListener('focusin', handleFullscreenFocusin, true);
-		root.classList.remove(FULLSCREEN_ROOT_CLASS);
+	const clearExitTimer = () => {
+		if (null === exitTimer) return;
+		if (typeof window !== 'undefined' && typeof window.clearTimeout === 'function') window.clearTimeout(exitTimer);
+		else clearTimeout(exitTimer);
+		exitTimer = null;
+	};
+
+	const clearEnterMotion = () => {
+		if (null !== enterFrame && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+			window.cancelAnimationFrame(enterFrame);
+		}
+		enterFrame = null;
+		root.classList.remove(FULLSCREEN_ENTER_CLASS);
+	};
+
+	const finalizeExit = ({ restoreFocus = true } = {}) => {
+		clearExitTimer();
+		exitPending = false;
+		clearEnterMotion();
+		root.classList.remove(FULLSCREEN_EXIT_CLASS, FULLSCREEN_ROOT_CLASS);
 		document.documentElement?.classList?.remove(FULLSCREEN_DOCUMENT_CLASS);
 		restoreRootTabIndex();
-		syncFullscreenControl();
+		if (activeFullscreenExit === exitFullscreenInternal) activeFullscreenExit = null;
 		dispatchFullscreenChange();
 
 		const returnTarget = focusReturnTarget;
 		focusReturnTarget = null;
 		if (restoreFocus && focusTargetIsUsable(returnTarget)) returnTarget.focus();
+	};
+
+	const exitFullscreenInternal = ({ restoreFocus = true, immediate = false } = {}) => {
+		if (exitPending) {
+			if (immediate) {
+				finalizeExit({ restoreFocus });
+				return true;
+			}
+			return false;
+		}
+		if (!fullscreenState) return false;
+
+		fullscreenState = false;
+		exitPending = true;
+		document.removeEventListener('keydown', handleFullscreenKeydown, true);
+		document.removeEventListener('focusin', handleFullscreenFocusin, true);
+		clearEnterMotion();
+		root.classList.add(FULLSCREEN_EXIT_CLASS);
+		syncFullscreenControl();
+
+		if (immediate || !motionEnabled()) {
+			finalizeExit({ restoreFocus });
+			return true;
+		}
+
+		const finish = () => finalizeExit({ restoreFocus });
+		exitTimer = typeof window !== 'undefined' && typeof window.setTimeout === 'function'
+			? window.setTimeout(finish, FULLSCREEN_EXIT_MS)
+			: setTimeout(finish, FULLSCREEN_EXIT_MS);
 		return true;
 	};
 
 	const enterFullscreen = () => {
 		if (fullscreenState) return false;
-		if (activeFullscreenExit) activeFullscreenExit({ restoreFocus: false });
+		if (exitPending) exitFullscreenInternal({ restoreFocus: false, immediate: true });
+		if (activeFullscreenExit && activeFullscreenExit !== exitFullscreenInternal) {
+			activeFullscreenExit({ restoreFocus: false, immediate: true });
+		}
 
 		focusReturnTarget = focusTargetIsUsable(document.activeElement) ? document.activeElement : null;
 		fullscreenState = true;
 		activeFullscreenExit = exitFullscreenInternal;
-		root.classList.add(FULLSCREEN_ROOT_CLASS);
+		root.classList.remove(FULLSCREEN_EXIT_CLASS);
+		root.classList.add(FULLSCREEN_ROOT_CLASS, FULLSCREEN_ENTER_CLASS);
 		document.documentElement?.classList?.add(FULLSCREEN_DOCUMENT_CLASS);
 		document.addEventListener('keydown', handleFullscreenKeydown, true);
 		document.addEventListener('focusin', handleFullscreenFocusin, true);
 		syncFullscreenControl();
 		focusInside();
 		dispatchFullscreenChange();
+
+		if (!motionEnabled()) {
+			root.classList.remove(FULLSCREEN_ENTER_CLASS);
+		} else {
+			enterFrame = scheduleAnimationFrame(() => {
+				enterFrame = null;
+				root.classList.remove(FULLSCREEN_ENTER_CLASS);
+			});
+		}
 		return true;
 	};
 
@@ -246,6 +360,50 @@ export const createDesignerShell = (root, {
 		return true;
 	};
 
+	const applySidebarConfiguration = ({
+		roles = {},
+		labels = {},
+		activeRole = 'inspector',
+	} = {}) => {
+		const state = group(DEFAULT_GROUP);
+		const records = DESIGNER_SIDEBAR_ROLES.map((role) => {
+			const panelId = String(roles?.[role] || role).trim();
+			const tab = state.tabs.find((candidate) => candidate.dataset.cbDesignShellTab === panelId) ?? null;
+			const panel = state.panels.find((candidate) => candidate.dataset.cbDesignShellPanel === panelId) ?? null;
+			return { role, panelId, tab, panel };
+		}).filter((record) => record.tab && record.panel);
+		if (!records.length) return false;
+
+		const roleTabs = records.map((record) => record.tab);
+		const rolePanels = records.map((record) => record.panel);
+		const remainingTabs = state.tabs.filter((tab) => !roleTabs.includes(tab));
+		const remainingPanels = state.panels.filter((panel) => !rolePanels.includes(panel));
+		state.tabs.splice(0, state.tabs.length, ...roleTabs, ...remainingTabs);
+		state.panels.splice(0, state.panels.length, ...rolePanels, ...remainingPanels);
+
+		const tabParent = roleTabs[0]?.parentElement;
+		if (tabParent && roleTabs.every((tab) => tab.parentElement === tabParent)) {
+			tabParent.append(...roleTabs);
+		}
+		const panelParent = rolePanels[0]?.parentElement;
+		if (panelParent && rolePanels.every((panel) => panel.parentElement === panelParent)) {
+			panelParent.append(...rolePanels);
+		}
+
+		records.forEach(({ role, tab, panel }) => {
+			const label = String(labels?.[role] || SIDEBAR_ROLE_LABELS[role] || role).trim();
+			tab.dataset.cbDesignShellSidebarRole = role;
+			panel.dataset.cbDesignShellSidebarRole = role;
+			tab.textContent = label;
+			decorateDesignerControl(tab, SIDEBAR_ROLE_ICONS[role], { label });
+		});
+
+		const active = records.find((record) => record.role === activeRole) ?? records[0];
+		sidebarDefaultPanel = active?.panelId || null;
+		if (initialized && sidebarDefaultPanel) activatePanel(sidebarDefaultPanel);
+		return true;
+	};
+
 	const moveTabFocus = (current, direction) => {
 		const state = group(groupIdFor(current));
 		if (!state.tabs.length) return;
@@ -288,9 +446,15 @@ export const createDesignerShell = (root, {
 	fullscreen?.addEventListener('click', toggleFullscreen);
 	frames.forEach(bindFrameKeyboard);
 
+	const pendingSidebarConfiguration = pendingSidebarConfigs.get(root);
+	if (pendingSidebarConfiguration) {
+		applySidebarConfiguration(pendingSidebarConfiguration);
+		pendingSidebarConfigs.delete(root);
+	}
+
 	groups.forEach((state) => {
 		const requested = state.id === DEFAULT_GROUP
-			? defaultPanel
+			? (sidebarDefaultPanel || defaultPanel)
 			: defaultPanels?.[state.id];
 		const initialPanel = String(
 			requested
@@ -300,13 +464,15 @@ export const createDesignerShell = (root, {
 		).trim();
 		if (initialPanel) activatePanel(initialPanel, { group: state.id });
 	});
+	initialized = true;
 	syncHistory();
 	syncFullscreenControl();
 
-	return Object.freeze({
+	const controller = Object.freeze({
 		root,
 		activatePanel,
 		syncHistory,
+		configureSidebar: applySidebarConfiguration,
 		isFullscreen,
 		enterFullscreen,
 		exitFullscreen,
@@ -321,4 +487,12 @@ export const createDesignerShell = (root, {
 			return group(groupId).panels.find((candidate) => candidate.dataset.cbDesignShellPanel === String(id || '')) ?? null;
 		},
 	});
+	shellControllers.set(root, controller);
+	return controller;
+};
+
+export {
+	DESIGNER_ICON_NAMES,
+	createDesignerIcon,
+	decorateDesignerControl,
 };
