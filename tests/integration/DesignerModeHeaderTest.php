@@ -31,6 +31,20 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( 'max-width: 782px;', $mail_css );
 	}
 
+	public function test_designer_mode_is_launch_only_before_fullscreen_and_toolbar_actions_do_not_shrink(): void {
+		$root = dirname( __DIR__, 2 );
+		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
+		$shell_css = (string) file_get_contents( $root . '/assets/css/design/editor-shell.css' );
+		$mail_css = (string) file_get_contents( $root . '/assets/css/pages/mail-designer.css' );
+
+		self::assertStringContainsString( "root.classList.toggle('is-designer-mode-active', active)", $launch );
+		self::assertStringContainsString( ".cb-core-mail-designer__workspace {\n\tdisplay: none;", $mail_css );
+		self::assertStringContainsString( '.cb-core-mail-designer.is-designer-mode-active .cb-core-mail-designer__workspace', $mail_css );
+		self::assertStringContainsString( '.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-group', $shell_css );
+		self::assertStringContainsString( "\tflex: 0 0 auto;", $shell_css );
+		self::assertStringContainsString( '.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-status:empty', $shell_css );
+	}
+
 	public function test_tablet_viewport_is_owned_by_mail_and_uses_wordpress_platform_vocabulary(): void {
 		$root = dirname( __DIR__, 2 );
 		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
@@ -42,6 +56,7 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( "value === 'tablet'", $feature );
 		self::assertStringContainsString( "classList.toggle('is-tablet'", $feature );
 	}
+
 	public function test_designer_mode_and_hud_share_the_canonical_core_blueprint_mark(): void {
 		$root = dirname( __DIR__, 2 );
 		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
