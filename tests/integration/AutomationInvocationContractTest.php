@@ -13,6 +13,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 
 	private const PROVIDER = 'acme-invocation-fixture';
 	private const PLUGIN_FILE = self::PROVIDER . '/' . self::PROVIDER . '.php';
+	private const CAPABILITY = 'acme_run_automation';
 
 	private int $action_calls = 0;
 	private int $state_calls = 0;
@@ -113,7 +114,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		self::assertSame( [ 'project_id' => 1 ], ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $context ) );
 		$user = get_userdata( $principal_id );
 		self::assertInstanceOf( WP_User::class, $user );
-		$user->remove_cap( 'manage_options' );
+		$user->remove_cap( self::CAPABILITY );
 		$lost = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 2 ], $context );
 		self::assertSame( 'cb_core_automation_permission_denied', $lost->get_error_code() );
 	}
@@ -199,7 +200,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'schema_version'      => '1',
 			'input_schema'        => [ 'source_id' => [ 'type' => 'integer', 'required' => true ] ],
 			'output_schema'       => [ 'project_id' => [ 'type' => 'integer', 'required' => true ] ],
-			'required_capability' => 'manage_options',
+			'required_capability' => self::CAPABILITY,
 			'executor'            => function ( array $input ): array {
 				++$this->action_calls;
 				return [ 'project_id' => $input['source_id'] ];
@@ -214,7 +215,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'schema_version'      => '1',
 			'input_schema'        => [ 'invoice_id' => [ 'type' => 'integer', 'required' => true ] ],
 			'output_schema'       => [ 'status' => [ 'type' => 'string', 'required' => true ] ],
-			'required_capability' => 'manage_options',
+			'required_capability' => self::CAPABILITY,
 			'resolver'            => function ( array $input ): array {
 				++$this->state_calls;
 				return [ 'status' => 'paid' ];
@@ -262,7 +263,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'schema_version'      => '1',
 			'input_schema'        => [],
 			'output_schema'       => [ 'ok' => [ 'type' => 'boolean', 'required' => true ] ],
-			'required_capability' => 'manage_options',
+			'required_capability' => self::CAPABILITY,
 			'executor'            => $executor,
 		];
 	}
@@ -277,7 +278,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'schema_version'      => '1',
 			'input_schema'        => [],
 			'output_schema'       => [ 'ok' => [ 'type' => 'boolean', 'required' => true ] ],
-			'required_capability' => 'manage_options',
+			'required_capability' => self::CAPABILITY,
 			'resolver'            => $resolver,
 		];
 	}
@@ -286,7 +287,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		$user_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 		$user = get_userdata( $user_id );
 		self::assertInstanceOf( WP_User::class, $user );
-		$user->add_cap( 'manage_options' );
+		$user->add_cap( self::CAPABILITY );
 		return $user_id;
 	}
 
