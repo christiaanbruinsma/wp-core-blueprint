@@ -28,6 +28,7 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 	public function test_designer_header_uses_shared_toolbar_and_viewport_contracts(): void {
 		$root = dirname( __DIR__, 2 );
 		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
+		$viewports = (string) file_get_contents( $root . '/assets/js/design/shell/viewports.js' );
 		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
 		$shell_css = (string) file_get_contents( $root . '/assets/css/design/editor-shell.css' );
 		$mail_css = (string) file_get_contents( $root . '/assets/css/pages/mail-designer.css' );
@@ -37,8 +38,9 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( "[data-cb-design-shell-fullscreen]", $launch );
 		self::assertStringContainsString( "[data-cb-design-shell-primary-action]", $launch );
 		self::assertStringContainsString( "[data-cb-design-shell-viewport]", $launch );
-		self::assertStringContainsString( "VIEWPORT_ORDER = Object.freeze(['mobile', 'tablet', 'desktop'])", $launch );
-		self::assertStringContainsString( "cb:design-shell:viewportchange", $launch );
+		self::assertStringContainsString( 'shellApi.configureViewports(shell)', $launch );
+		self::assertStringContainsString( "DESIGNER_VIEWPORT_ORDER = Object.freeze(['mobile', 'tablet', 'desktop'])", $viewports );
+		self::assertStringContainsString( "cb:design-shell:viewportchange", $viewports );
 		self::assertStringContainsString( 'data-cb-design-shell-viewport="tablet"', $template );
 		self::assertStringContainsString( 'cb-core-design-shell__toolbar--designer', $launch );
 		self::assertStringContainsString( 'grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);', $shell_css );
@@ -64,6 +66,8 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		$root = dirname( __DIR__, 2 );
 		$icons = (string) file_get_contents( $root . '/assets/js/design/shell/icons.js' );
 		$shell = (string) file_get_contents( $root . '/assets/js/design/shell/index.js' );
+		$viewports = (string) file_get_contents( $root . '/assets/js/design/shell/viewports.js' );
+		$editor = (string) file_get_contents( $root . '/assets/js/design/editor.js' );
 		$shell_css = (string) file_get_contents( $root . '/assets/css/design/editor-shell.css' );
 		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
 
@@ -74,10 +78,12 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( "'settings-2'", $icons );
 		self::assertStringContainsString( "['inspector', 'layers', 'settings']", $shell );
 		self::assertStringContainsString( 'configureDesignerSidebar', $shell );
-		self::assertStringContainsString( "mobile: 'smartphone'", $launch );
-		self::assertStringContainsString( "tablet: 'tablet'", $launch );
-		self::assertStringContainsString( "desktop: 'monitor'", $launch );
-		self::assertStringContainsString( 'shell.dataset.cbDesignShellViewport = value', $launch );
+		self::assertStringContainsString( "mobile: 'smartphone'", $viewports );
+		self::assertStringContainsString( "tablet: 'tablet'", $viewports );
+		self::assertStringContainsString( "desktop: 'monitor'", $viewports );
+		self::assertStringContainsString( 'root.dataset.cbDesignShellViewport = value', $viewports );
+		self::assertStringContainsString( 'configureViewports: configureDesignerViewports', $editor );
+		self::assertStringContainsString( 'viewportOrder: DESIGNER_VIEWPORT_ORDER', $editor );
 		self::assertStringNotContainsString( 'data-cb-mail-', $launch );
 		self::assertStringNotContainsString( 'const ICONS', $launch );
 		self::assertStringContainsString( '.cb-core-design-shell.is-fullscreen.is-entering', $shell_css );
@@ -106,14 +112,14 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 	public function test_tablet_viewport_is_a_shared_designer_capability_while_mail_owns_preview_response(): void {
 		$root = dirname( __DIR__, 2 );
 		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
-		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
+		$viewports = (string) file_get_contents( $root . '/assets/js/design/shell/viewports.js' );
 		$feature = (string) file_get_contents( $root . '/assets/js/features/mail-designer.js' );
 
 		self::assertStringContainsString( "\$tablet_label = __( 'Tablet', 'default' )", $template );
 		self::assertStringContainsString( 'data-cb-design-shell-viewport="tablet"', $template );
 		self::assertStringContainsString( 'data-cb-mail-viewport="tablet"', $template );
 		self::assertStringNotContainsString( "'Tablet', 'core-blueprint'", $template );
-		self::assertStringContainsString( "cb:design-shell:viewportchange", $launch );
+		self::assertStringContainsString( "cb:design-shell:viewportchange", $viewports );
 		self::assertStringContainsString( "value === 'tablet'", $feature );
 		self::assertStringContainsString( "classList.toggle('is-tablet'", $feature );
 	}
