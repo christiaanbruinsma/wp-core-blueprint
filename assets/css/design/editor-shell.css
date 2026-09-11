@@ -4,9 +4,30 @@
  * Composition only. Profiles/consumers own canvas semantics and component UI.
  */
 
+html.cb-core-design-shell-focus-mode,
+html.cb-core-design-shell-focus-mode body {
+	overflow: hidden;
+}
+
 .cb-core-design-shell {
 	width: 100%;
 	min-width: 0;
+}
+
+.cb-core-design-shell.is-fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 100100;
+	display: flex;
+	flex-direction: column;
+	width: auto;
+	height: 100dvh;
+	min-height: 0;
+	padding: var(--cb-space-3);
+	box-sizing: border-box;
+	overflow: hidden;
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
 }
 
 .cb-core-design-shell__toolbar {
@@ -21,6 +42,10 @@
 	border: 1px solid var(--cb-border);
 	border-radius: var(--cb-radius-md);
 	background: var(--cb-surface-1);
+}
+
+.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__toolbar {
+	flex: 0 0 auto;
 }
 
 .cb-core-design-shell__toolbar-group {
@@ -39,6 +64,13 @@
 	min-width: 0;
 }
 
+.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
+	flex: 1 1 auto;
+	min-height: 0;
+	align-items: stretch;
+	overflow: hidden;
+}
+
 .cb-core-design-shell__palette,
 .cb-core-design-shell__canvas,
 .cb-core-design-shell__sidebar {
@@ -55,12 +87,25 @@
 	top: 48px;
 }
 
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__canvas,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__sidebar {
+	position: static;
+	min-height: 0;
+	max-height: 100%;
+	overflow: auto;
+}
+
 .cb-core-design-shell__palette {
 	padding: var(--cb-space-3);
 }
 
 .cb-core-design-shell__palette--tabbed {
 	padding: 0;
+	overflow: hidden;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed {
 	overflow: hidden;
 }
 
@@ -117,6 +162,11 @@
 	min-height: 360px;
 }
 
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__panel,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__sidebar-panel {
+	min-height: 0;
+}
+
 .cb-core-design-shell__panel[hidden],
 .cb-core-design-shell__sidebar-panel[hidden] {
 	display: none !important;
@@ -151,5 +201,9 @@
 	.cb-core-design-shell__palette,
 	.cb-core-design-shell__sidebar {
 		position: static;
+	}
+
+	.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
+		overflow: auto;
 	}
 }
