@@ -80,6 +80,21 @@ final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
 		self::assertStringNotContainsString( '<script>alert(1)</script>', $html );
 	}
 
+	public function test_authoring_markers_are_preview_only(): void {
+		$project = $this->project( [
+			$this->node( 'mail.text', [ 'text' => 'Preview marker boundary' ] ),
+		] );
+		$renderer = new HtmlRenderer();
+		$runtime_html = $renderer->render( $project );
+		$preview_html = $renderer->render( $project, [], [ 'editor_markers' => true ] );
+
+		self::assertStringNotContainsString( 'data-cb-mail-editor-node', $runtime_html );
+		self::assertStringNotContainsString( 'data-cb-mail-path', $runtime_html );
+		self::assertStringContainsString( 'data-cb-mail-editor-node="1"', $preview_html );
+		self::assertStringContainsString( 'data-cb-mail-path="[0]"', $preview_html );
+		self::assertStringContainsString( 'data-cb-mail-path="[0,0]"', $preview_html );
+	}
+
 	public function test_registered_template_preview_renders_without_enabling_delivery(): void {
 		$settings = MailSettings::defaults();
 		$settings['delivery_enabled'] = false;
@@ -89,6 +104,7 @@ final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
 		$preview = Renderer::preview( 'wordpress.password-reset' );
 		self::assertIsArray( $preview );
 		self::assertStringContainsString( '<!doctype html>', $preview['html'] );
+		self::assertStringContainsString( 'data-cb-mail-editor-node="1"', $preview['html'] );
 		self::assertStringContainsString( 'Reset', $preview['subject'] );
 		self::assertFalse( MailSettings::delivery_enabled() );
 	}
@@ -113,6 +129,7 @@ final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
 		self::assertSame( $canonical['to'], $rendered['to'] );
 		self::assertNotSame( $canonical['subject'], $rendered['subject'] );
 		self::assertStringContainsString( '<!doctype html>', $rendered['message'] );
+		self::assertStringNotContainsString( 'data-cb-mail-editor-node', $rendered['message'] );
 		self::assertContains( 'Content-Type: text/html; charset=UTF-8', $rendered['headers'] );
 		self::assertStringContainsString( 'test-key', $rendered['message'] );
 	}
