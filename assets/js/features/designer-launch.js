@@ -4,6 +4,7 @@
 	const config = window.cbCoreDesignerLaunch || {};
 	const BOOT_RETRY_DELAY_MS = 50;
 	const BOOT_RETRY_LIMIT = 200;
+	const SAVE_EVENT = 'cb:design-shell:savechange';
 
 	const sharedShellApi = () => window.cbCore?.designEditor?.shell ?? null;
 
@@ -27,6 +28,29 @@
 			roles,
 			labels: config.sidebarLabels || {},
 			activeRole,
+		});
+	};
+
+	const bindSaveState = (shell, save, status) => {
+		if (!save && !status) return;
+		const saveLabel = String(save?.getAttribute('aria-label') || save?.textContent || 'Save').trim();
+
+		shell.addEventListener(SAVE_EVENT, (event) => {
+			const state = String(event.detail?.state || '').trim();
+			if (!['saving', 'saved', 'error', 'idle'].includes(state)) return;
+			const busy = state === 'saving';
+			const message = String(event.detail?.message || '').trim();
+			shell.dataset.cbDesignShellSaveState = state;
+
+			if (save) {
+				save.disabled = busy;
+				if (busy) save.setAttribute('aria-busy', 'true');
+				else save.removeAttribute('aria-busy');
+			}
+			if (status) {
+				status.textContent = message || (busy ? `${saveLabel}…` : '');
+				status.classList.toggle('is-error', state === 'error');
+			}
 		});
 	};
 
@@ -75,6 +99,7 @@
 			const label = String(save.textContent || 'Save').trim();
 			shellApi.icons.decorate(save, 'save', { iconOnly: true, label });
 		}
+		bindSaveState(shell, save, status);
 
 		configureSidebar(shell, shellApi);
 
