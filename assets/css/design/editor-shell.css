@@ -101,14 +101,14 @@ html.cb-core-design-shell-focus-mode body {
 	flex: 0 0 30px;
 	width: 30px;
 	height: 30px;
-	border-radius: var(--cb-radius-sm);
-	background: var(--cb-accent);
+	border-radius: 50%;
+	overflow: hidden;
 }
 
 .cb-core-design-shell__brand-mark img {
 	display: block;
-	width: 19px;
-	height: 19px;
+	width: 30px;
+	height: 30px;
 	object-fit: contain;
 }
 
