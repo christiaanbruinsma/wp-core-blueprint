@@ -5,11 +5,23 @@ export const MAIL_ROOT_TYPE = 'mail.root';
 export const MAIL_WIDTH_MIN = 320;
 export const MAIL_WIDTH_MAX = 800;
 export const MAIL_WIDTH_DEFAULT = 600;
+export const MAIL_FONT_FAMILIES = Object.freeze([
+	'Arial, Helvetica, sans-serif',
+	'Helvetica, Arial, sans-serif',
+	'Georgia, Times New Roman, serif',
+	'Tahoma, Verdana, sans-serif',
+	'Verdana, Geneva, sans-serif',
+]);
 
 const normalizeNumber = (value, fallback, min, max) => {
 	const number = Number(value);
 	if (!Number.isFinite(number)) return fallback;
 	return Math.max(min, Math.min(max, number));
+};
+
+const normalizeFontFamily = (value) => {
+	const fontFamily = String(value || '').trim();
+	return MAIL_FONT_FAMILIES.includes(fontFamily) ? fontFamily : MAIL_FONT_FAMILIES[0];
 };
 
 export const normalizeMailLayout = (layout = {}) => {
@@ -18,7 +30,7 @@ export const normalizeMailLayout = (layout = {}) => {
 		width: normalizeNumber(layout.width, MAIL_WIDTH_DEFAULT, MAIL_WIDTH_MIN, MAIL_WIDTH_MAX),
 		background: String(layout.background || '#f3f4f6'),
 		contentBackground: String(layout.contentBackground || '#ffffff'),
-		fontFamily: String(layout.fontFamily || 'Arial, Helvetica, sans-serif'),
+		fontFamily: normalizeFontFamily(layout.fontFamily),
 		textColor: String(layout.textColor || '#1f2937'),
 		accentColor: String(layout.accentColor || '#2563eb'),
 	});

@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
 	MAIL_DESIGN_TYPE,
+	MAIL_FONT_FAMILIES,
 	MAIL_ROOT_TYPE,
 	MAIL_WIDTH_DEFAULT,
 	normalizeMailLayout,
@@ -56,6 +57,18 @@ test('mail layout normalizes bounded email width independently of document geome
 	assert.equal(normalizeMailLayout({ width: 200 }).width, 320);
 });
 
+test('mail layout normalizes font family to the renderer-safe contract', () => {
+	assert.deepEqual(MAIL_FONT_FAMILIES, [
+		'Arial, Helvetica, sans-serif',
+		'Helvetica, Arial, sans-serif',
+		'Georgia, Times New Roman, serif',
+		'Tahoma, Verdana, sans-serif',
+		'Verdana, Geneva, sans-serif',
+	]);
+	assert.equal(normalizeMailLayout({ fontFamily: MAIL_FONT_FAMILIES[2] }).fontFamily, MAIL_FONT_FAMILIES[2]);
+	assert.equal(normalizeMailLayout({ fontFamily: 'Comic Sans MS' }).fontFamily, MAIL_FONT_FAMILIES[0]);
+});
+
 test('public editor delegates validation to profile APIs and exposes Mail without profile-specific conditionals', async () => {
 	const source = await readFile(new URL('../../assets/js/design/editor.js', import.meta.url), 'utf8');
 	assert.match(source, /['"]mail['"]\s*:\s*Object\.freeze/);
@@ -79,6 +92,20 @@ test('mail designer uses the canonical live preview as its editable canvas', asy
 	assert.match(source, /data-cb-mail-structure/);
 	assert.match(source, /bindPreviewInteractions/);
 	assert.doesNotMatch(source, /\[data-cb-mail-canvas\]/);
+});
+
+test('mail designer consumes Mail profile styling and exposes section inspection without adding a section palette component', async () => {
+	const source = await readFile(new URL('../../assets/js/features/mail-designer.js', import.meta.url), 'utf8');
+	const componentRegistry = await readFile(new URL('../../src/Mail/Designer/ComponentRegistry.php', import.meta.url), 'utf8');
+	assert.match(source, /profiles\.mail/);
+	assert.match(source, /MAIL_FONT_FAMILIES/);
+	assert.match(source, /normalizeMailLayout/);
+	assert.match(source, /node_type:\s*['"]mail\.section['"]/);
+	assert.match(source, /defaults:\s*Object\.freeze\(\{\s*background:\s*['"]#ffffff['"],\s*padding:\s*28\s*\}\)/);
+	assert.match(source, /key:\s*['"]background['"]/);
+	assert.match(source, /key:\s*['"]padding['"]/);
+	assert.match(source, /node\.properties\?\.\[field\.key\]\s*\?\?\s*definition\.defaults\?\.\[field\.key\]/);
+	assert.doesNotMatch(componentRegistry, /'node_type'\s*=>\s*'mail\.section'/);
 });
 
 test('mail designer consumes the shared Designer Shell instead of owning shell controls', async () => {
