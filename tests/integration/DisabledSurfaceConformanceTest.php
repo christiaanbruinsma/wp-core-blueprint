@@ -172,7 +172,7 @@ final class CB_Base_Disabled_Surface_Conformance_Test extends WP_UnitTestCase {
             );
 
             self::assertSame( 409, $this->response_code( $result['termination'] ) );
-            self::assertStringContainsString( 'Mail is disabled', $this->termination_message( $result['termination'] ) );
+            self::assertStringContainsString( 'Mail Delivery is disabled', $this->termination_message( $result['termination'] ) );
             self::assertSame( $disabled_settings, MailSettings::all(), 'Disabled Mail settings request mutated persisted configuration.' );
 
             // Admin-post registration remains available for explicit datastore

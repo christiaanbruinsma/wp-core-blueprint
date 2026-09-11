@@ -21,8 +21,9 @@ final class HtmlRenderer {
 	/**
 	 * @param array<string,mixed> $project
 	 * @param array<string,scalar|null> $bindings
+	 * @param array{editor_markers?:bool} $options
 	 */
-	public function render( array $project, array $bindings = [] ): string {
+	public function render( array $project, array $bindings = [], array $options = [] ): string {
 		$diagnostics = $this->validator->validate( $project );
 		if ( $diagnostics->has_errors() ) {
 			throw new \InvalidArgumentException( 'Mail design project is invalid.' );
@@ -38,15 +39,17 @@ final class HtmlRenderer {
 		$accent = $this->color( $layout['accentColor'] ?? '#2563eb', '#2563eb' );
 		$font = $this->font_family( $layout['fontFamily'] ?? Contract::FONT_FAMILIES[0] );
 		$preheader = $this->interpolate( (string) ( $properties['preheader'] ?? '' ), $bindings );
+		$editor_markers = true === ( $options['editor_markers'] ?? false );
+		$theme = [
+			'text' => $text_color,
+			'accent' => $accent,
+			'font' => $font,
+		];
 
 		$body = '';
-		foreach ( (array) ( $root['children'] ?? [] ) as $node ) {
+		foreach ( (array) ( $root['children'] ?? [] ) as $index => $node ) {
 			if ( is_array( $node ) ) {
-				$body .= $this->render_node( $node, $bindings, [
-					'text' => $text_color,
-					'accent' => $accent,
-					'font' => $font,
-				] );
+				$body .= $this->render_node( $node, $bindings, $theme, [ (int) $index ], $editor_markers );
 			}
 		}
 
@@ -54,9 +57,12 @@ final class HtmlRenderer {
 			'<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">%s</div>',
 			esc_html( $preheader )
 		);
+		$editor_css = $editor_markers
+			? '[data-cb-mail-editor-node][data-cb-mail-selected="true"]>tr>td{outline:2px solid #2271b1;outline-offset:-2px}[data-cb-mail-editor-node][data-cb-mail-hovered="true"]>tr>td{outline:2px dashed #2271b1;outline-offset:-2px}'
+			: '';
 
 		return '<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-			. '<meta name="x-apple-disable-message-reformatting"><style>@media only screen and (max-width:640px){.cb-mail-container{width:100%!important}.cb-mail-pad{padding-left:20px!important;padding-right:20px!important}.cb-mail-button{display:block!important;width:100%!important;box-sizing:border-box!important}}</style></head>'
+			. '<meta name="x-apple-disable-message-reformatting"><style>@media only screen and (max-width:640px){.cb-mail-container{width:100%!important}.cb-mail-pad{padding-left:20px!important;padding-right:20px!important}.cb-mail-button{display:block!important;width:100%!important;box-sizing:border-box!important}}' . $editor_css . '</style></head>'
 			. '<body style="margin:0;padding:0;background:' . esc_attr( $background ) . ';font-family:' . esc_attr( $font ) . ';color:' . esc_attr( $text_color ) . ';">'
 			. $preheader_html
 			. '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:' . esc_attr( $background ) . ';border-collapse:collapse;"><tr><td align="center" style="padding:32px 12px;">'
@@ -69,8 +75,9 @@ final class HtmlRenderer {
 	 * @param array<string,mixed> $node
 	 * @param array<string,scalar|null> $bindings
 	 * @param array{text:string,accent:string,font:string} $theme
+	 * @param list<int> $path
 	 */
-	private function render_node( array $node, array $bindings, array $theme ): string {
+	private function render_node( array $node, array $bindings, array $theme, array $path, bool $editor_markers ): string {
 		$type = (string) ( $node['type'] ?? '' );
 		$provider = (string) ( $node['provider'] ?? '' );
 		$properties = is_array( $node['properties'] ?? null ) ? $node['properties'] : [];
@@ -81,18 +88,28 @@ final class HtmlRenderer {
 			 *
 			 * Extensions must return complete email-safe table-row HTML. Base passes
 			 * only already-validated declarative node data and resolved binding values.
+			 * Preview callers additionally receive non-persistent editor context.
 			 *
 			 * @param string $html
 			 * @param array<string,mixed> $node
 			 * @param array<string,scalar|null> $bindings
 			 * @param array<string,string> $theme
+			 * @param array{editor_preview:bool,path:list<int>} $render_context
 			 */
-			$html = apply_filters( 'cb_core_design_mail_render_node', '', $node, $bindings, $theme );
-			return is_string( $html ) ? $html : '';
+			$html = apply_filters(
+				'cb_core_design_mail_render_node',
+				'',
+				$node,
+				$bindings,
+				$theme,
+				[ 'editor_preview' => $editor_markers, 'path' => $path ]
+			);
+			$html = is_string( $html ) ? $html : '';
+			return $editor_markers ? $this->wrap_editor_node( $html, $path, $type, $provider ) : $html;
 		}
 
-		return match ( $type ) {
-			'mail.section' => $this->render_section( $node, $bindings, $theme ),
+		$html = match ( $type ) {
+			'mail.section' => $this->render_section( $node, $bindings, $theme, $path, $editor_markers ),
 			'mail.heading' => $this->render_heading( $properties, $bindings, $theme ),
 			'mail.text' => $this->render_text( $properties, $bindings, $theme ),
 			'mail.button' => $this->render_button( $properties, $bindings, $theme ),
@@ -101,23 +118,41 @@ final class HtmlRenderer {
 			'mail.spacer' => $this->render_spacer( $properties ),
 			default => '',
 		};
+		return $editor_markers ? $this->wrap_editor_node( $html, $path, $type, $provider ) : $html;
 	}
 
-	/** @param array<string,mixed> $node @param array<string,scalar|null> $bindings @param array{text:string,accent:string,font:string} $theme */
-	private function render_section( array $node, array $bindings, array $theme ): string {
+	/**
+	 * @param array<string,mixed> $node
+	 * @param array<string,scalar|null> $bindings
+	 * @param array{text:string,accent:string,font:string} $theme
+	 * @param list<int> $path
+	 */
+	private function render_section( array $node, array $bindings, array $theme, array $path, bool $editor_markers ): string {
 		$properties = is_array( $node['properties'] ?? null ) ? $node['properties'] : [];
 		$background = $this->color( $properties['background'] ?? '#ffffff', '#ffffff' );
 		$padding = $this->int_range( $properties['padding'] ?? 28, 0, 80, 28 );
 		$content = '';
-		foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
+		foreach ( (array) ( $node['children'] ?? [] ) as $index => $child ) {
 			if ( is_array( $child ) ) {
-				$content .= $this->render_node( $child, $bindings, $theme );
+				$content .= $this->render_node( $child, $bindings, $theme, [ ...$path, (int) $index ], $editor_markers );
 			}
 		}
 		return '<tr><td style="padding:0;background:' . esc_attr( $background ) . ';"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;">'
 			. '<tr><td class="cb-mail-pad" style="padding:' . esc_attr( (string) $padding ) . 'px;">'
 			. '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;">' . $content . '</table>'
 			. '</td></tr></table></td></tr>';
+	}
+
+	/** @param list<int> $path */
+	private function wrap_editor_node( string $html, array $path, string $type, string $provider ): string {
+		if ( '' === $html ) {
+			return '';
+		}
+		$path_json = wp_json_encode( array_values( $path ) );
+		$path_json = is_string( $path_json ) ? $path_json : '[]';
+		return '<tbody data-cb-mail-editor-node="1" data-cb-mail-path="' . esc_attr( $path_json ) . '" data-cb-mail-type="' . esc_attr( $type ) . '" data-cb-mail-provider="' . esc_attr( $provider ) . '">'
+			. $html
+			. '</tbody>';
 	}
 
 	/** @param array<string,mixed> $properties @param array<string,scalar|null> $bindings @param array{text:string,accent:string,font:string} $theme */
