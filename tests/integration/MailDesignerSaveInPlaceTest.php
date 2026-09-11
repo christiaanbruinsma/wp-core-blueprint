@@ -12,6 +12,17 @@ final class CB_Mail_Designer_Save_In_Place_Test extends WP_UnitTestCase {
 		self::assertNotFalse( has_action( 'wp_ajax_cb_core_mail_template_save', [ TemplateActions::class, 'save_ajax' ] ) );
 	}
 
+	public function test_mail_bootstrap_loads_template_actions_for_ajax_requests(): void {
+		$root = dirname( __DIR__, 2 );
+		$source = (string) file_get_contents( $root . '/src/Mail/Bootstrap.php' );
+		$ajax_pos = strpos( $source, 'if ( RequestContext::is_ajax() )' );
+
+		self::assertNotFalse( $ajax_pos );
+		$ajax_block = substr( $source, (int) $ajax_pos, 220 );
+		self::assertStringContainsString( 'DesignerAjax::boot();', $ajax_block );
+		self::assertStringContainsString( 'TemplateActions::boot();', $ajax_block );
+	}
+
 	public function test_admin_post_and_ajax_reuse_one_canonical_persistence_path(): void {
 		$root = dirname( __DIR__, 2 );
 		$source = (string) file_get_contents( $root . '/src/Mail/Admin/TemplateActions.php' );
