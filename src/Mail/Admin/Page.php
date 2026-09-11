@@ -156,9 +156,10 @@ final class Page extends PageBase {
 			'cb-core-designer-launch',
 			'cbCoreDesignerLaunch',
 			[
-				'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),
-				'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),
-				'iconUrl'   => CB_CORE_URL . 'assets/core-blueprint-icon.svg',
+				'label'       => __( 'Design with Core Blueprint', 'core-blueprint' ),
+				'ariaLabel'   => __( 'Open Designer Mode', 'core-blueprint' ),
+				'tabletLabel' => __( 'Tablet', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
+				'iconUrl'     => CB_CORE_URL . 'assets/core-blueprint-icon.svg',
 			]
 		);
 	}
