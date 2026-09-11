@@ -2,47 +2,10 @@
 	'use strict';
 
 	const config = window.cbCoreDesignerLaunch || {};
-	const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-	const ICONS = Object.freeze({
-		mobile: '<rect x="8" y="3" width="8" height="18" rx="2"/><path d="M11 18h2"/>',
-		tablet: '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 18h2"/>',
-		desktop: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
-		undo: '<path d="M9 7 4 12l5 5"/><path d="M20 17a8 8 0 0 0-8-8H4"/>',
-		redo: '<path d="m15 7 5 5-5 5"/><path d="M4 17a8 8 0 0 1 8-8h8"/>',
-		fullscreen: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
-		save: '<path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
-	});
 
-	const createIcon = (name) => {
-		const wrapper = document.createElement('span');
-		wrapper.className = 'cb-core-design-shell__icon';
-		wrapper.setAttribute('aria-hidden', 'true');
+	const sharedShellApi = () => window.cbCore?.designEditor?.shell ?? null;
 
-		const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
-		svg.setAttribute('viewBox', '0 0 24 24');
-		svg.setAttribute('fill', 'none');
-		svg.setAttribute('stroke', 'currentColor');
-		svg.setAttribute('stroke-width', '1.8');
-		svg.setAttribute('stroke-linecap', 'round');
-		svg.setAttribute('stroke-linejoin', 'round');
-		svg.setAttribute('focusable', 'false');
-		svg.innerHTML = ICONS[name] || '';
-		wrapper.append(svg);
-		return wrapper;
-	};
-
-	const iconize = (button, iconName, label) => {
-		if (!button) return;
-		const accessibleLabel = String(label || button.getAttribute('aria-label') || button.textContent || '').trim();
-		button.classList.add('cb-core-design-shell__icon-button');
-		if (accessibleLabel) {
-			button.setAttribute('aria-label', accessibleLabel);
-			button.setAttribute('title', accessibleLabel);
-		}
-		button.replaceChildren(createIcon(iconName));
-	};
-
-	const composeHeader = (root, shell) => {
+	const composeHeader = (root, shell, shellApi) => {
 		const toolbar = shell.querySelector('.cb-core-design-shell__toolbar');
 		if (!toolbar || toolbar.dataset.cbDesignShellHeader === 'true') return;
 
@@ -74,10 +37,10 @@
 		historyGroup.classList.add('cb-core-design-shell__toolbar-group--history');
 		viewportGroup.classList.add('cb-core-design-shell__toolbar-group--viewport');
 
-		iconize(undo, 'undo', undoLabel);
-		iconize(redo, 'redo', redoLabel);
-		iconize(fullscreen, 'fullscreen', fullscreenLabel);
-		iconize(save, 'save', saveLabel);
+		shellApi.icons.decorate(undo, 'undo-2', { iconOnly: true, label: undoLabel });
+		shellApi.icons.decorate(redo, 'redo-2', { iconOnly: true, label: redoLabel });
+		shellApi.icons.decorate(fullscreen, 'maximize-2', { iconOnly: true, label: fullscreenLabel });
+		shellApi.icons.decorate(save, 'save', { iconOnly: true, label: saveLabel });
 
 		const desktop = viewportGroup.querySelector('[data-cb-mail-viewport="desktop"]');
 		const tablet = viewportGroup.querySelector('[data-cb-mail-viewport="tablet"]');
@@ -87,10 +50,20 @@
 		const desktopLabel = String(desktop.textContent || 'Desktop').trim();
 		const tabletLabel = String(tablet.textContent || 'Tablet').trim();
 		const mobileLabel = String(mobile.textContent || 'Mobile').trim();
-		iconize(mobile, 'mobile', mobileLabel);
-		iconize(tablet, 'tablet', tabletLabel);
-		iconize(desktop, 'desktop', desktopLabel);
+		shellApi.icons.decorate(mobile, 'smartphone', { iconOnly: true, label: mobileLabel });
+		shellApi.icons.decorate(tablet, 'tablet', { iconOnly: true, label: tabletLabel });
+		shellApi.icons.decorate(desktop, 'monitor', { iconOnly: true, label: desktopLabel });
 		viewportGroup.replaceChildren(mobile, tablet, desktop);
+
+		shellApi.configureSidebar(shell, {
+			roles: {
+				inspector: 'inspector',
+				layers: 'structure',
+				settings: 'email',
+			},
+			labels: config.sidebarLabels || {},
+			activeRole: 'inspector',
+		});
 
 		const start = document.createElement('div');
 		start.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--start';
@@ -132,13 +105,16 @@
 	};
 
 	const boot = () => {
+		const shellApi = sharedShellApi();
+		if (!shellApi?.icons?.decorate || typeof shellApi.configureSidebar !== 'function') return false;
+
 		document.querySelectorAll('[data-cb-mail-designer]').forEach((root) => {
 			const shell = root.querySelector('[data-cb-design-shell]');
 			const fullscreen = shell?.querySelector('[data-cb-design-shell-fullscreen]');
 			const context = root.querySelector('.cb-core-mail-designer__context');
 			if (!shell || !fullscreen || !context || root.querySelector('[data-cb-design-launch]')) return;
 
-			composeHeader(root, shell);
+			composeHeader(root, shell, shellApi);
 
 			const wrapper = document.createElement('div');
 			wrapper.className = 'cb-core-design-launch-wrap';
@@ -176,15 +152,27 @@
 			});
 
 			shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
-				setDesignerMode(Boolean(event.detail?.fullscreen));
+				const active = Boolean(event.detail?.fullscreen);
+				const labelText = String(fullscreen.getAttribute('aria-label') || 'Fullscreen mode').trim();
+				shellApi.icons.decorate(fullscreen, active ? 'minimize-2' : 'maximize-2', {
+					iconOnly: true,
+					label: labelText,
+				});
+				setDesignerMode(active);
 			});
 
 			wrapper.append(button);
 			context.insertAdjacentElement('afterend', wrapper);
 			setDesignerMode(false);
 		});
+		return true;
 	};
 
-	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-	else boot();
+	const start = () => {
+		if (boot()) return;
+		window.addEventListener('cb:design-editor:ready', boot, { once: true });
+	};
+
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+	else start();
 })();
