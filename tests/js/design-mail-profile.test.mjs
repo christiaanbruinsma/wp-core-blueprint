@@ -118,6 +118,17 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
+test('mail Designer Mode chrome parses as a classic script and delegates fullscreen ownership', async () => {
+	const source = await readFile(new URL('../../assets/js/features/designer-launch.js', import.meta.url), 'utf8');
+	assert.doesNotThrow(() => new Function(source));
+	assert.match(source, /fullscreen\.click\(\)/);
+	assert.match(source, /cb:design-shell:fullscreenchange/);
+	assert.match(source, /cbMailViewport\s*=\s*['"]tablet['"]/);
+	assert.match(source, /cb-core-design-shell__toolbar--designer/);
+	assert.doesNotMatch(source, /createDesignerShell/);
+	assert.doesNotMatch(source, /requestFullscreen/);
+});
+
 test('mail designer template exposes one fullwidth shared shell with independent left and right tab sets', async () => {
 	const source = await readFile(new URL('../../templates/mail-designer.php', import.meta.url), 'utf8');
 	assert.match(source, /data-cb-mail-template-select/);
