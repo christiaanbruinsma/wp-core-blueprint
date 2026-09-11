@@ -24,79 +24,29 @@ jobs:
           php-version: '8.4'
           coverage: none
 
-      - name: Diagnose localization payload
+      - name: Synchronize localized catalogs
+        if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: |
-          php <<'PHP'
-          <?php
-          $source = file_get_contents('tools/l10n-materialize.php');
-          if ($source === false) {
-              fwrite(STDERR, "Could not read materializer source.\n");
-              exit(1);
-          }
-
-          $marker = '$payload = \'';
-          $start = strpos($source, $marker);
-          if ($start === false) {
-              fwrite(STDERR, "Could not locate localization payload start.\n");
-              exit(1);
-          }
-          $start += strlen($marker);
-          $end = strpos($source, "';", $start);
-          if ($end === false) {
-              fwrite(STDERR, "Could not locate localization payload end.\n");
-              exit(1);
-          }
-
-          $payload = substr($source, $start, $end - $start);
-          printf("Payload length: %d (mod 4=%d)\n", strlen($payload), strlen($payload) % 4);
-          printf("Payload tail: %s\n", substr($payload, -24));
-          printf("Padding count: %d; first padding offset: %s\n", substr_count($payload, '='), ($offset = strpos($payload, '=')) === false ? 'none' : (string) $offset);
-
-          foreach ([$payload, rtrim($payload, '=') . '=', rtrim($payload, '=') . '=='] as $index => $candidate) {
-              $decoded = base64_decode($candidate, true);
-              printf("Strict candidate %d (len=%d mod4=%d): %s\n", $index, strlen($candidate), strlen($candidate) % 4, $decoded === false ? 'failed' : 'passed');
-              if ($decoded !== false) {
-                  printf("Decoded prefix: %s\n", bin2hex(substr($decoded, 0, 8)));
-              }
-          }
-
-          $decoded = base64_decode($payload, false);
-          printf("Relaxed decode: %s\n", $decoded === false ? 'failed' : 'passed');
-          if ($decoded === false) {
-              exit(0);
-          }
-
-          printf("Relaxed decoded bytes: %d; prefix=%s\n", strlen($decoded), bin2hex(substr($decoded, 0, 8)));
-          foreach (['gzdecode', 'gzinflate', 'gzuncompress'] as $decoder) {
-              $json = @$decoder($decoded);
-              if ($json === false) {
-                  printf("%s: failed\n", $decoder);
-                  continue;
-              }
-
-              printf("%s: passed (%d bytes)\n", $decoder, strlen($json));
-              try {
-                  $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-                  printf("JSON decode: passed; top-level type=%s count=%d\n", gettype($data), is_countable($data) ? count($data) : 0);
-              } catch (JsonException $exception) {
-                  printf("JSON decode after %s: failed (%s)\n", $decoder, $exception->getMessage());
-              }
-          }
-          PHP
-
-      - name: Materialize localized catalogs
-        run: php tools/l10n-materialize.php
+          php -l tools/l10n-mail-md15-sync.php
+          php tools/l10n-mail-md15-sync.php
 
       - name: Validate translation guard and PHP syntax
+        if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: bash tests/bin/php-lint.sh
 
       - name: Validate patch whitespace
+        if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: git diff --check
 
       - name: Commit synchronized catalogs
+        if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add languages/core-blueprint-*.l10n.php
+          if git diff --cached --quiet; then
+            echo "Localized catalogs are already synchronized."
+            exit 0
+          fi
           git commit -m "L10N: synchronize Mail Designer catalogs"
           git push origin HEAD:mail-designer-md15-shared-designer-shell
