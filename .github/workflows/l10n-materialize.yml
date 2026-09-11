@@ -29,29 +29,53 @@ jobs:
           php <<'PHP'
           <?php
           $source = file_get_contents('tools/l10n-materialize.php');
-          if ($source === false || !preg_match("/\\$payload = '([^']*)';/s", $source, $matches)) {
-              fwrite(STDERR, "Could not locate localization payload.\n");
+          if ($source === false) {
+              fwrite(STDERR, "Could not read materializer source.\n");
               exit(1);
           }
 
-          $payload = $matches[1];
+          $marker = '$payload = \'';
+          $start = strpos($source, $marker);
+          if ($start === false) {
+              fwrite(STDERR, "Could not locate localization payload start.\n");
+              exit(1);
+          }
+          $start += strlen($marker);
+          $end = strpos($source, "';", $start);
+          if ($end === false) {
+              fwrite(STDERR, "Could not locate localization payload end.\n");
+              exit(1);
+          }
+
+          $payload = substr($source, $start, $end - $start);
+          $padding = (4 - (strlen($payload) % 4)) % 4;
           printf("Payload length: %d\n", strlen($payload));
-          printf("Payload length modulo 4: %d\n", strlen($payload) % 4);
+          printf("Required Base64 padding: %d\n", $padding);
 
-          if (preg_match('/[^A-Za-z0-9+\\\/=]/', $payload, $invalid, PREG_OFFSET_CAPTURE)) {
-              printf("First invalid byte: 0x%02X at offset %d\n", ord($invalid[0][0]), $invalid[0][1]);
-          } else {
-              echo "Base64 alphabet: valid\n";
-          }
-
-          $decoded = base64_decode($payload, true);
+          $decoded = base64_decode($payload . str_repeat('=', $padding), true);
           if ($decoded === false) {
-              echo "Strict Base64 decode: failed\n";
-              exit(0);
+              fwrite(STDERR, "Strict Base64 decode still failed after padding.\n");
+              exit(1);
           }
 
-          echo "Strict Base64 decode: passed\n";
+          printf("Strict Base64 decode: passed (%d bytes)\n", strlen($decoded));
           printf("Decoded prefix: %s\n", bin2hex(substr($decoded, 0, 8)));
+
+          foreach (['gzdecode', 'gzinflate', 'gzuncompress'] as $decoder) {
+              $json = @$decoder($decoded);
+              if ($json === false) {
+                  printf("%s: failed\n", $decoder);
+                  continue;
+              }
+
+              printf("%s: passed (%d bytes)\n", $decoder, strlen($json));
+              try {
+                  $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+                  printf("JSON decode: passed; top-level type=%s count=%d\n", gettype($data), is_countable($data) ? count($data) : 0);
+              } catch (JsonException $exception) {
+                  printf("JSON decode after %s: failed (%s)\n", $decoder, $exception->getMessage());
+              }
+          }
           PHP
 
       - name: Materialize localized catalogs
