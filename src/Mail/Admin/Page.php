@@ -130,6 +130,9 @@ final class Page extends PageBase {
 			$bindings = BindingRegistry::all();
 			$components = ComponentRegistry::all();
 			$preview = is_array( $current_template ) ? DesignerRenderer::preview( $template_id ) : null;
+			if ( $designer_enabled && is_array( $current_template ) ) {
+				$this->enqueue_designer_launch_assets();
+			}
 			include CB_CORE_DIR . 'templates/mail-designer.php';
 		} elseif ( 'settings' === $tab ) {
 			include CB_CORE_DIR . 'templates/mail-settings.php';
@@ -139,5 +142,24 @@ final class Page extends PageBase {
 		$html = (string) ob_get_clean();
 
 		echo TabNav::inject( $html, self::SLUG, $tab, $tabs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	private function enqueue_designer_launch_assets(): void {
+		wp_enqueue_script(
+			'cb-core-designer-launch',
+			CB_CORE_URL . 'assets/js/features/designer-launch.js',
+			[],
+			CB_CORE_VERSION,
+			true
+		);
+		wp_localize_script(
+			'cb-core-designer-launch',
+			'cbCoreDesignerLaunch',
+			[
+				'label'     => __( 'Design with Core Blueprint', 'core-blueprint' ),
+				'ariaLabel' => __( 'Open Designer Mode', 'core-blueprint' ),
+				'iconUrl'   => CB_CORE_URL . 'assets/core-blueprint-icon.svg',
+			]
+		);
 	}
 }

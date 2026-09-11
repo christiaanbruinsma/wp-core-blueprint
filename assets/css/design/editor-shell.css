@@ -56,6 +56,34 @@ html.cb-core-design-shell-focus-mode body {
 	min-width: 0;
 }
 
+.cb-core-design-launch-wrap {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+	margin: 0 0 var(--cb-space-4);
+}
+
+.cb-core-design-launch {
+	min-width: 320px;
+	min-height: 64px !important;
+	padding: var(--cb-space-3) var(--cb-space-5) !important;
+	gap: var(--cb-space-3) !important;
+	font-size: var(--cb-fs-md) !important;
+	letter-spacing: .01em;
+}
+
+.cb-core-design-launch__mark {
+	display: block;
+	flex: 0 0 28px;
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+}
+
+.cb-core-design-launch__label {
+	font-weight: var(--cb-fw-semibold);
+}
+
 .cb-core-design-shell__workspace {
 	display: grid;
 	grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(240px, 300px);
@@ -218,5 +246,12 @@ html.cb-core-design-shell-focus-mode body {
 
 	.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
 		overflow: auto;
+	}
+}
+
+@media (max-width: 600px) {
+	.cb-core-design-launch {
+		width: 100%;
+		min-width: 0;
 	}
 }
