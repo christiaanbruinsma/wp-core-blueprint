@@ -20,6 +20,10 @@ import {
 	createDesignerShell,
 	decorateDesignerControl,
 } from './shell/index.js';
+import {
+	DESIGNER_VIEWPORT_ORDER,
+	configureDesignerViewports,
+} from './shell/viewports.js';
 
 const PROFILE_APIS = Object.freeze({
 	'document-fixed': Object.freeze({ ...fixedProfile }),
@@ -182,9 +186,11 @@ export {
 	CommandHistory,
 	DESIGNER_ICON_NAMES,
 	DESIGNER_SIDEBAR_ROLES,
+	DESIGNER_VIEWPORT_ORDER,
 	EditorState,
 	ProjectState,
 	configureDesignerSidebar,
+	configureDesignerViewports,
 	createDesignerIcon,
 	createDesignerShell,
 	decorateDesignerControl,
@@ -200,7 +206,9 @@ const publicApi = Object.freeze({
 	shell: Object.freeze({
 		create: createDesignerShell,
 		configureSidebar: configureDesignerSidebar,
+		configureViewports: configureDesignerViewports,
 		sidebarRoles: DESIGNER_SIDEBAR_ROLES,
+		viewportOrder: DESIGNER_VIEWPORT_ORDER,
 		icons: Object.freeze({
 			names: DESIGNER_ICON_NAMES,
 			create: createDesignerIcon,
