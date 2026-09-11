@@ -35,6 +35,7 @@ if (root) {
 		label: 'Section',
 		node_type: 'mail.section',
 		provider: 'core',
+		defaults: Object.freeze({ background: '#ffffff', padding: 28 }),
 		inspector: Object.freeze([
 			Object.freeze({ key: 'background', label: 'Background', type: 'color' }),
 			Object.freeze({ key: 'padding', label: 'Padding', type: 'number', min: 0, max: 80, step: 1 }),
@@ -337,7 +338,8 @@ if (root) {
 
 		if (definition && Array.isArray(definition.inspector) && definition.inspector.length) {
 			definition.inspector.forEach((field) => {
-				inspector.append(createInspectorField(field, node.properties?.[field.key], selectedPath));
+				const value = node.properties?.[field.key] ?? definition.defaults?.[field.key];
+				inspector.append(createInspectorField(field, value, selectedPath));
 			});
 		} else {
 			const description = document.createElement('p');
