@@ -58,8 +58,8 @@ const focusTargetIsUsable = (target) => (
 );
 
 const motionEnabled = () => {
-	if (typeof window === 'undefined') return false;
-	return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches !== true;
+	if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+	return window.matchMedia('(prefers-reduced-motion: reduce)').matches !== true;
 };
 
 const scheduleAnimationFrame = (callback) => {
