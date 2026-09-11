@@ -28,6 +28,7 @@ jobs:
         if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: |
           python3 <<'PY'
+          import json
           from pathlib import Path
 
           path = Path('tools/l10n-mail-md15-sync.php')
@@ -42,21 +43,20 @@ jobs:
           if stale_end < 0:
               raise SystemExit('Expected stale catalog block terminator was not found.')
           stale_end += len(stale_end_marker)
-          stale_replacement = r'''$stale = json_decode(<<<'JSON'
-[
-  "A valid From Email is required before Mail can be enabled.",
-  "Active mail transport: %s. You can safely prepare Core Blueprint Mail now, but its transport hooks stay inactive until the other mail plugin is disabled.",
-  "Another mail transport is active: %s. Core Blueprint will not register transport hooks until the conflict is removed.",
-  "Core Blueprint Mail is configured but inactive.",
-  "Core Blueprint Mail is disabled. Enable it from the Dashboard before changing transport settings.",
-  "Core Blueprint Mail transport is inactive because another mail transport is active.",
-  "Enable Core Blueprint Mail before sending a test email.",
-  "Mail disabled",
-  "Mail settings saved.",
-  "Mail settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.",
-  "Review Mail settings."
-]
-JSON, true, 512, JSON_THROW_ON_ERROR);'''
+          stale_values = [
+              'A valid From Email is required before Mail can be enabled.',
+              'Active mail transport: %s. You can safely prepare Core Blueprint Mail now, but its transport hooks stay inactive until the other mail plugin is disabled.',
+              'Another mail transport is active: %s. Core Blueprint will not register transport hooks until the conflict is removed.',
+              'Core Blueprint Mail is configured but inactive.',
+              'Core Blueprint Mail is disabled. Enable it from the Dashboard before changing transport settings.',
+              'Core Blueprint Mail transport is inactive because another mail transport is active.',
+              'Enable Core Blueprint Mail before sending a test email.',
+              'Mail disabled',
+              'Mail settings saved.',
+              'Mail settings saved. Core Blueprint transport stays inactive until the conflicting mail plugin is disabled.',
+              'Review Mail settings.',
+          ]
+          stale_replacement = "$stale = json_decode(<<<'JSON'\n" + json.dumps(stale_values, ensure_ascii=False, indent=2) + "\nJSON, true, 512, JSON_THROW_ON_ERROR);"
           source = source[:stale_start] + stale_replacement + source[stale_end:]
 
           key_needle = '                if (!is_string($source) || !is_string($translation)) {'
