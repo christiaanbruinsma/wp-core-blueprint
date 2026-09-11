@@ -61,26 +61,52 @@ run_mail_designer_option_stage() {
   local marker="mail-designer-$stage"
 
   echo "[A3 uninstall] Mail Designer option stage: $stage"
-  if ! output="$(WP_CORE_DIR="$WP_CORE_DIR" php -r '
+  if ! output="$(php -r '
 $stage = isset($argv[1]) ? (string) $argv[1] : "";
-$wp_core_dir = rtrim((string) getenv("WP_CORE_DIR"), "/\\");
-$_SERVER["HTTP_HOST"] = "cb-a3-uninstall.local";
-$_SERVER["SERVER_NAME"] = "cb-a3-uninstall.local";
-$_SERVER["REQUEST_URI"] = "/";
-$_SERVER["REQUEST_METHOD"] = "GET";
-$_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
-$_SERVER["REMOTE_ADDR"] = "127.0.0.1";
-$_SERVER["SERVER_PORT"] = "80";
-$_SERVER["SCRIPT_NAME"] = "/index.php";
-$_SERVER["PHP_SELF"] = "/index.php";
-$_SERVER["SCRIPT_FILENAME"] = $wp_core_dir . "/index.php";
-require $wp_core_dir . "/wp-load.php";
+$host = (string) getenv("WP_DB_HOST");
+$port = 3306;
+if (preg_match("/^([^:]+):([0-9]+)$/D", $host, $matches)) {
+    $host = $matches[1];
+    $port = (int) $matches[2];
+}
+$prefix = (string) getenv("CB_UNINSTALL_TABLE_PREFIX");
+if (1 !== preg_match("/^[A-Za-z0-9_]+$/D", $prefix)) {
+    fwrite(STDERR, "Unsafe uninstall table prefix.\n");
+    exit(1);
+}
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli(
+    $host,
+    (string) getenv("WP_DB_USER"),
+    (string) getenv("WP_DB_PASSWORD"),
+    (string) getenv("WP_DB_NAME"),
+    $port
+);
+$table = $prefix . "options";
 $key = "cb_core_mail_template_overrides";
 
 if ("seed" === $stage) {
-    $value = ["a3-mail-designer-sentinel" => ["subject" => "delete-me"]];
-    update_option($key, $value, false);
-    if ($value !== get_option($key, null)) {
+    $value = serialize(["a3-mail-designer-sentinel" => ["subject" => "delete-me"]]);
+    $autoload = "off";
+    $statement = $mysqli->prepare(
+        "INSERT INTO `{$table}` (option_name, option_value, autoload) VALUES (?, ?, ?) " .
+        "ON DUPLICATE KEY UPDATE option_value = VALUES(option_value), autoload = VALUES(autoload)"
+    );
+    $statement->bind_param("sss", $key, $value, $autoload);
+    $statement->execute();
+    $statement->close();
+
+    $statement = $mysqli->prepare("SELECT option_value FROM `{$table}` WHERE option_name = ? LIMIT 1");
+    $statement->bind_param("s", $key);
+    $statement->execute();
+    $statement->bind_result($stored);
+    $found = $statement->fetch();
+    $statement->close();
+    $mysqli->close();
+
+    $expected = ["a3-mail-designer-sentinel" => ["subject" => "delete-me"]];
+    if (!$found || $expected !== unserialize((string) $stored, ["allowed_classes" => false])) {
         fwrite(STDERR, "Mail Designer uninstall sentinel could not be seeded.\n");
         exit(1);
     }
@@ -89,7 +115,15 @@ if ("seed" === $stage) {
 }
 
 if ("verify" === $stage) {
-    if (false !== get_option($key, false)) {
+    $statement = $mysqli->prepare("SELECT COUNT(*) FROM `{$table}` WHERE option_name = ?");
+    $statement->bind_param("s", $key);
+    $statement->execute();
+    $statement->bind_result($count);
+    $statement->fetch();
+    $statement->close();
+    $mysqli->close();
+
+    if (0 !== (int) $count) {
         fwrite(STDERR, "Mail Designer template overrides survived Base uninstall.\n");
         exit(1);
     }
@@ -97,6 +131,7 @@ if ("verify" === $stage) {
     exit(0);
 }
 
+$mysqli->close();
 fwrite(STDERR, "Unknown Mail Designer option stage.\n");
 exit(64);
 ' "$stage" 2>&1)"; then
