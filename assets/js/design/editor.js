@@ -213,7 +213,9 @@ const publicApi = Object.freeze({
 if (typeof window !== 'undefined') {
 	window.cbCore = window.cbCore || {};
 	window.cbCore.designEditor = publicApi;
-	window.dispatchEvent(new CustomEvent('cb:design-editor:ready', {
-		detail: Object.freeze({ api: publicApi }),
-	}));
+	if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+		window.dispatchEvent(new CustomEvent('cb:design-editor:ready', {
+			detail: Object.freeze({ api: publicApi }),
+		}));
+	}
 }
