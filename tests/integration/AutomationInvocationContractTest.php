@@ -56,7 +56,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 	}
 
 	public function test_af3_valid_explicit_principal_executes_legacy_callbacks(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$principal_id = $this->principal_with_capability();
 		wp_set_current_user( 0 );
 		$context = $this->context( $principal_id );
 
@@ -70,7 +70,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 	}
 
 	public function test_af3_unknown_version_and_invalid_input_fail_closed(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$principal_id = $this->principal_with_capability();
 		$context = $this->context( $principal_id );
 
 		$unknown_action = ActionInvoker::invoke( self::PROVIDER, 'work.unknown', '1', [], $context );
@@ -92,7 +92,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 
 	public function test_af3_missing_deleted_and_lost_principal_authority_fail_closed(): void {
 		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
-		$deleted_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$deleted_id = $this->principal_with_capability();
 		if ( ! function_exists( 'wp_delete_user' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/user.php';
 		}
@@ -108,18 +108,18 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 		self::assertSame( 'cb_core_automation_permission_denied', $denied->get_error_code() );
 		self::assertSame( 'cb_core_automation_permission_denied', $state_denied->get_error_code() );
 
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$principal_id = $this->principal_with_capability();
 		$context = $this->context( $principal_id );
 		self::assertSame( [ 'project_id' => 1 ], ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 1 ], $context ) );
 		$user = get_userdata( $principal_id );
 		self::assertInstanceOf( WP_User::class, $user );
-		$user->set_role( 'subscriber' );
+		$user->remove_cap( 'manage_options' );
 		$lost = ActionInvoker::invoke( self::PROVIDER, 'work.project.create', '1', [ 'source_id' => 2 ], $context );
 		self::assertSame( 'cb_core_automation_permission_denied', $lost->get_error_code() );
 	}
 
 	public function test_af3_explicit_principal_not_ambient_user_controls_permission(): void {
-		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$admin_id = $this->principal_with_capability();
 		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 
 		wp_set_current_user( $admin_id );
@@ -132,7 +132,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 	}
 
 	public function test_af3_provider_failures_and_invalid_outputs_are_normalized(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$principal_id = $this->principal_with_capability();
 		$context = $this->context( $principal_id );
 
 		$action_error = ActionInvoker::invoke( self::PROVIDER, 'work.fail', '1', [], $context );
@@ -157,7 +157,7 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 	}
 
 	public function test_af3_context_reaches_callbacks_and_discovery_stays_private(): void {
-		$principal_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$principal_id = $this->principal_with_capability();
 		$context = $this->context( $principal_id );
 
 		self::assertSame( [ 'ok' => true ], ActionInvoker::invoke( self::PROVIDER, 'work.context', '1', [], $context ) );
@@ -280,6 +280,14 @@ final class CB_Base_Automation_Invocation_Contract_Test extends WP_UnitTestCase 
 			'required_capability' => 'manage_options',
 			'resolver'            => $resolver,
 		];
+	}
+
+	private function principal_with_capability(): int {
+		$user_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		$user = get_userdata( $user_id );
+		self::assertInstanceOf( WP_User::class, $user );
+		$user->add_cap( 'manage_options' );
+		return $user_id;
 	}
 
 	private function context( int $principal_user_id ): InvocationContext {
