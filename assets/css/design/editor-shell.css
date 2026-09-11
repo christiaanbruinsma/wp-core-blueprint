@@ -107,7 +107,19 @@ html.cb-core-design-shell-focus-mode body {
 }
 
 .cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed {
+	display: flex;
+	flex-direction: column;
 	overflow: hidden;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__tabs {
+	flex: 0 0 auto;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__panel:not([hidden]) {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
 }
 
 .cb-core-design-shell__canvas {
