@@ -91,11 +91,26 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( '@media (prefers-reduced-motion: reduce)', $shell_css );
 	}
 
+	public function test_designer_mode_is_exposed_through_the_public_design_foundation_asset_boundary(): void {
+		$root = dirname( __DIR__, 2 );
+		$assets = (string) file_get_contents( $root . '/src/Design/Editor/Assets.php' );
+		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
+
+		self::assertStringContainsString( "public const DESIGNER_MODE_SCRIPT = 'cb-core-designer-mode';", $assets );
+		self::assertStringContainsString( 'public static function enqueue_designer_mode(): void', $assets );
+		self::assertStringContainsString( "CB_CORE_URL . 'assets/js/features/designer-launch.js'", $assets );
+		self::assertStringContainsString( "'cbCoreDesignerLaunch'", $assets );
+		self::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $assets );
+		self::assertStringContainsString( 'DesignEditorAssets::enqueue_designer_mode();', $page );
+		self::assertStringNotContainsString( "assets/js/features/designer-launch.js", $page );
+		self::assertStringNotContainsString( 'wp_localize_script(', $page );
+	}
+
 	public function test_mail_declares_its_panels_against_canonical_inspector_layers_settings_roles(): void {
 		$root = dirname( __DIR__, 2 );
 		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
 		$launch = (string) file_get_contents( $root . '/assets/js/features/designer-launch.js' );
-		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
+		$assets = (string) file_get_contents( $root . '/src/Design/Editor/Assets.php' );
 
 		self::assertStringContainsString( 'data-cb-design-shell-tab="inspector" data-cb-design-shell-sidebar-role="inspector"', $template );
 		self::assertStringContainsString( 'data-cb-design-shell-tab="structure" data-cb-design-shell-sidebar-role="layers"', $template );
@@ -103,10 +118,10 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( 'discoverSidebarRoles', $launch );
 		self::assertStringNotContainsString( "layers: 'structure'", $launch );
 		self::assertStringNotContainsString( "settings: 'email'", $launch );
-		self::assertStringContainsString( "'sidebarLabels' => [", $page );
-		self::assertStringContainsString( "'inspector' => __( 'Inspector', 'core-blueprint' )", $page );
-		self::assertStringContainsString( "'layers'    => __( 'Layers', 'default' )", $page );
-		self::assertStringContainsString( "'settings'  => __( 'Settings', 'core-blueprint' )", $page );
+		self::assertStringContainsString( "'sidebarLabels' => [", $assets );
+		self::assertStringContainsString( "'inspector' => __( 'Inspector', 'core-blueprint' )", $assets );
+		self::assertStringContainsString( "'layers'    => __( 'Layers', 'default' )", $assets );
+		self::assertStringContainsString( "'settings'  => __( 'Settings', 'core-blueprint' )", $assets );
 	}
 
 	public function test_tablet_viewport_is_a_shared_designer_capability_while_mail_owns_preview_response(): void {
@@ -126,15 +141,15 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 
 	public function test_designer_mode_and_hud_share_the_canonical_core_blueprint_mark(): void {
 		$root = dirname( __DIR__, 2 );
-		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
+		$assets = (string) file_get_contents( $root . '/src/Design/Editor/Assets.php' );
 		$hud = (string) file_get_contents( $root . '/src/HUD/Brand/CoreBlueprint.php' );
 		$mark = (string) file_get_contents( $root . '/src/Brand/CoreBlueprintMark.php' );
 
-		self::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $page );
+		self::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $assets );
 		self::assertStringContainsString( 'CoreBlueprintMark::svg()', $hud );
 		self::assertStringContainsString( '#00FFDD', $mark );
 		self::assertStringContainsString( '#0037FF', $mark );
 		self::assertStringContainsString( '#131648', $mark );
-		self::assertStringNotContainsString( 'assets/core-blueprint-icon.svg', $page );
+		self::assertStringNotContainsString( 'assets/core-blueprint-icon.svg', $assets );
 	}
 }
