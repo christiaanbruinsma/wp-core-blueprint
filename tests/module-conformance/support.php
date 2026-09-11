@@ -108,6 +108,10 @@ function cb_b3_assert_screen_contract(bool $enabled): void {
     ];
     foreach ($module_pages as $id => $slug) {
         $present = in_array($slug, $pages, true);
+        if ('mail' === $id) {
+            cb_b3_expect($present, 'Mail configuration surface must remain registered while its capabilities are OFF.');
+            continue;
+        }
         cb_b3_expect($present === $enabled, sprintf('%s page registration mismatch while module is %s.', $id, $enabled ? 'ON' : 'OFF'));
     }
     $login_hook = false !== has_filter('login_url', [\CB\Core\Security\LoginShield::class, 'filter_login_url']);
