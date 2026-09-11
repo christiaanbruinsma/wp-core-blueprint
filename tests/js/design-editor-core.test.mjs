@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { after, before, test } from 'node:test';
+import './design-shell-profile-proof.test.mjs';
 
 const sourceDirectory = new URL('../../assets/js/design/core/', import.meta.url);
 let tempDirectory;
