@@ -42,7 +42,7 @@ jobs:
         run: node --test tests/js/object-picker-identifiers.test.mjs
 
       - name: Design Editor JavaScript contract
-        run: node --test tests/js/design-editor-core.test.mjs tests/js/design-editor-boundary.test.mjs
+        run: node --test tests/js/design-editor-core.test.mjs tests/js/design-editor-boundary.test.mjs tests/js/design-shell-fullscreen.test.mjs
 
       - name: Document Fixed JavaScript contract
         run: node --test tests/js/design-document-fixed.test.mjs tests/js/design-document-fixed-boundary.test.mjs
@@ -181,7 +181,7 @@ jobs:
 
     env:
       WP_CORE_DIR: /tmp/core-blueprint-uninstall-wp
-      WP_TESTS_DIR: /tmp/core-blueprint-uninstall-wp-tests
+      WP_TESTS_DIR: /tmp/core-blueprint-wp-tests
       CB_PLUGIN_FILE: /tmp/core-blueprint-uninstall-wp/wp-content/plugins/core-blueprint/core-blueprint.php
       WP_DB_NAME: wordpress_test
       WP_DB_USER: root
@@ -198,7 +198,6 @@ jobs:
         with:
           php-version: '8.4'
           extensions: dom, mbstring, mysqli, sodium, xml, xmlwriter
-          tools: composer:2.10.2
           coverage: none
 
       - name: Install pinned WordPress 7.0 runtime
