@@ -14,7 +14,7 @@ namespace CB\Core\Mail\Admin;
 
 use CB\Core\Admin\PageBase;
 use CB\Core\Admin\TabNav;
-use CB\Core\Brand\CoreBlueprintMark;
+use CB\Core\Design\Editor\Assets as DesignEditorAssets;
 use CB\Core\Mail\ConflictDetector;
 use CB\Core\Mail\DeliveryState;
 use CB\Core\Mail\Designer\BindingRegistry;
@@ -132,7 +132,7 @@ final class Page extends PageBase {
 			$components = ComponentRegistry::all();
 			$preview = is_array( $current_template ) ? DesignerRenderer::preview( $template_id ) : null;
 			if ( $designer_enabled && is_array( $current_template ) ) {
-				$this->enqueue_designer_launch_assets();
+				DesignEditorAssets::enqueue_designer_mode();
 			}
 			include CB_CORE_DIR . 'templates/mail-designer.php';
 		} elseif ( 'settings' === $tab ) {
@@ -143,30 +143,5 @@ final class Page extends PageBase {
 		$html = (string) ob_get_clean();
 
 		echo TabNav::inject( $html, self::SLUG, $tab, $tabs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	}
-
-	private function enqueue_designer_launch_assets(): void {
-		wp_enqueue_script(
-			'cb-core-designer-launch',
-			CB_CORE_URL . 'assets/js/features/designer-launch.js',
-			[],
-			CB_CORE_VERSION,
-			true
-		);
-		wp_localize_script(
-			'cb-core-designer-launch',
-			'cbCoreDesignerLaunch',
-			[
-				'label'         => __( 'Design with Core Blueprint', 'core-blueprint' ),
-				'ariaLabel'     => __( 'Open Designer Mode', 'core-blueprint' ),
-				'iconUrl'       => CoreBlueprintMark::data_uri(),
-				'sidebarLabels' => [
-					'inspector' => __( 'Inspector', 'core-blueprint' ),
-					// WordPress editor vocabulary intentionally uses the default text domain.
-					'layers'    => __( 'Layers', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
-					'settings'  => __( 'Settings', 'core-blueprint' ),
-				],
-			]
-		);
 	}
 }
