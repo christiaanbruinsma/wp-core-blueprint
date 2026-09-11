@@ -142,7 +142,7 @@ if (root) {
 		if (!doc) return;
 
 		doc.addEventListener('click', (event) => {
-			const target = event.target instanceof Element ? event.target : null;
+			const target = event.target && typeof event.target.closest === 'function' ? event.target : null;
 			const marker = target?.closest('[data-cb-mail-editor-node]');
 			if (!marker) return;
 			const path = markerPath(marker);
@@ -153,7 +153,7 @@ if (root) {
 		}, true);
 
 		doc.addEventListener('pointermove', (event) => {
-			const target = event.target instanceof Element ? event.target : null;
+			const target = event.target && typeof event.target.closest === 'function' ? event.target : null;
 			const marker = target?.closest('[data-cb-mail-editor-node]');
 			doc.querySelectorAll('[data-cb-mail-hovered]').forEach((node) => { delete node.dataset.cbMailHovered; });
 			if (marker) marker.dataset.cbMailHovered = 'true';
