@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 /**
- * Runtime activation boundary for Core Blueprint Mail.
+ * Runtime activation boundary for Core Blueprint Mail Delivery.
  *
- * No transport hooks are registered unless the module is enabled and no known
- * competing SMTP/mail transport plugin is active.
+ * No transport hooks are registered unless Delivery is enabled and no known
+ * competing SMTP/mail transport plugin is active. Mail Designer is a separate
+ * presentation capability and never activates transport hooks by itself.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -23,7 +24,7 @@ final class Runtime {
 	private static bool $active = false;
 
 	public static function boot(): void {
-		if ( ! State::is_enabled() || ConflictDetector::has_conflict() || '' !== Settings::activation_error_code() ) {
+		if ( ! DeliveryState::is_enabled() || ConflictDetector::has_conflict() || '' !== Settings::activation_error_code() ) {
 			return;
 		}
 
@@ -34,9 +35,6 @@ final class Runtime {
 		$transports = is_array( $transports ) ? $transports : [];
 		$transport  = $transports[ Settings::provider() ] ?? null;
 
-		// Validate the selected provider before registering any mail-related
-		// hooks. Unknown/invalid provider adapters therefore fail closed just
-		// like the disabled/conflict states above.
 		if ( ! is_string( $transport ) || ! is_subclass_of( $transport, \CB\Core\Mail\Transport\TransportInterface::class ) ) {
 			return;
 		}
@@ -44,11 +42,6 @@ final class Runtime {
 		self::$active = true;
 		DeliveryLogger::boot();
 
-		// These two filters are always present while Core Blueprint Mail owns the
-		// runtime. Outside a scoped Sender::send() call they only enforce the
-		// configured default when the corresponding force setting is enabled.
-		// During a scoped call the registered Base-owned identity is authoritative,
-		// even when an earlier theme/plugin filter tries to replace the sender.
 		add_filter( 'wp_mail_from', [ __CLASS__, 'force_from_email' ], PHP_INT_MAX );
 		add_filter( 'wp_mail_from_name', [ __CLASS__, 'force_from_name' ], PHP_INT_MAX );
 

@@ -55,6 +55,52 @@ run_ai_stage() {
   fi
 }
 
+run_mail_designer_option_stage() {
+  local stage="$1"
+  local output
+  local marker="mail-designer-$stage"
+
+  echo "[A3 uninstall] Mail Designer option stage: $stage"
+  if ! output="$(WP_CORE_DIR="$WP_CORE_DIR" php -r '
+$stage = isset($argv[1]) ? (string) $argv[1] : "";
+$wp_core_dir = rtrim((string) getenv("WP_CORE_DIR"), "/\\");
+require $wp_core_dir . "/wp-load.php";
+$key = "cb_core_mail_template_overrides";
+
+if ("seed" === $stage) {
+    $value = ["a3-mail-designer-sentinel" => ["subject" => "delete-me"]];
+    update_option($key, $value, false);
+    if ($value !== get_option($key, null)) {
+        fwrite(STDERR, "Mail Designer uninstall sentinel could not be seeded.\n");
+        exit(1);
+    }
+    fwrite(STDOUT, "[A3 uninstall] mail-designer-seed PASS\n");
+    exit(0);
+}
+
+if ("verify" === $stage) {
+    if (false !== get_option($key, false)) {
+        fwrite(STDERR, "Mail Designer template overrides survived Base uninstall.\n");
+        exit(1);
+    }
+    fwrite(STDOUT, "[A3 uninstall] mail-designer-verify PASS\n");
+    exit(0);
+}
+
+fwrite(STDERR, "Unknown Mail Designer option stage.\n");
+exit(64);
+' "$stage" 2>&1)"; then
+    printf '%s\n' "$output"
+    return 1
+  fi
+
+  printf '%s\n' "$output"
+  if ! grep -Fq "[A3 uninstall] $marker PASS" <<<"$output"; then
+    echo "[A3 uninstall] $marker FAIL: child process exited without its explicit PASS marker." >&2
+    return 1
+  fi
+}
+
 # The plugin is deleted only through WordPress' real delete_plugins() path.
 # Every transition runs in a fresh PHP process against one persistent site.
 run_stage install
@@ -62,10 +108,12 @@ run_stage activate-base
 # The first normal request after activation runs the canonical plugins_loaded
 # schema registration/reconciliation lifecycle for Base-owned dedicated stores.
 run_stage seed
+run_mail_designer_option_stage seed
 run_ai_stage seed
 run_stage deactivate-base
 run_stage delete-base
 run_stage verify
+run_mail_designer_option_stage verify
 run_ai_stage verify
 
 echo "[A3 uninstall] destructive uninstall scenario PASS"
