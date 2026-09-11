@@ -29,6 +29,21 @@ html.cb-core-design-shell-focus-mode body {
 	overflow: hidden;
 	background: var(--cb-surface-0);
 	color: var(--cb-text);
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	transform-origin: center top;
+	transition: opacity 170ms cubic-bezier(.2, .8, .2, 1), transform 170ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.cb-core-design-shell.is-fullscreen.is-entering {
+	opacity: 0;
+	transform: translateY(4px) scale(.995);
+}
+
+.cb-core-design-shell.is-fullscreen.is-exiting {
+	opacity: 0;
+	transform: translateY(2px) scale(.997);
+	transition-duration: 130ms;
 }
 
 .cb-core-design-shell__toolbar {
@@ -131,6 +146,13 @@ html.cb-core-design-shell-focus-mode body {
 	line-height: 1 !important;
 }
 
+.cb-core-design-shell__icon-label {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--cb-space-1);
+}
+
 .cb-core-design-shell__icon {
 	display: inline-flex;
 	align-items: center;
@@ -138,6 +160,12 @@ html.cb-core-design-shell-focus-mode body {
 	width: 18px;
 	height: 18px;
 	pointer-events: none;
+}
+
+.cb-core-design-shell__tab .cb-core-design-shell__icon,
+.cb-core-design-shell__sidebar-tab .cb-core-design-shell__icon {
+	width: 16px;
+	height: 16px;
 }
 
 .cb-core-design-shell__icon svg {
@@ -324,6 +352,16 @@ html.cb-core-design-shell-focus-mode body {
 .cb-core-design-shell__panel[hidden],
 .cb-core-design-shell__sidebar-panel[hidden] {
 	display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-core-design-shell.is-fullscreen,
+	.cb-core-design-shell.is-fullscreen.is-entering,
+	.cb-core-design-shell.is-fullscreen.is-exiting {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
 }
 
 @media (max-width: 1280px) {
