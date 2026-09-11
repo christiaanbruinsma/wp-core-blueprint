@@ -69,11 +69,15 @@ test('mail layout normalizes font family to the renderer-safe contract', () => {
 	assert.equal(normalizeMailLayout({ fontFamily: 'Comic Sans MS' }).fontFamily, MAIL_FONT_FAMILIES[0]);
 });
 
-test('public editor delegates validation to profile APIs and exposes Mail without profile-specific conditionals', async () => {
+test('public editor delegates validation to profile APIs and exposes shared Designer UI contracts without profile conditionals', async () => {
 	const source = await readFile(new URL('../../assets/js/design/editor.js', import.meta.url), 'utf8');
 	assert.match(source, /['"]mail['"]\s*:\s*Object\.freeze/);
 	assert.match(source, /profile\.api\.validateProject/);
 	assert.match(source, /createDesignerShell/);
+	assert.match(source, /configureSidebar:\s*configureDesignerSidebar/);
+	assert.match(source, /sidebarRoles:\s*DESIGNER_SIDEBAR_ROLES/);
+	assert.match(source, /icons:\s*Object\.freeze/);
+	assert.match(source, /cb:design-editor:ready/);
 	assert.doesNotMatch(source, /profile\.id\s*===\s*['"]document-(?:fixed|flow)['"]/);
 });
 
@@ -118,13 +122,22 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
-test('mail Designer Mode chrome parses as a classic script and delegates fullscreen ownership', async () => {
+test('mail Designer Mode chrome consumes shared Lucide/sidebar contracts and delegates fullscreen ownership', async () => {
 	const source = await readFile(new URL('../../assets/js/features/designer-launch.js', import.meta.url), 'utf8');
 	assert.doesNotThrow(() => new Function(source));
 	assert.match(source, /fullscreen\.click\(\)/);
 	assert.match(source, /cb:design-shell:fullscreenchange/);
 	assert.match(source, /\[data-cb-mail-viewport="tablet"\]/);
 	assert.match(source, /cb-core-design-shell__toolbar--designer/);
+	assert.match(source, /shellApi\.icons\.decorate\(undo, 'undo-2'/);
+	assert.match(source, /shellApi\.icons\.decorate\(redo, 'redo-2'/);
+	assert.match(source, /shellApi\.configureSidebar\(shell/);
+	assert.match(source, /inspector:\s*'inspector'/);
+	assert.match(source, /layers:\s*'structure'/);
+	assert.match(source, /settings:\s*'email'/);
+	assert.match(source, /activeRole:\s*'inspector'/);
+	assert.doesNotMatch(source, /const ICONS/);
+	assert.doesNotMatch(source, /createElementNS/);
 	assert.doesNotMatch(source, /setViewportState/);
 	assert.doesNotMatch(source, /createDesignerShell/);
 	assert.doesNotMatch(source, /requestFullscreen/);
