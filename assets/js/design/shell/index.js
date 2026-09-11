@@ -266,8 +266,10 @@ export const createDesignerShell = (root, {
 			root.classList.remove(FULLSCREEN_ENTER_CLASS);
 		} else {
 			enterFrame = scheduleAnimationFrame(() => {
-				enterFrame = null;
-				root.classList.remove(FULLSCREEN_ENTER_CLASS);
+				enterFrame = scheduleAnimationFrame(() => {
+					enterFrame = null;
+					root.classList.remove(FULLSCREEN_ENTER_CLASS);
+				});
 			});
 		}
 		return true;
