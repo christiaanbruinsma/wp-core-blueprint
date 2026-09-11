@@ -27,8 +27,19 @@ jobs:
       - name: Synchronize localized catalogs
         if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
         run: |
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path('tools/l10n-mail-md15-sync.php')
+          source = path.read_text()
+          needle = "            foreach ($value as $source => $translation) {\n                if (!is_string($source) || !is_string($translation)) {"
+          replacement = "            foreach ($value as $source => $translation) {\n                $source = is_int($source) ? (string) $source : $source;\n                if (!is_string($source) || !is_string($translation)) {"
+          if needle not in source:
+              raise SystemExit('Expected serializer guard was not found.')
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
           php -l tools/l10n-mail-md15-sync.php
           php tools/l10n-mail-md15-sync.php
+          git checkout -- tools/l10n-mail-md15-sync.php
 
       - name: Validate translation guard and PHP syntax
         if: ${{ hashFiles('tools/l10n-mail-md15-sync.php') != '' }}
