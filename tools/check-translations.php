@@ -65,7 +65,7 @@ function literal_translation_value( array $tokens ): ?string {
 }
 
 function translation_placeholders( string $value ): array {
-    preg_match_all( '/%(?:\\d+\\$)?[-+0 #\\'\\.\\d]*[bcdeEfFgGosuxX]/', str_replace( '%%', '', $value ), $matches );
+    preg_match_all( "/%(?:\\d+\\$)?[-+0 #'\\.\\d]*[bcdeEfFgGosuxX]/", str_replace( '%%', '', $value ), $matches );
     $items = $matches[0] ?? [];
     sort( $items );
     return $items;
