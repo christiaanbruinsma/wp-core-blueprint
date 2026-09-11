@@ -4,68 +4,140 @@
 	const config = window.cbCoreDesignerLaunch || {};
 	const BOOT_RETRY_DELAY_MS = 50;
 	const BOOT_RETRY_LIMIT = 200;
+	const VIEWPORT_EVENT = 'cb:design-shell:viewportchange';
+	const VIEWPORT_ORDER = Object.freeze(['mobile', 'tablet', 'desktop']);
+	const VIEWPORT_ICONS = Object.freeze({
+		mobile: 'smartphone',
+		tablet: 'tablet',
+		desktop: 'monitor',
+	});
 
 	const sharedShellApi = () => window.cbCore?.designEditor?.shell ?? null;
 
-	const composeHeader = (root, shell, shellApi) => {
+	const discoverSidebarRoles = (shell) => {
+		const roles = {};
+		shell.querySelectorAll('[data-cb-design-shell-sidebar-role][data-cb-design-shell-tab]').forEach((tab) => {
+			const role = String(tab.dataset.cbDesignShellSidebarRole || '').trim();
+			const panelId = String(tab.dataset.cbDesignShellTab || '').trim();
+			if (role && panelId) roles[role] = panelId;
+		});
+		return roles;
+	};
+
+	const configureSidebar = (shell, shellApi) => {
+		const roles = discoverSidebarRoles(shell);
+		const roleNames = Object.keys(roles);
+		if (!roleNames.length) return;
+		const activeRole = String(config.activeSidebarRole || '').trim()
+			|| (roles.inspector ? 'inspector' : roleNames[0]);
+		shellApi.configureSidebar(shell, {
+			roles,
+			labels: config.sidebarLabels || {},
+			activeRole,
+		});
+	};
+
+	const configureViewports = (shell, viewportGroup, shellApi) => {
+		if (!viewportGroup) return;
+		const controls = Array.from(viewportGroup.querySelectorAll('[data-cb-design-shell-viewport]'));
+		if (!controls.length) return;
+
+		viewportGroup.setAttribute('role', 'group');
+		viewportGroup.classList.add('cb-core-design-shell__toolbar-group--viewport');
+
+		controls.forEach((button) => {
+			const viewport = String(button.dataset.cbDesignShellViewport || '').trim();
+			const label = String(button.textContent || viewport).trim();
+			const icon = String(button.dataset.cbDesignShellIcon || VIEWPORT_ICONS[viewport] || '').trim();
+			if (icon) shellApi.icons.decorate(button, icon, { iconOnly: true, label });
+		});
+
+		const orderIndex = (button) => {
+			const viewport = String(button.dataset.cbDesignShellViewport || '').trim();
+			const index = VIEWPORT_ORDER.indexOf(viewport);
+			return index < 0 ? VIEWPORT_ORDER.length : index;
+		};
+		viewportGroup.replaceChildren(...controls.sort((left, right) => orderIndex(left) - orderIndex(right)));
+
+		const setViewport = (viewport, { emit = true } = {}) => {
+			const value = String(viewport || '').trim();
+			if (!value) return false;
+			const target = controls.find((button) => button.dataset.cbDesignShellViewport === value);
+			if (!target) return false;
+			shell.dataset.cbDesignShellViewport = value;
+			controls.forEach((button) => {
+				const active = button === target;
+				button.classList.toggle('is-active', active);
+				button.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+			if (emit) {
+				shell.dispatchEvent(new CustomEvent(VIEWPORT_EVENT, {
+					bubbles: true,
+					detail: Object.freeze({ viewport: value }),
+				}));
+			}
+			return true;
+		};
+
+		viewportGroup.addEventListener('click', (event) => {
+			const target = event.target?.closest?.('[data-cb-design-shell-viewport]');
+			if (!target || !viewportGroup.contains(target)) return;
+			setViewport(target.dataset.cbDesignShellViewport);
+		});
+
+		const initial = controls.find((button) => button.getAttribute('aria-pressed') === 'true')
+			|| controls.find((button) => button.classList.contains('is-active'))
+			|| controls[0];
+		setViewport(initial?.dataset.cbDesignShellViewport, { emit: false });
+	};
+
+	const composeHeader = (shell, shellApi) => {
 		const toolbar = shell.querySelector('.cb-core-design-shell__toolbar');
 		if (!toolbar || toolbar.dataset.cbDesignShellHeader === 'true') return;
 
-		const historyGroup = toolbar.querySelector('[data-cb-design-shell-undo]')?.closest('.cb-core-design-shell__toolbar-group');
-		const viewportGroup = toolbar.querySelector('[data-cb-mail-viewport]')?.closest('.cb-core-design-shell__toolbar-group');
+		const historyGroup = toolbar.querySelector('[data-cb-design-shell-undo]')?.closest('.cb-core-design-shell__toolbar-group') ?? null;
+		const viewportGroup = toolbar.querySelector('[data-cb-design-shell-viewport]')?.closest('.cb-core-design-shell__toolbar-group') ?? null;
 		const fullscreen = toolbar.querySelector('[data-cb-design-shell-fullscreen]');
-		const save = toolbar.querySelector('button[type="submit"]');
-		const status = toolbar.querySelector('[data-cb-mail-preview-status]');
-		if (!historyGroup || !viewportGroup || !fullscreen || !save) return;
+		const save = toolbar.querySelector('[data-cb-design-shell-primary-action]');
+		const status = toolbar.querySelector('[data-cb-design-shell-status]');
 
-		const historyHeading = historyGroup.querySelector('.cb-core-mail-designer__toolbar-label');
-		const viewportHeading = viewportGroup.querySelector('.cb-core-mail-designer__toolbar-label');
-		const historyLabel = String(historyHeading?.textContent || 'History').trim();
-		const viewportLabel = String(viewportHeading?.textContent || 'Canvas').trim();
-		historyHeading?.remove();
-		viewportHeading?.remove();
+		if (historyGroup) {
+			const heading = historyGroup.querySelector('[data-cb-design-shell-group-label]');
+			const historyLabel = String(heading?.textContent || 'History').trim();
+			heading?.remove();
+			historyGroup.setAttribute('role', 'group');
+			historyGroup.setAttribute('aria-label', historyLabel);
+			historyGroup.classList.add('cb-core-design-shell__toolbar-group--history');
+			const undo = historyGroup.querySelector('[data-cb-design-shell-undo]');
+			const redo = historyGroup.querySelector('[data-cb-design-shell-redo]');
+			if (undo) {
+				const label = String(undo.textContent || 'Undo').trim();
+				shellApi.icons.decorate(undo, 'undo-2', { iconOnly: true, label });
+			}
+			if (redo) {
+				const label = String(redo.textContent || 'Redo').trim();
+				shellApi.icons.decorate(redo, 'redo-2', { iconOnly: true, label });
+			}
+		}
 
-		const undo = historyGroup.querySelector('[data-cb-design-shell-undo]');
-		const redo = historyGroup.querySelector('[data-cb-design-shell-redo]');
-		const undoLabel = String(undo?.textContent || 'Undo').trim();
-		const redoLabel = String(redo?.textContent || 'Redo').trim();
-		const fullscreenLabel = String(fullscreen.getAttribute('aria-label') || fullscreen.textContent || 'Fullscreen mode').trim();
-		const saveLabel = String(save.textContent || 'Save template').trim();
+		if (viewportGroup) {
+			const heading = viewportGroup.querySelector('[data-cb-design-shell-group-label]');
+			const viewportLabel = String(heading?.textContent || 'Canvas').trim();
+			heading?.remove();
+			viewportGroup.setAttribute('aria-label', viewportLabel);
+			configureViewports(shell, viewportGroup, shellApi);
+		}
 
-		historyGroup.setAttribute('role', 'group');
-		historyGroup.setAttribute('aria-label', historyLabel);
-		viewportGroup.setAttribute('role', 'group');
-		viewportGroup.setAttribute('aria-label', viewportLabel);
-		historyGroup.classList.add('cb-core-design-shell__toolbar-group--history');
-		viewportGroup.classList.add('cb-core-design-shell__toolbar-group--viewport');
+		if (fullscreen) {
+			const label = String(fullscreen.getAttribute('aria-label') || fullscreen.textContent || 'Fullscreen mode').trim();
+			shellApi.icons.decorate(fullscreen, 'maximize-2', { iconOnly: true, label });
+		}
+		if (save) {
+			const label = String(save.textContent || 'Save').trim();
+			shellApi.icons.decorate(save, 'save', { iconOnly: true, label });
+		}
 
-		shellApi.icons.decorate(undo, 'undo-2', { iconOnly: true, label: undoLabel });
-		shellApi.icons.decorate(redo, 'redo-2', { iconOnly: true, label: redoLabel });
-		shellApi.icons.decorate(fullscreen, 'maximize-2', { iconOnly: true, label: fullscreenLabel });
-		shellApi.icons.decorate(save, 'save', { iconOnly: true, label: saveLabel });
-
-		const desktop = viewportGroup.querySelector('[data-cb-mail-viewport="desktop"]');
-		const tablet = viewportGroup.querySelector('[data-cb-mail-viewport="tablet"]');
-		const mobile = viewportGroup.querySelector('[data-cb-mail-viewport="mobile"]');
-		if (!desktop || !tablet || !mobile) return;
-
-		const desktopLabel = String(desktop.textContent || 'Desktop').trim();
-		const tabletLabel = String(tablet.textContent || 'Tablet').trim();
-		const mobileLabel = String(mobile.textContent || 'Mobile').trim();
-		shellApi.icons.decorate(mobile, 'smartphone', { iconOnly: true, label: mobileLabel });
-		shellApi.icons.decorate(tablet, 'tablet', { iconOnly: true, label: tabletLabel });
-		shellApi.icons.decorate(desktop, 'monitor', { iconOnly: true, label: desktopLabel });
-		viewportGroup.replaceChildren(mobile, tablet, desktop);
-
-		shellApi.configureSidebar(shell, {
-			roles: {
-				inspector: 'inspector',
-				layers: 'structure',
-				settings: 'email',
-			},
-			labels: config.sidebarLabels || {},
-			activeRole: 'inspector',
-		});
+		configureSidebar(shell, shellApi);
 
 		const start = document.createElement('div');
 		start.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--start';
@@ -91,7 +163,7 @@
 
 		const center = document.createElement('div');
 		center.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--center';
-		center.append(viewportGroup);
+		if (viewportGroup) center.append(viewportGroup);
 
 		const end = document.createElement('div');
 		end.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--end';
@@ -99,7 +171,9 @@
 			status.classList.add('cb-core-design-shell__toolbar-status');
 			end.append(status);
 		}
-		end.append(historyGroup, fullscreen, save);
+		if (historyGroup) end.append(historyGroup);
+		if (fullscreen) end.append(fullscreen);
+		if (save) end.append(save);
 
 		toolbar.classList.add('cb-core-design-shell__toolbar--designer');
 		toolbar.dataset.cbDesignShellHeader = 'true';
@@ -110,13 +184,13 @@
 		const shellApi = sharedShellApi();
 		if (!shellApi?.icons?.decorate || typeof shellApi.configureSidebar !== 'function') return false;
 
-		document.querySelectorAll('[data-cb-mail-designer]').forEach((root) => {
+		document.querySelectorAll('[data-cb-design-launch-root]').forEach((root) => {
 			const shell = root.querySelector('[data-cb-design-shell]');
 			const fullscreen = shell?.querySelector('[data-cb-design-shell-fullscreen]');
-			const context = root.querySelector('.cb-core-mail-designer__context');
+			const context = root.querySelector('[data-cb-design-launch-context]');
 			if (!shell || !fullscreen || !context || root.querySelector('[data-cb-design-launch]')) return;
 
-			composeHeader(root, shell, shellApi);
+			composeHeader(shell, shellApi);
 
 			const wrapper = document.createElement('div');
 			wrapper.className = 'cb-core-design-launch-wrap';
