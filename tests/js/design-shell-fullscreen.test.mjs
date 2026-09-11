@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { after, before, test } from 'node:test';
 
 const shellSource = new URL('../../assets/js/design/shell/index.js', import.meta.url);
+const iconsSource = new URL('../../assets/js/design/shell/icons.js', import.meta.url);
 const shellCss = new URL('../../assets/css/design/editor-shell.css', import.meta.url);
 let tempDirectory;
 let createDesignerShell;
@@ -180,7 +181,10 @@ const buildShell = ({ withControl = true, withFrame = false } = {}) => {
 before(async () => {
 	tempDirectory = await mkdtemp(join(tmpdir(), 'cb-design-shell-fullscreen-'));
 	const source = await readFile(shellSource, 'utf8');
+	const iconSource = await readFile(iconsSource, 'utf8');
 	const modulePath = join(tempDirectory, 'shell.mjs');
+	await writeFile(join(tempDirectory, 'package.json'), '{"type":"module"}\n');
+	await writeFile(join(tempDirectory, 'icons.js'), iconSource);
 	await writeFile(modulePath, source);
 
 	globalThis.document = new FakeDocument();
@@ -330,4 +334,25 @@ test('shared fullscreen CSS owns fixed viewport composition and document scroll 
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*\{[\s\S]*height:\s*100dvh/);
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*>\s*\.cb-core-design-shell__workspace/);
 	assert.match(css, /palette--tabbed\s*>\s*\.cb-core-design-shell__panel:not\(\[hidden\]\)[\s\S]*overflow:\s*auto/);
+});
+
+test('shared Designer UX defines canonical sidebar roles, Lucide icons and reduced-motion-safe transitions', async () => {
+	const shell = await readFile(shellSource, 'utf8');
+	const icons = await readFile(iconsSource, 'utf8');
+	const css = await readFile(shellCss, 'utf8');
+
+	assert.match(shell, /DESIGNER_SIDEBAR_ROLES\s*=\s*Object\.freeze\(\['inspector', 'layers', 'settings'\]\)/);
+	assert.match(shell, /SIDEBAR_ROLE_ICONS/);
+	assert.match(shell, /configureDesignerSidebar/);
+	assert.match(icons, /Copyright \(c\) 2026 Lucide Icons and Contributors/);
+	assert.match(icons, /'undo-2'/);
+	assert.match(icons, /'redo-2'/);
+	assert.match(icons, /'maximize-2'/);
+	assert.match(icons, /'minimize-2'/);
+	assert.match(icons, /'sliders-horizontal'/);
+	assert.match(icons, /layers:/);
+	assert.match(icons, /'settings-2'/);
+	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\.is-entering/);
+	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\.is-exiting/);
+	assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
