@@ -75,7 +75,9 @@ test('public editor delegates validation to profile APIs and exposes shared Desi
 	assert.match(source, /profile\.api\.validateProject/);
 	assert.match(source, /createDesignerShell/);
 	assert.match(source, /configureSidebar:\s*configureDesignerSidebar/);
+	assert.match(source, /configureViewports:\s*configureDesignerViewports/);
 	assert.match(source, /sidebarRoles:\s*DESIGNER_SIDEBAR_ROLES/);
+	assert.match(source, /viewportOrder:\s*DESIGNER_VIEWPORT_ORDER/);
 	assert.match(source, /icons:\s*Object\.freeze/);
 	assert.match(source, /cb:design-editor:ready/);
 	assert.doesNotMatch(source, /profile\.id\s*===\s*['"]document-(?:fixed|flow)['"]/);
@@ -87,6 +89,20 @@ test('shared Designer Shell supports independent named tab groups', async () => 
 	assert.match(source, /activePanelFor\(groupId\)/);
 	assert.match(source, /defaultPanels/);
 	assert.match(source, /group:\s*state\.id/);
+});
+
+test('shared Designer Shell owns reusable viewport controls independently of Mail', async () => {
+	const source = await readFile(new URL('../../assets/js/design/shell/viewports.js', import.meta.url), 'utf8');
+	assert.match(source, /DESIGNER_VIEWPORT_ORDER\s*=\s*Object\.freeze\(\['mobile', 'tablet', 'desktop'\]\)/);
+	assert.match(source, /\[data-cb-design-shell-viewport\]/);
+	assert.match(source, /mobile:\s*'smartphone'/);
+	assert.match(source, /tablet:\s*'tablet'/);
+	assert.match(source, /desktop:\s*'monitor'/);
+	assert.match(source, /root\.dataset\.cbDesignShellViewport\s*=\s*value/);
+	assert.match(source, /cb:design-shell:viewportchange/);
+	assert.match(source, /onChange/);
+	assert.doesNotMatch(source, /data-cb-mail-/);
+	assert.doesNotMatch(source, /mail/i);
 });
 
 test('mail designer uses the canonical live preview as its editable canvas', async () => {
@@ -122,15 +138,13 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
-test('shared Designer Mode owns reusable chrome and viewport state without Mail semantics', async () => {
+test('shared Designer Mode composes generic chrome and delegates viewport state to the Shell API', async () => {
 	const source = await readFile(new URL('../../assets/js/features/designer-launch.js', import.meta.url), 'utf8');
 	assert.doesNotThrow(() => new Function(source));
 	assert.match(source, /fullscreen\.click\(\)/);
 	assert.match(source, /cb:design-shell:fullscreenchange/);
-	assert.match(source, /cb:design-shell:viewportchange/);
 	assert.match(source, /\[data-cb-design-shell-viewport\]/);
-	assert.match(source, /VIEWPORT_ORDER\s*=\s*Object\.freeze\(\['mobile', 'tablet', 'desktop'\]\)/);
-	assert.match(source, /shell\.dataset\.cbDesignShellViewport\s*=\s*value/);
+	assert.match(source, /shellApi\.configureViewports\(shell\)/);
 	assert.match(source, /cb-core-design-shell__toolbar--designer/);
 	assert.match(source, /shellApi\.icons\.decorate\(undo, 'undo-2'/);
 	assert.match(source, /shellApi\.icons\.decorate\(redo, 'redo-2'/);
@@ -139,6 +153,7 @@ test('shared Designer Mode owns reusable chrome and viewport state without Mail 
 	assert.doesNotMatch(source, /data-cb-mail-/);
 	assert.doesNotMatch(source, /layers:\s*'structure'/);
 	assert.doesNotMatch(source, /settings:\s*'email'/);
+	assert.doesNotMatch(source, /cbDesignShellViewport\s*=/);
 	assert.doesNotMatch(source, /const ICONS/);
 	assert.doesNotMatch(source, /createElementNS/);
 	assert.doesNotMatch(source, /createDesignerShell/);
