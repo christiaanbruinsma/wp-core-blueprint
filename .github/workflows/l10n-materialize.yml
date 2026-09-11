@@ -29,22 +29,29 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-          path = Path('tools/l10n-mail-md15-sync.php')
-          source = path.read_text()
 
-          key_needle = "            foreach ($value as $source => $translation) {\n                if (!is_string($source) || !is_string($translation)) {"
-          key_replacement = "            foreach ($value as $source => $translation) {\n                $source = is_int($source) ? (string) $source : $source;\n                if (!is_string($source) || !is_string($translation)) {"
+          path = Path('tools/l10n-mail-md15-sync.php')
+          source = path.read_text(encoding='utf-8')
+
+          key_needle = r'''            foreach ($value as $source => $translation) {
+                if (!is_string($source) || !is_string($translation)) {'''
+          key_replacement = r'''            foreach ($value as $source => $translation) {
+                $source = is_int($source) ? (string) $source : $source;
+                if (!is_string($source) || !is_string($translation)) {'''
           if key_needle not in source:
               raise SystemExit('Expected serializer key guard was not found.')
           source = source.replace(key_needle, key_replacement, 1)
 
-          value_needle = "                $out .= '        ' . php_string($source) . ' => ' . php_string($translation) . \",\\n\";"
-          value_replacement = "                $serializedTranslation = str_contains($translation, \\"\\0\\")\n                    ? implode(' . \\\"\\\\0\\\" . ', array_map('php_string', explode(\\"\\0\\", $translation)))\n                    : php_string($translation);\n                $out .= '        ' . php_string($source) . ' => ' . $serializedTranslation . \",\\n\";"
+          value_needle = r'''                $out .= '        ' . php_string($source) . ' => ' . php_string($translation) . ",\n";'''
+          value_replacement = r'''                $serializedTranslation = str_contains($translation, "\0")
+                    ? implode(' . "\\0" . ', array_map('php_string', explode("\0", $translation)))
+                    : php_string($translation);
+                $out .= '        ' . php_string($source) . ' => ' . $serializedTranslation . ",\n";'''
           if value_needle not in source:
               raise SystemExit('Expected serializer value line was not found.')
           source = source.replace(value_needle, value_replacement, 1)
 
-          path.write_text(source)
+          path.write_text(source, encoding='utf-8')
           PY
           php -l tools/l10n-mail-md15-sync.php
           php tools/l10n-mail-md15-sync.php
