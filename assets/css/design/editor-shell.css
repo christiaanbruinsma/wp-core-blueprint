@@ -64,6 +64,11 @@ html.cb-core-design-shell-focus-mode body {
 	gap: var(--cb-space-3);
 }
 
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-group,
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__icon-button {
+	flex: 0 0 auto;
+}
+
 .cb-core-design-shell__toolbar-zone {
 	display: flex;
 	align-items: center;
@@ -81,6 +86,8 @@ html.cb-core-design-shell-focus-mode body {
 
 .cb-core-design-shell__toolbar-zone--end {
 	justify-self: end;
+	justify-content: flex-end;
+	flex-wrap: nowrap;
 }
 
 .cb-core-design-shell__brand {
@@ -151,6 +158,15 @@ html.cb-core-design-shell-focus-mode body {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-status {
+	flex: 0 1 160px;
+	min-width: 0;
+}
+
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-status:empty {
+	display: none;
 }
 
 .cb-core-design-launch-wrap {
