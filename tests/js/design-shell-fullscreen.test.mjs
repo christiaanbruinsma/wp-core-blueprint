@@ -33,9 +33,10 @@ class FakeClassList {
 }
 
 class FakeElement extends EventTarget {
-	constructor(ownerDocument = null) {
+	constructor(ownerDocument = null, tagName = 'DIV') {
 		super();
 		this.ownerDocument = ownerDocument;
+		this.tagName = tagName;
 		this.dataset = {};
 		this.attributes = new Map();
 		this.classList = new FakeClassList();
@@ -102,7 +103,8 @@ class FakeElement extends EventTarget {
 								? 'cbDesignShellPanel'
 								: null;
 		const visit = (node) => {
-			if (datasetKey && Object.hasOwn(node.dataset, datasetKey)) matches.push(node);
+			if (selector === 'iframe' && node.tagName === 'IFRAME') matches.push(node);
+			else if (datasetKey && Object.hasOwn(node.dataset, datasetKey)) matches.push(node);
 			node.children.forEach(visit);
 		};
 		this.children.forEach(visit);
@@ -110,13 +112,24 @@ class FakeElement extends EventTarget {
 	}
 }
 
-class FakeButton extends FakeElement {}
+class FakeButton extends FakeElement {
+	constructor(ownerDocument = null) {
+		super(ownerDocument, 'BUTTON');
+	}
+}
 
 class FakeDocument extends EventTarget {
 	constructor() {
 		super();
 		this.activeElement = null;
-		this.documentElement = new FakeElement(this);
+		this.documentElement = new FakeElement(this, 'HTML');
+	}
+}
+
+class FakeFrame extends FakeElement {
+	constructor(ownerDocument = null) {
+		super(ownerDocument, 'IFRAME');
+		this.contentDocument = new FakeDocument();
 	}
 }
 
@@ -136,11 +149,12 @@ const keyEvent = (key, { shiftKey = false } = {}) => {
 	return event;
 };
 
-const buildShell = ({ withControl = true } = {}) => {
+const buildShell = ({ withControl = true, withFrame = false } = {}) => {
 	const root = new FakeElement(document);
 	let fullscreen = null;
 	let label = null;
 	const secondary = new FakeButton(document);
+	const frame = withFrame ? new FakeFrame(document) : null;
 
 	if (withControl) {
 		fullscreen = new FakeButton(document);
@@ -152,13 +166,15 @@ const buildShell = ({ withControl = true } = {}) => {
 		label.textContent = 'Enter focus mode';
 		fullscreen.append(label);
 		root.append(fullscreen, secondary);
-		root._focusables = [fullscreen, secondary];
+		if (frame) root.append(frame);
+		root._focusables = frame ? [fullscreen, secondary, frame] : [fullscreen, secondary];
 	} else {
 		root.append(secondary);
-		root._focusables = [];
+		if (frame) root.append(frame);
+		root._focusables = frame ? [frame] : [];
 	}
 
-	return { root, fullscreen, label, secondary };
+	return { root, fullscreen, label, secondary, frame };
 };
 
 before(async () => {
@@ -242,6 +258,20 @@ test('fullscreen control toggles state and keyboard focus stays inside the visib
 
 	assert.equal(shell.toggleFullscreen(), true);
 	assert.equal(shell.isFullscreen(), false);
+});
+
+test('Escape inside a same-origin descendant iframe exits shared fullscreen state', () => {
+	const { root, fullscreen, frame } = buildShell({ withFrame: true });
+	const shell = createDesignerShell(root);
+
+	fullscreen.focus();
+	assert.equal(shell.enterFullscreen(), true);
+	const escape = keyEvent('Escape');
+	frame.contentDocument.dispatchEvent(escape);
+	assert.equal(escape.defaultPrevented, true);
+	assert.equal(shell.isFullscreen(), false);
+	assert.equal(document.documentElement.classList.contains('cb-core-design-shell-focus-mode'), false);
+	assert.equal(document.activeElement, fullscreen);
 });
 
 test('only one Designer Shell owns fullscreen state and document scroll lock at a time', () => {
