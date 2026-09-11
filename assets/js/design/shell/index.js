@@ -1,15 +1,43 @@
 const element = (root, selector) => root?.querySelector?.(selector) ?? null;
 const elements = (root, selector) => Array.from(root?.querySelectorAll?.(selector) ?? []);
 const DEFAULT_GROUP = 'default';
+const FULLSCREEN_ROOT_CLASS = 'is-fullscreen';
+const FULLSCREEN_DOCUMENT_CLASS = 'cb-core-design-shell-focus-mode';
+const FULLSCREEN_EVENT = 'cb:design-shell:fullscreenchange';
+const FOCUSABLE_SELECTOR = [
+	'a[href]',
+	'button:not([disabled])',
+	'input:not([disabled])',
+	'select:not([disabled])',
+	'textarea:not([disabled])',
+	'iframe',
+	'[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+let activeFullscreenExit = null;
 
 const normalizeGroupId = (value) => String(value || DEFAULT_GROUP).trim() || DEFAULT_GROUP;
+
+const focusableElements = (root) => elements(root, FOCUSABLE_SELECTOR).filter((candidate) => {
+	if (candidate.disabled === true || candidate.hidden === true) return false;
+	if (candidate.getAttribute?.('aria-hidden') === 'true') return false;
+	if (candidate.closest?.('[hidden]')) return false;
+	return typeof candidate.focus === 'function';
+});
+
+const focusTargetIsUsable = (target) => (
+	target
+	&& typeof target.focus === 'function'
+	&& target.isConnected !== false
+);
 
 /**
  * Shared Core Blueprint Designer shell.
  *
- * Owns only editor chrome/session presentation: tab groups, history controls
- * and shell-level keyboard delegation. Profiles and consumers keep ownership of
- * canvas semantics, palettes, inspectors, persistence and domain behaviour.
+ * Owns only editor chrome/session presentation: tab groups, history controls,
+ * fullscreen/focus-mode UI state and shell-level keyboard delegation. Profiles
+ * and consumers keep ownership of canvas semantics, palettes, inspectors,
+ * persistence and domain behaviour.
  */
 export const createDesignerShell = (root, {
 	session = null,
@@ -23,9 +51,15 @@ export const createDesignerShell = (root, {
 
 	const undo = element(root, '[data-cb-design-shell-undo]');
 	const redo = element(root, '[data-cb-design-shell-redo]');
+	const fullscreen = element(root, '[data-cb-design-shell-fullscreen]');
+	const fullscreenLabel = element(fullscreen, '[data-cb-design-shell-fullscreen-label]');
 	const tabs = elements(root, '[data-cb-design-shell-tab]');
 	const panels = elements(root, '[data-cb-design-shell-panel]');
 	const groups = new Map();
+	let fullscreenState = false;
+	let focusReturnTarget = null;
+	let temporaryRootTabIndex = null;
+	let controller = null;
 
 	const groupIdFor = (node) => normalizeGroupId(node?.dataset?.cbDesignShellGroup);
 	const group = (groupId = DEFAULT_GROUP) => {
@@ -49,6 +83,112 @@ export const createDesignerShell = (root, {
 		if (undo instanceof HTMLButtonElement) undo.disabled = !session.history.canUndo;
 		if (redo instanceof HTMLButtonElement) redo.disabled = !session.history.canRedo;
 	};
+
+	const syncFullscreenControl = () => {
+		if (!fullscreen) return;
+		fullscreen.setAttribute('aria-pressed', fullscreenState ? 'true' : 'false');
+		const label = fullscreenState
+			? fullscreen.dataset?.cbDesignShellFullscreenExitLabel
+			: fullscreen.dataset?.cbDesignShellFullscreenEnterLabel;
+		if (!label) return;
+		fullscreen.setAttribute('aria-label', label);
+		if (fullscreenLabel) fullscreenLabel.textContent = label;
+	};
+
+	const dispatchFullscreenChange = () => {
+		root.dispatchEvent(new CustomEvent(FULLSCREEN_EVENT, {
+			bubbles: true,
+			detail: Object.freeze({ fullscreen: fullscreenState }),
+		}));
+	};
+
+	const focusInside = () => {
+		const active = document.activeElement;
+		if (active && root.contains(active)) return;
+		const candidates = focusableElements(root);
+		if (candidates.length) {
+			candidates[0].focus();
+			return;
+		}
+		if (!root.hasAttribute('tabindex')) {
+			temporaryRootTabIndex = true;
+			root.setAttribute('tabindex', '-1');
+		}
+		root.focus?.();
+	};
+
+	const restoreRootTabIndex = () => {
+		if (temporaryRootTabIndex !== true) return;
+		root.removeAttribute('tabindex');
+		temporaryRootTabIndex = null;
+	};
+
+	const exitFullscreenInternal = ({ restoreFocus = true } = {}) => {
+		if (!fullscreenState) return false;
+		fullscreenState = false;
+		if (activeFullscreenExit === exitFullscreenInternal) activeFullscreenExit = null;
+		document.removeEventListener('keydown', handleFullscreenKeydown, true);
+		root.classList.remove(FULLSCREEN_ROOT_CLASS);
+		document.documentElement?.classList?.remove(FULLSCREEN_DOCUMENT_CLASS);
+		restoreRootTabIndex();
+		syncFullscreenControl();
+		dispatchFullscreenChange();
+
+		const returnTarget = focusReturnTarget;
+		focusReturnTarget = null;
+		if (restoreFocus && focusTargetIsUsable(returnTarget)) returnTarget.focus();
+		return true;
+	};
+
+	const enterFullscreen = () => {
+		if (fullscreenState) return false;
+		if (activeFullscreenExit) activeFullscreenExit({ restoreFocus: false });
+
+		focusReturnTarget = focusTargetIsUsable(document.activeElement) ? document.activeElement : null;
+		fullscreenState = true;
+		activeFullscreenExit = exitFullscreenInternal;
+		root.classList.add(FULLSCREEN_ROOT_CLASS);
+		document.documentElement?.classList?.add(FULLSCREEN_DOCUMENT_CLASS);
+		document.addEventListener('keydown', handleFullscreenKeydown, true);
+		syncFullscreenControl();
+		focusInside();
+		dispatchFullscreenChange();
+		return true;
+	};
+
+	const exitFullscreen = () => exitFullscreenInternal();
+	const toggleFullscreen = () => fullscreenState ? exitFullscreen() : enterFullscreen();
+	const isFullscreen = () => fullscreenState;
+
+	function handleFullscreenKeydown(event) {
+		if (!fullscreenState || event.defaultPrevented) return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			exitFullscreen();
+			return;
+		}
+		if (event.key !== 'Tab') return;
+
+		const candidates = focusableElements(root);
+		if (!candidates.length) {
+			event.preventDefault();
+			focusInside();
+			return;
+		}
+		const first = candidates[0];
+		const last = candidates.at(-1);
+		const active = document.activeElement;
+		if (!root.contains(active)) {
+			event.preventDefault();
+			(event.shiftKey ? last : first).focus();
+		} else if (event.shiftKey && active === first) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && active === last) {
+			event.preventDefault();
+			first.focus();
+		}
+	}
 
 	const activatePanel = (panelId, { focus = false, group: requestedGroup = DEFAULT_GROUP } = {}) => {
 		const id = String(panelId || '').trim();
@@ -111,6 +251,7 @@ export const createDesignerShell = (root, {
 		session.redo();
 		syncHistory();
 	});
+	fullscreen?.addEventListener('click', toggleFullscreen);
 
 	groups.forEach((state) => {
 		const requested = state.id === DEFAULT_GROUP
@@ -124,12 +265,17 @@ export const createDesignerShell = (root, {
 		).trim();
 		if (initialPanel) activatePanel(initialPanel, { group: state.id });
 	});
-	 syncHistory();
+	syncHistory();
+	syncFullscreenControl();
 
-	return Object.freeze({
+	controller = Object.freeze({
 		root,
 		activatePanel,
 		syncHistory,
+		isFullscreen,
+		enterFullscreen,
+		exitFullscreen,
+		toggleFullscreen,
 		get activePanel() {
 			return group(DEFAULT_GROUP).activePanel;
 		},
@@ -140,4 +286,5 @@ export const createDesignerShell = (root, {
 			return group(groupId).panels.find((candidate) => candidate.dataset.cbDesignShellPanel === String(id || '')) ?? null;
 		},
 	});
+	return controller;
 };
