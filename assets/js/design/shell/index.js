@@ -56,6 +56,7 @@ export const createDesignerShell = (root, {
 	const fullscreenLabel = element(fullscreen, '[data-cb-design-shell-fullscreen-label]');
 	const tabs = elements(root, '[data-cb-design-shell-tab]');
 	const panels = elements(root, '[data-cb-design-shell-panel]');
+	const frames = elements(root, 'iframe');
 	const groups = new Map();
 	let fullscreenState = false;
 	let focusReturnTarget = null;
@@ -190,6 +191,30 @@ export const createDesignerShell = (root, {
 		}
 	}
 
+	function handleFrameFullscreenKeydown(event) {
+		if (!fullscreenState || event.defaultPrevented || event.key !== 'Escape') return;
+		event.preventDefault();
+		exitFullscreen();
+	}
+
+	const bindFrameKeyboard = (frame) => {
+		let boundDocument = null;
+		const bind = () => {
+			let nextDocument = null;
+			try {
+				nextDocument = frame.contentDocument;
+			} catch (error) {
+				return;
+			}
+			if (!nextDocument || nextDocument === boundDocument) return;
+			boundDocument?.removeEventListener?.('keydown', handleFrameFullscreenKeydown, true);
+			boundDocument = nextDocument;
+			boundDocument.addEventListener?.('keydown', handleFrameFullscreenKeydown, true);
+		};
+		frame.addEventListener?.('load', bind);
+		bind();
+	};
+
 	const activatePanel = (panelId, { focus = false, group: requestedGroup = DEFAULT_GROUP } = {}) => {
 		const id = String(panelId || '').trim();
 		if (!id) return false;
@@ -252,6 +277,7 @@ export const createDesignerShell = (root, {
 		syncHistory();
 	});
 	fullscreen?.addEventListener('click', toggleFullscreen);
+	frames.forEach(bindFrameKeyboard);
 
 	groups.forEach((state) => {
 		const requested = state.id === DEFAULT_GROUP
