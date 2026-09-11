@@ -134,6 +134,20 @@ final class CB_Mail_Designer_Foundation_Test extends WP_UnitTestCase {
 		self::assertStringContainsString( 'test-key', $rendered['message'] );
 	}
 
+	public function test_mail_designer_opts_into_shared_fullscreen_without_owning_fullscreen_runtime(): void {
+		$root = dirname( __DIR__, 2 );
+		$template = (string) file_get_contents( $root . '/templates/mail-designer.php' );
+		$feature = (string) file_get_contents( $root . '/assets/js/features/mail-designer.js' );
+
+		self::assertStringContainsString( 'data-cb-design-shell-fullscreen', $template );
+		self::assertStringContainsString( 'aria-pressed="false"', $template );
+		self::assertStringContainsString( "esc_html_e( 'Fullscreen mode' );", $template );
+		self::assertStringNotContainsString( "'Fullscreen mode', 'core-blueprint'", $template );
+		self::assertStringNotContainsString( 'toggleFullscreen', $feature );
+		self::assertStringNotContainsString( 'enterFullscreen', $feature );
+		self::assertStringNotContainsString( 'exitFullscreen', $feature );
+	}
+
 	/** @param list<array<string,mixed>> $children @return array<string,mixed> */
 	private function project( array $children ): array {
 		return [
