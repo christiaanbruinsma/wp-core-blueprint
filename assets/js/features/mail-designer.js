@@ -523,9 +523,14 @@ if (root) {
 
 	root.querySelectorAll('[data-cb-mail-viewport]').forEach((button) => {
 		button.addEventListener('click', () => {
-			const mobile = button.dataset.cbMailViewport === 'mobile';
-			previewFrame?.classList.toggle('is-mobile', mobile);
-			root.querySelectorAll('[data-cb-mail-viewport]').forEach((candidate) => candidate.classList.toggle('is-active', candidate === button));
+			const value = String(button.dataset.cbMailViewport || 'desktop');
+			previewFrame?.classList.toggle('is-mobile', value === 'mobile');
+			previewFrame?.classList.toggle('is-tablet', value === 'tablet');
+			root.querySelectorAll('[data-cb-mail-viewport]').forEach((candidate) => {
+				const active = candidate === button;
+				candidate.classList.toggle('is-active', active);
+				candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
 		});
 	});
 

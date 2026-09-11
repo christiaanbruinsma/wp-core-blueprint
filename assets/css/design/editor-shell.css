@@ -4,9 +4,46 @@
  * Composition only. Profiles/consumers own canvas semantics and component UI.
  */
 
+html.cb-core-design-shell-focus-mode,
+html.cb-core-design-shell-focus-mode body {
+	overflow: hidden;
+}
+
 .cb-core-design-shell {
 	width: 100%;
 	min-width: 0;
+}
+
+.cb-core-design-shell.is-fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 100100;
+	display: flex;
+	flex-direction: column;
+	width: auto;
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	padding: var(--cb-space-3);
+	box-sizing: border-box;
+	overflow: hidden;
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	transform-origin: center top;
+	transition: opacity 170ms cubic-bezier(.2, .8, .2, 1), transform 170ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.cb-core-design-shell.is-fullscreen.is-entering {
+	opacity: 0;
+	transform: translateY(4px) scale(.995);
+}
+
+.cb-core-design-shell.is-fullscreen.is-exiting {
+	opacity: 0;
+	transform: translateY(2px) scale(.997);
+	transition-duration: 130ms;
 }
 
 .cb-core-design-shell__toolbar {
@@ -23,11 +60,169 @@
 	background: var(--cb-surface-1);
 }
 
+.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__toolbar {
+	flex: 0 0 auto;
+}
+
 .cb-core-design-shell__toolbar-group {
 	display: flex;
 	align-items: center;
 	gap: var(--cb-space-2);
 	min-width: 0;
+}
+
+.cb-core-design-shell__toolbar--designer {
+	position: relative;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: center;
+	gap: var(--cb-space-3);
+}
+
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-group,
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__icon-button {
+	flex: 0 0 auto;
+}
+
+.cb-core-design-shell__toolbar-zone {
+	display: flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-width: 0;
+}
+
+.cb-core-design-shell__toolbar-zone--start {
+	justify-self: start;
+}
+
+.cb-core-design-shell__toolbar-zone--center {
+	justify-self: center;
+}
+
+.cb-core-design-shell__toolbar-zone--end {
+	justify-self: end;
+	justify-content: flex-end;
+	flex-wrap: nowrap;
+}
+
+.cb-core-design-shell__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cb-space-2);
+	min-width: 0;
+	color: var(--cb-text-strong);
+	font-size: var(--cb-fs-sm);
+	font-weight: var(--cb-fw-semibold);
+	white-space: nowrap;
+}
+
+.cb-core-design-shell__brand-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 30px;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	overflow: hidden;
+}
+
+.cb-core-design-shell__brand-mark img {
+	display: block;
+	width: 30px;
+	height: 30px;
+	object-fit: contain;
+}
+
+.cb-core-design-shell__icon-button {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 36px;
+	min-width: 36px !important;
+	height: 36px;
+	min-height: 36px !important;
+	padding: 0 !important;
+	line-height: 1 !important;
+}
+
+.cb-core-design-shell__icon-label {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--cb-space-1);
+}
+
+.cb-core-design-shell__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	pointer-events: none;
+}
+
+.cb-core-design-shell__tab .cb-core-design-shell__icon,
+.cb-core-design-shell__sidebar-tab .cb-core-design-shell__icon {
+	width: 16px;
+	height: 16px;
+}
+
+.cb-core-design-shell__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.cb-core-design-shell__toolbar-group--viewport .cb-core-design-shell__icon-button.is-active,
+.cb-core-design-shell__toolbar-group--viewport .cb-core-design-shell__icon-button[aria-pressed="true"],
+.cb-core-design-shell__icon-button[data-cb-design-shell-fullscreen][aria-pressed="true"] {
+	border-color: var(--cb-accent) !important;
+	box-shadow: inset 0 0 0 1px var(--cb-accent);
+}
+
+.cb-core-design-shell__toolbar-status {
+	max-width: 160px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-status {
+	flex: 0 1 160px;
+	min-width: 0;
+}
+
+.cb-core-design-shell__toolbar--designer .cb-core-design-shell__toolbar-status:empty {
+	display: none;
+}
+
+.cb-core-design-launch-wrap {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+	margin: 0 0 var(--cb-space-4);
+}
+
+.cb-core-design-launch {
+	min-width: 320px;
+	min-height: 64px !important;
+	padding: var(--cb-space-3) var(--cb-space-5) !important;
+	gap: var(--cb-space-3) !important;
+	font-size: var(--cb-fs-md) !important;
+	letter-spacing: .01em;
+}
+
+.cb-core-design-launch__mark {
+	display: block;
+	flex: 0 0 28px;
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+}
+
+.cb-core-design-launch__label {
+	font-weight: var(--cb-fw-semibold);
 }
 
 .cb-core-design-shell__workspace {
@@ -37,6 +232,13 @@
 	align-items: start;
 	width: 100%;
 	min-width: 0;
+}
+
+.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
+	flex: 1 1 auto;
+	min-height: 0;
+	align-items: stretch;
+	overflow: hidden;
 }
 
 .cb-core-design-shell__palette,
@@ -55,6 +257,15 @@
 	top: 48px;
 }
 
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__canvas,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__sidebar {
+	position: static;
+	min-height: 0;
+	max-height: 100%;
+	overflow: auto;
+}
+
 .cb-core-design-shell__palette {
 	padding: var(--cb-space-3);
 }
@@ -62,6 +273,22 @@
 .cb-core-design-shell__palette--tabbed {
 	padding: 0;
 	overflow: hidden;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__tabs {
+	flex: 0 0 auto;
+}
+
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__panel:not([hidden]) {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
 }
 
 .cb-core-design-shell__canvas {
@@ -117,9 +344,24 @@
 	min-height: 360px;
 }
 
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__panel,
+.cb-core-design-shell.is-fullscreen .cb-core-design-shell__sidebar-panel {
+	min-height: 0;
+}
+
 .cb-core-design-shell__panel[hidden],
 .cb-core-design-shell__sidebar-panel[hidden] {
 	display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cb-core-design-shell.is-fullscreen,
+	.cb-core-design-shell.is-fullscreen.is-entering,
+	.cb-core-design-shell.is-fullscreen.is-exiting {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
 }
 
 @media (max-width: 1280px) {
@@ -139,9 +381,14 @@
 }
 
 @media (max-width: 900px) {
-	.cb-core-design-shell__toolbar {
+	.cb-core-design-shell__toolbar:not(.cb-core-design-shell__toolbar--designer) {
 		align-items: flex-start;
 		flex-wrap: wrap;
+	}
+
+	.cb-core-design-shell__brand-wordmark,
+	.cb-core-design-shell__toolbar-status {
+		display: none;
 	}
 
 	.cb-core-design-shell__workspace {
@@ -151,5 +398,41 @@
 	.cb-core-design-shell__palette,
 	.cb-core-design-shell__sidebar {
 		position: static;
+	}
+
+	.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
+		overflow: auto;
+	}
+}
+
+@media (max-width: 700px) {
+	.cb-core-design-shell__toolbar--designer {
+		gap: var(--cb-space-2);
+		padding: var(--cb-space-2);
+	}
+
+	.cb-core-design-shell__toolbar-zone,
+	.cb-core-design-shell__toolbar-group {
+		gap: var(--cb-space-1);
+	}
+
+	.cb-core-design-shell__icon-button {
+		width: 32px;
+		min-width: 32px !important;
+		height: 32px;
+		min-height: 32px !important;
+	}
+
+	.cb-core-design-shell__brand-mark {
+		flex-basis: 28px;
+		width: 28px;
+		height: 28px;
+	}
+}
+
+@media (max-width: 600px) {
+	.cb-core-design-launch {
+		width: 100%;
+		min-width: 0;
 	}
 }

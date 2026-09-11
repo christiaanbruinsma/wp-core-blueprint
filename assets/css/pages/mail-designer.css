@@ -86,6 +86,14 @@
 	min-width: 0;
 }
 
+.cb-core-mail-designer__workspace {
+	display: none;
+}
+
+.cb-core-mail-designer.is-designer-mode-active .cb-core-mail-designer__workspace {
+	display: block;
+}
+
 .cb-core-mail-designer__subject {
 	max-width: none;
 	margin-bottom: var(--cb-space-3);
@@ -206,6 +214,10 @@
 	background: #fff;
 	box-shadow: var(--cb-shadow-sm);
 	transition: max-width .15s ease;
+}
+
+.cb-core-mail-designer__preview-frame.is-tablet iframe {
+	max-width: 782px;
 }
 
 .cb-core-mail-designer__preview-frame.is-mobile iframe {

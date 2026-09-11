@@ -69,11 +69,17 @@ test('mail layout normalizes font family to the renderer-safe contract', () => {
 	assert.equal(normalizeMailLayout({ fontFamily: 'Comic Sans MS' }).fontFamily, MAIL_FONT_FAMILIES[0]);
 });
 
-test('public editor delegates validation to profile APIs and exposes Mail without profile-specific conditionals', async () => {
+test('public editor delegates validation to profile APIs and exposes shared Designer UI contracts without profile conditionals', async () => {
 	const source = await readFile(new URL('../../assets/js/design/editor.js', import.meta.url), 'utf8');
 	assert.match(source, /['"]mail['"]\s*:\s*Object\.freeze/);
 	assert.match(source, /profile\.api\.validateProject/);
 	assert.match(source, /createDesignerShell/);
+	assert.match(source, /configureSidebar:\s*configureDesignerSidebar/);
+	assert.match(source, /configureViewports:\s*configureDesignerViewports/);
+	assert.match(source, /sidebarRoles:\s*DESIGNER_SIDEBAR_ROLES/);
+	assert.match(source, /viewportOrder:\s*DESIGNER_VIEWPORT_ORDER/);
+	assert.match(source, /icons:\s*Object\.freeze/);
+	assert.match(source, /cb:design-editor:ready/);
 	assert.doesNotMatch(source, /profile\.id\s*===\s*['"]document-(?:fixed|flow)['"]/);
 });
 
@@ -83,6 +89,20 @@ test('shared Designer Shell supports independent named tab groups', async () => 
 	assert.match(source, /activePanelFor\(groupId\)/);
 	assert.match(source, /defaultPanels/);
 	assert.match(source, /group:\s*state\.id/);
+});
+
+test('shared Designer Shell owns reusable viewport controls independently of Mail', async () => {
+	const source = await readFile(new URL('../../assets/js/design/shell/viewports.js', import.meta.url), 'utf8');
+	assert.match(source, /DESIGNER_VIEWPORT_ORDER\s*=\s*Object\.freeze\(\['mobile', 'tablet', 'desktop'\]\)/);
+	assert.match(source, /\[data-cb-design-shell-viewport\]/);
+	assert.match(source, /mobile:\s*'smartphone'/);
+	assert.match(source, /tablet:\s*'tablet'/);
+	assert.match(source, /desktop:\s*'monitor'/);
+	assert.match(source, /root\.dataset\.cbDesignShellViewport\s*=\s*value/);
+	assert.match(source, /cb:design-shell:viewportchange/);
+	assert.match(source, /onChange/);
+	assert.doesNotMatch(source, /data-cb-mail-/);
+	assert.doesNotMatch(source, /mail/i);
 });
 
 test('mail designer uses the canonical live preview as its editable canvas', async () => {
@@ -118,10 +138,41 @@ test('mail designer consumes the shared Designer Shell instead of owning shell c
 	assert.doesNotMatch(source, /updateHistoryButtons/);
 });
 
-test('mail designer template exposes one fullwidth shared shell with independent left and right tab sets', async () => {
+test('shared Designer Mode composes generic chrome and delegates viewport state to the Shell API', async () => {
+	const source = await readFile(new URL('../../assets/js/features/designer-launch.js', import.meta.url), 'utf8');
+	assert.doesNotThrow(() => new Function(source));
+	assert.match(source, /fullscreen\.click\(\)/);
+	assert.match(source, /cb:design-shell:fullscreenchange/);
+	assert.match(source, /\[data-cb-design-shell-viewport\]/);
+	assert.match(source, /shellApi\.configureViewports\(shell\)/);
+	assert.match(source, /cb-core-design-shell__toolbar--designer/);
+	assert.match(source, /shellApi\.icons\.decorate\(undo, 'undo-2'/);
+	assert.match(source, /shellApi\.icons\.decorate\(redo, 'redo-2'/);
+	assert.match(source, /shellApi\.configureSidebar\(shell/);
+	assert.match(source, /discoverSidebarRoles/);
+	assert.doesNotMatch(source, /data-cb-mail-/);
+	assert.doesNotMatch(source, /layers:\s*'structure'/);
+	assert.doesNotMatch(source, /settings:\s*'email'/);
+	assert.doesNotMatch(source, /cbDesignShellViewport\s*=/);
+	assert.doesNotMatch(source, /const ICONS/);
+	assert.doesNotMatch(source, /createElementNS/);
+	assert.doesNotMatch(source, /createDesignerShell/);
+	assert.doesNotMatch(source, /requestFullscreen/);
+});
+
+test('mail designer template exposes shared Designer capabilities and declarative sidebar roles', async () => {
 	const source = await readFile(new URL('../../templates/mail-designer.php', import.meta.url), 'utf8');
 	assert.match(source, /data-cb-mail-template-select/);
+	assert.match(source, /data-cb-design-launch-root/);
+	assert.match(source, /data-cb-design-launch-context/);
 	assert.match(source, /data-cb-design-shell/);
+	assert.match(source, /data-cb-design-shell-viewport="desktop"/);
+	assert.match(source, /data-cb-design-shell-viewport="tablet"/);
+	assert.match(source, /data-cb-design-shell-viewport="mobile"/);
+	assert.match(source, /data-cb-design-shell-primary-action/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="inspector"/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="layers"/);
+	assert.match(source, /data-cb-design-shell-sidebar-role="settings"/);
 	assert.match(source, /cb-core-design-shell__workspace/);
 	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="elements"/);
 	assert.match(source, /data-cb-design-shell-group="palette"\s+data-cb-design-shell-tab="dynamic-data"/);
