@@ -97,11 +97,11 @@ final class CB_Designer_Mode_Header_Test extends WP_UnitTestCase {
 		$page = (string) file_get_contents( $root . '/src/Mail/Admin/Page.php' );
 
 		self::assertStringContainsString( "public const DESIGNER_MODE_SCRIPT = 'cb-core-designer-mode';", $assets );
-		self::assertStringContainsString( 'public static function enqueue_designer_mode(): void', $assets );
+		self::assertStringContainsString( "public static function enqueue_designer_mode( string \$title = '' ): void", $assets );
 		self::assertStringContainsString( "CB_CORE_URL . 'assets/js/features/designer-launch.js'", $assets );
 		self::assertStringContainsString( "'cbCoreDesignerLaunch'", $assets );
 		self::assertStringContainsString( 'CoreBlueprintMark::data_uri()', $assets );
-		self::assertStringContainsString( 'DesignEditorAssets::enqueue_designer_mode();', $page );
+		self::assertStringContainsString( "DesignEditorAssets::enqueue_designer_mode( __( 'Mail Designer', 'core-blueprint' ) );", $page );
 		self::assertStringNotContainsString( "assets/js/features/designer-launch.js", $page );
 		self::assertStringNotContainsString( 'wp_localize_script(', $page );
 	}

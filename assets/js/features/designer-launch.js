@@ -57,7 +57,54 @@
 		});
 	};
 
-	const composeHeader = (shell, shellApi) => {
+	const panelToggleLabel = (panel, collapsed) => {
+		const verb = String(collapsed ? config.panelLabels?.expand : config.panelLabels?.collapse || '').trim();
+		const panelLabel = String(panel?.getAttribute('aria-label') || '').trim();
+		return [verb, panelLabel].filter(Boolean).join(' ').trim() || (collapsed ? 'Expand' : 'Collapse');
+	};
+
+	const composePanelToggles = (shell, shellApi) => {
+		const workspace = shell.querySelector('.cb-core-design-shell__workspace');
+		if (!workspace || workspace.dataset.cbDesignShellPanelToggles === 'true') return;
+
+		const leftPanel = workspace.querySelector(':scope > .cb-core-design-shell__palette');
+		const rightPanel = workspace.querySelector(':scope > .cb-core-design-shell__sidebar');
+		if (!leftPanel && !rightPanel) return;
+
+		workspace.dataset.cbDesignShellPanelToggles = 'true';
+		workspace.classList.add('cb-core-design-shell__workspace--collapsible');
+
+		const addToggle = (side, panel) => {
+			if (!panel) return;
+			const className = side === 'left' ? 'is-left-panel-collapsed' : 'is-right-panel-collapsed';
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = `cb-core-design-shell__panel-toggle cb-core-design-shell__panel-toggle--${side}`;
+			button.dataset.cbDesignShellPanelToggle = side;
+
+			const sync = () => {
+				const collapsed = shell.classList.contains(className);
+				button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+				const label = panelToggleLabel(panel, collapsed);
+				const icon = side === 'left'
+					? (collapsed ? 'chevron-right' : 'chevron-left')
+					: (collapsed ? 'chevron-left' : 'chevron-right');
+				shellApi.icons.decorate(button, icon, { iconOnly: true, label });
+			};
+
+			button.addEventListener('click', () => {
+				shell.classList.toggle(className);
+				sync();
+			});
+			sync();
+			workspace.append(button);
+		};
+
+		addToggle('left', leftPanel);
+		addToggle('right', rightPanel);
+	};
+
+	const composeHeader = (root, shell, shellApi, { direct = false, exitUrl = '' } = {}) => {
 		const toolbar = shell.querySelector('.cb-core-design-shell__toolbar');
 		if (!toolbar || toolbar.dataset.cbDesignShellHeader === 'true') return;
 
@@ -103,14 +150,15 @@
 			shellApi.icons.decorate(save, 'save', { iconOnly: true, label });
 		}
 		bindSaveState(shell, save, status);
-
 		configureSidebar(shell, shellApi);
+		composePanelToggles(shell, shellApi);
 
 		const start = document.createElement('div');
 		start.className = 'cb-core-design-shell__toolbar-zone cb-core-design-shell__toolbar-zone--start';
 		const brand = document.createElement('div');
 		brand.className = 'cb-core-design-shell__brand';
-		brand.setAttribute('aria-label', 'Core Blueprint');
+		const title = String(root.dataset.cbDesignTitle || config.title || 'Designer').trim() || 'Designer';
+		brand.setAttribute('aria-label', `${title} — Core Blueprint`);
 		const iconUrl = String(config.iconUrl || '').trim();
 		if (iconUrl) {
 			const markWrap = document.createElement('span');
@@ -124,7 +172,7 @@
 		}
 		const wordmark = document.createElement('span');
 		wordmark.className = 'cb-core-design-shell__brand-wordmark';
-		wordmark.textContent = 'Core Blueprint';
+		wordmark.textContent = title;
 		brand.append(wordmark);
 		start.append(brand);
 
@@ -139,7 +187,22 @@
 			end.append(status);
 		}
 		if (historyGroup) end.append(historyGroup);
-		if (fullscreen) end.append(fullscreen);
+
+		if (direct && fullscreen && exitUrl) {
+			const close = document.createElement('button');
+			close.type = 'button';
+			close.className = 'button cb-core-button cb-core-design-shell__close';
+			close.dataset.cbDesignShellClose = '';
+			const closeLabel = String(config.closeLabel || 'Close').trim();
+			shellApi.icons.decorate(close, 'x', { iconOnly: true, label: closeLabel });
+			close.addEventListener('click', () => {
+				if (fullscreen.getAttribute('aria-pressed') === 'true') fullscreen.click();
+				else window.location.assign(exitUrl);
+			});
+			end.append(close);
+		} else if (fullscreen) {
+			end.append(fullscreen);
+		}
 		if (save) end.append(save);
 
 		toolbar.classList.add('cb-core-design-shell__toolbar--designer');
@@ -202,7 +265,6 @@
 
 		shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
 			const active = Boolean(event.detail?.fullscreen);
-			syncFullscreenIcon(fullscreen, active, shellApi);
 			if (active) {
 				entered = true;
 				stopRetry();
@@ -288,7 +350,7 @@
 			if (!direct && (!context || root.querySelector('[data-cb-design-launch]'))) return;
 
 			root.dataset.cbDesignLaunchInitialized = 'true';
-			composeHeader(shell, shellApi);
+			composeHeader(root, shell, shellApi, { direct, exitUrl });
 
 			if (direct) {
 				initializeDirectLaunch(root, shell, fullscreen, shellApi, exitUrl);

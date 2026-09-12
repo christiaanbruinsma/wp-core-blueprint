@@ -132,7 +132,7 @@ final class Page extends PageBase {
 			$components = ComponentRegistry::all();
 			$preview = is_array( $current_template ) ? DesignerRenderer::preview( $template_id ) : null;
 			if ( $designer_enabled && is_array( $current_template ) ) {
-				DesignEditorAssets::enqueue_designer_mode();
+				DesignEditorAssets::enqueue_designer_mode( __( 'Mail Designer', 'core-blueprint' ) );
 			}
 			include CB_CORE_DIR . 'templates/mail-designer.php';
 		} elseif ( 'settings' === $tab ) {
