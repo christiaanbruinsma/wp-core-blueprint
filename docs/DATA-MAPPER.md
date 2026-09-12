@@ -310,7 +310,6 @@ The controller exposes:
 - `autoMatch()`
 - `setValidation()`
 - `setBusy()`
-- `destroy()`
 
 Events:
 
@@ -324,6 +323,10 @@ cb:data-mapper:submit
 `cb:data-mapper:submit` is deliberately a request for the consumer to perform its server-side preview/export workflow. Base does not turn a browser click into an extension mutation by itself and the shared browser runtime owns no generic fetch/AJAX route.
 
 A consumer can return canonical preview information through `controller.setValidation()` so the shared Preview panel can show create/update/skip/error counts or other safe summaries.
+
+`controller.setBusy( true, message )` is the v1 in-flight gate for consumer-owned server inspection/preview/apply work. While busy, the shared workspace disables semantic mutations: primary submit, file replacement, auto-match, mapping controls and Undo/Redo. Re-rendering does not clear that gate. `setSourceFields()` remains available while busy because it is the expected completion handoff from source-file inspection; the consumer should call `setBusy( false )` after it has applied the inspected schema/result.
+
+The v1 controller lifetime is tied to the rendered root/page. There is deliberately no public `destroy()`/recreate contract because the shared Designer Shell does not currently expose a teardown lifecycle; Base does not promise a partial teardown that would leave Shell listeners/session state attached.
 
 ## Mapping profiles
 
@@ -347,6 +350,7 @@ Profile persistence/marketplace distribution is intentionally outside this first
 - Mapper source/target records are not logged by Base.
 - Preview/apply remains protected by the Data Exchange plan fingerprint.
 - Ambiguous matches fail safe to manual mapping.
+- In-flight server work uses the shared busy gate so client-side semantic mapping state cannot drift underneath a pending preview/apply response.
 - No arbitrary PHP callbacks, serialized objects or executable mapping expressions are accepted.
 - Mapper state is request/browser state unless a future explicit Mapping Profile persistence contract is used.
 
