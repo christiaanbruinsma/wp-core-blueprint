@@ -16,6 +16,7 @@
 - Module activation — `cb_core_module_activation_definitions`; state classes must implement `CB\Core\Modules\ModuleStateInterface`.
 - Module health/status — `cb_core_module_status_definitions`; providers return the canonical `ok|warn|err|off` status shape.
 - Extension registry — `CB\Core\ExtensionRegistry` via `cb_core_register_extensions`; canonical identity/inventory/compatibility boundary.
+- Interoperability Foundation — `CB\Core\Interoperability\Registry` via `cb_core_register_interoperability_contracts` and `cb_core_register_interoperability_implementations`; canonical versioned cross-extension contract registration, discovery and runtime resolution boundary; see `INTEROPERABILITY-FOUNDATION.md`.
 - Settings Hub — `CB\Core\Admin\SettingsRegistry` via `cb_core_register_settings`; canonical extension-configuration directory and routing boundary; see `SETTINGS-HUB-FOUNDATION.md`.
 - Capability catalog — `cb_core_capability_catalog`.
 - Access Mode request bypass — prefer `CB\Core\Security\AccessMode::register_bypass()`; advanced policy may use `cb_core_access_mode_bypass_request`.
@@ -126,7 +127,7 @@ The `core-blueprint-*` ID namespace is reserved for first-party plugins. A regis
 
 ## Canonical Settings Hub registry
 
-`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. Configuration-only extension pages should use this registry instead of registering one flat extension submenu item below Core Blueprint.
+`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. Configuration-only extension surfaces should use this registry instead of registering one flat extension submenu item below Core Blueprint.
 
 A provider must reference an extension that is already valid through `ExtensionRegistry`. Register during the explicit `cb_core_register_settings` lifecycle:
 
