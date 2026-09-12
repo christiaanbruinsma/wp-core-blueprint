@@ -50,6 +50,7 @@ final class Admin {
 					$parent_exists = true;
 					break;
 				}
+			}
 		}
 
 		if ( $parent_exists ) {
@@ -119,6 +120,7 @@ final class Admin {
 					}
 					break;
 				}
+			}
 		}
 
 		remove_submenu_page( CB_CORE_PARENT_MENU, 'core-blueprint-site-mode' );
