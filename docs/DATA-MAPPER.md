@@ -15,6 +15,7 @@ Base owns:
 - mapping validation and fingerprints;
 - source-shaped → target-shaped record transformation;
 - the shared Data Mapper workspace and interaction contract;
+- request-local source-file intake presentation;
 - integration with the public shared Designer Shell.
 
 Extensions own:
@@ -27,7 +28,8 @@ Extensions own:
 - create/update/skip planning;
 - canonical mutations;
 - audit meaning and retention;
-- route/upload/download transport around the Mapper workspace.
+- the authorized server transport used to inspect, preview and apply an uploaded file;
+- download transport and target serialization around export workflows.
 
 External platform-specific semantics do not belong in Base. A Brevo, Mailchimp or other platform mapping profile can declare a schema/mapping outside Base and use the same Mapper primitives.
 
@@ -108,6 +110,8 @@ Supported v1 types are:
 - `reference`
 - `json`
 
+`required`, `readable` and `writable` use actual boolean values. Base does not accept truthy strings or silently coerce schema metadata.
+
 Type metadata is descriptive in Mapper v1. Domain validation and business coercion remain provider-owned. Base does not silently convert ambiguous values.
 
 ## Deterministic auto-match
@@ -169,6 +173,8 @@ Supplies a fixed transport-safe value to a target field.
     'value'     => 'NL',
 ]
 ```
+
+Mapping transform identifiers are canonical exact tokens; Base does not trim a malformed token into validity.
 
 The headless engine supports all three. The first shared UI focuses on the common direct/ignore field-mapping workflow; richer constant/profile authoring can evolve without changing the canonical mapping shape.
 
@@ -239,12 +245,48 @@ Designer toolbar
 └── primary action
 
 Workspace
-├── Source fields
+├── Source fields / source-file intake
 ├── Mapping canvas
 └── Mapping / Preview details
 ```
 
 Consumers may choose manual or direct Designer Mode. Direct mode is appropriate when an extension opens a dedicated import/export mapping route and wants closing the workspace to return directly to its operational page.
+
+## Import file intake
+
+For an import route that does not know the source schema until the operator chooses a file, render with:
+
+```php
+Renderer::render( [
+    'direction'     => Foundation::DIRECTION_IMPORT,
+    'intake'        => true,
+    'target_fields' => $target_fields,
+] );
+```
+
+Import intake may start with an empty source schema. Export workflows may not use intake as a substitute for a real canonical source schema.
+
+The selected browser `File` remains request-local/browser-local. Base does not copy it into an option, transient, session, IndexedDB, local storage or a Base-owned temporary-file store.
+
+The browser emits:
+
+```text
+cb:data-mapper:file-selected
+```
+
+with the selected `File` plus display-safe name/size/type metadata. The owning extension then sends that same file through its own authorized server endpoint. That endpoint is responsible for capability checks, nonce/CSRF protection, file-size/type/content checks and calling the appropriate Base inspection method such as `Mapper::inspect_csv()`.
+
+After successful server-side inspection, the consumer supplies the normalized source schema to the existing workspace:
+
+```js
+controller.setSourceFields(sourceFields);
+```
+
+The Mapper then performs deterministic suggestions and enables manual mapping.
+
+When the operator chooses Validate/Preview, `cb:data-mapper:submit` contains the current `File` and mapping. The extension must send both through its authorized server transport again. The server maps the records, builds the canonical Data Exchange envelope and calls the Data Exchange provider preview. Browser-side validation never replaces server-side provider validation.
+
+On final apply the consumer must use the Data Exchange preview fingerprint/re-plan contract. The browser mapping itself is not an authorization or integrity token.
 
 ## Browser contract
 
@@ -257,8 +299,13 @@ window.cbCore.dataMapper.get(root)
 
 The controller exposes:
 
+- `file()`
+- `sourceFields()`
+- `targetFields()`
 - `mapping()`
 - `validation()`
+- `setSourceFields()`
+- `setTargetFields()`
 - `replaceMapping()`
 - `autoMatch()`
 - `setValidation()`
@@ -270,10 +317,11 @@ Events:
 ```text
 cb:data-mapper:ready
 cb:data-mapper:change
+cb:data-mapper:file-selected
 cb:data-mapper:submit
 ```
 
-`cb:data-mapper:submit` is deliberately a request for the consumer to perform its server-side preview/export workflow. Base does not turn a browser click into an extension mutation by itself.
+`cb:data-mapper:submit` is deliberately a request for the consumer to perform its server-side preview/export workflow. Base does not turn a browser click into an extension mutation by itself and the shared browser runtime owns no generic fetch/AJAX route.
 
 A consumer can return canonical preview information through `controller.setValidation()` so the shared Preview panel can show create/update/skip/error counts or other safe summaries.
 
@@ -295,6 +343,7 @@ Profile persistence/marketplace distribution is intentionally outside this first
 
 - Mapping UI validation is convenience only; server-side Data Exchange/provider validation remains authoritative.
 - Browser mutations still require the consumer transport to enforce nonce/CSRF and provider authorization.
+- Selected files remain browser/request local unless the owning extension deliberately submits them to its secured endpoint.
 - Mapper source/target records are not logged by Base.
 - Preview/apply remains protected by the Data Exchange plan fingerprint.
 - Ambiguous matches fail safe to manual mapping.

@@ -63,6 +63,11 @@ final class Mapper {
 			if ( [] !== array_diff( array_keys( $field ), $allowed ) ) {
 				return new WP_Error( 'cb_core_data_mapper_invalid_schema', 'Data Mapper field definition contains unsupported properties.' );
 			}
+			foreach ( [ 'required', 'readable', 'writable' ] as $flag ) {
+				if ( array_key_exists( $flag, $field ) && ! is_bool( $field[ $flag ] ) ) {
+					return new WP_Error( 'cb_core_data_mapper_invalid_schema', 'Data Mapper field boolean metadata must use actual boolean values.' );
+				}
+			}
 
 			$id = isset( $field['id'] ) && is_string( $field['id'] ) ? self::field_key( $field['id'] ) : null;
 			if ( null === $id || isset( $seen[ $id ] ) ) {
@@ -86,9 +91,9 @@ final class Mapper {
 				return new WP_Error( 'cb_core_data_mapper_invalid_schema', 'Data Mapper field metadata is invalid.' );
 			}
 
-			$readable = array_key_exists( 'readable', $field ) ? true === $field['readable'] : true;
-			$writable = array_key_exists( 'writable', $field ) ? true === $field['writable'] : true;
-			$required = array_key_exists( 'required', $field ) ? true === $field['required'] : false;
+			$readable = array_key_exists( 'readable', $field ) ? $field['readable'] : true;
+			$writable = array_key_exists( 'writable', $field ) ? $field['writable'] : true;
+			$required = array_key_exists( 'required', $field ) ? $field['required'] : false;
 			if ( ! $readable && ! $writable ) {
 				return new WP_Error( 'cb_core_data_mapper_invalid_schema', 'Data Mapper fields must be readable, writable or both.' );
 			}
@@ -328,9 +333,9 @@ final class Mapper {
 			}
 			$source_id = isset( $entry['source'] ) && is_string( $entry['source'] ) ? self::field_key( $entry['source'] ) : null;
 			$target_id = isset( $entry['target'] ) && is_string( $entry['target'] ) ? self::field_key( $entry['target'] ) : null;
-			$transform = isset( $entry['transform'] ) && is_string( $entry['transform'] ) ? trim( $entry['transform'] ) : '';
+			$transform = isset( $entry['transform'] ) && is_string( $entry['transform'] ) ? $entry['transform'] : '';
 			$value     = $entry['value'] ?? null;
-			if ( ! Foundation::is_mapping_transform( $transform ) ) {
+			if ( $transform !== trim( $transform ) || ! Foundation::is_mapping_transform( $transform ) ) {
 				$errors[] = self::mapping_error( $index, 'cb_core_data_mapper_invalid_transform', 'Data Mapper mapping transform is invalid.' );
 				continue;
 			}
@@ -378,7 +383,6 @@ final class Mapper {
 					$errors[] = self::mapping_error( null, 'cb_core_data_mapper_required_unmapped', sprintf( 'Required target field is not mapped: %s.', $field['label'] ) );
 				}
 			}
-		}
 
 		$fingerprint = '';
 		if ( [] === $errors ) {

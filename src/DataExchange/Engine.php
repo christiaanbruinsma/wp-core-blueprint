@@ -278,8 +278,7 @@ final class Engine {
 	 * @return array{entity:EntityInterface,plans:list<array<string,mixed>>,preview:array<string,mixed>}|WP_Error
 	 */
 	private static function prepare_import( array $decoded, string $mode, array $context, string $format_support ): array|WP_Error {
-		$mode = sanitize_key( $mode );
-		if ( ! Foundation::is_import_mode( $mode ) ) {
+		if ( $mode !== trim( $mode ) || ! Foundation::is_import_mode( $mode ) ) {
 			return new WP_Error( 'cb_core_data_exchange_invalid_mode', 'Data Exchange import mode is invalid.' );
 		}
 		$extension_id   = (string) $decoded['extension_id'];
@@ -708,15 +707,17 @@ final class Engine {
 		if ( '' === $value ) {
 			return '';
 		}
-		$first = $value[0];
-		return "'" === $first || in_array( $first, [ '=', '+', '-', '@', "\t", "\r", "\n" ], true ) ? "'" . $value : $value;
+		if ( "'" === $value[0] || 1 === preg_match( '/^[ \t\r\n]*[=+\-@]/D', $value ) ) {
+			return "'" . $value;
+		}
+		return $value;
 	}
 
 	private static function restore_csv_cell( string $value ): string {
 		if ( str_starts_with( $value, "''" ) ) {
 			return substr( $value, 1 );
 		}
-		if ( strlen( $value ) >= 2 && "'" === $value[0] && in_array( $value[1], [ '=', '+', '-', '@', "\t", "\r", "\n" ], true ) ) {
+		if ( str_starts_with( $value, "'" ) && 1 === preg_match( '/^[ \t\r\n]*[=+\-@]/D', substr( $value, 1 ) ) ) {
 			return substr( $value, 1 );
 		}
 		return $value;
@@ -731,11 +732,11 @@ final class Engine {
 		if ( [] !== array_diff( array_keys( $plan ), $allowed ) || ! isset( $plan['operation'], $plan['reference'], $plan['payload'] ) ) {
 			return new WP_Error( 'cb_core_data_exchange_plan_contract', 'Data Exchange provider returned an unsupported import plan shape.' );
 		}
-		$operation = is_string( $plan['operation'] ) ? trim( $plan['operation'] ) : '';
+		$operation = is_string( $plan['operation'] ) ? $plan['operation'] : '';
 		$reference = is_string( $plan['reference'] ) ? self::reference( $plan['reference'] ) : null;
 		$payload   = $plan['payload'];
 		$warnings  = $plan['warnings'] ?? [];
-		if ( ! Foundation::is_operation( $operation ) || null === $reference || ! is_array( $payload ) || ! self::transport_safe( $payload ) ) {
+		if ( $operation !== trim( $operation ) || ! Foundation::is_operation( $operation ) || null === $reference || ! is_array( $payload ) || ! self::transport_safe( $payload ) ) {
 			return new WP_Error( 'cb_core_data_exchange_plan_contract', 'Data Exchange provider returned invalid plan values.' );
 		}
 		if ( Foundation::MODE_CREATE_ONLY === $mode && Foundation::OP_UPDATE === $operation ) {
@@ -763,8 +764,10 @@ final class Engine {
 	}
 
 	private static function reference( string $reference ): ?string {
-		$reference = trim( $reference );
-		return '' !== $reference && strlen( $reference ) <= self::MAX_REFERENCE_LEN && ! str_contains( $reference, "\0" )
+		return $reference === trim( $reference )
+			&& '' !== $reference
+			&& strlen( $reference ) <= self::MAX_REFERENCE_LEN
+			&& ! str_contains( $reference, "\0" )
 			? $reference
 			: null;
 	}
@@ -773,8 +776,11 @@ final class Engine {
 		if ( $depth > self::MAX_DEPTH ) {
 			return false;
 		}
-		if ( null === $value || is_bool( $value ) || is_int( $value ) || is_string( $value ) ) {
+		if ( null === $value || is_bool( $value ) || is_int( $value ) ) {
 			return true;
+		}
+		if ( is_string( $value ) ) {
+			return ! str_contains( $value, "\0" );
 		}
 		if ( is_float( $value ) ) {
 			return is_finite( $value );

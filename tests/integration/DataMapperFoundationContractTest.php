@@ -98,6 +98,29 @@ final class CB_Base_Data_Mapper_Foundation_Contract_Test extends WP_UnitTestCase
 		self::assertContains( 'cb_core_data_mapper_required_unmapped', array_column( $missing['errors'], 'code' ) );
 	}
 
+	public function test_dm1_schema_booleans_and_mapping_tokens_are_exact(): void {
+		$bad_schema = Mapper::normalize_schema( [
+			[
+				'id'       => 'email',
+				'label'    => 'Email',
+				'type'     => 'string',
+				'required' => 'yes',
+			],
+		] );
+		self::assertWPError( $bad_schema );
+		self::assertSame( 'cb_core_data_mapper_invalid_schema', $bad_schema->get_error_code() );
+
+		$source = [ [ 'id' => 'EMAIL', 'label' => 'Email', 'type' => 'string', 'readable' => true, 'writable' => false ] ];
+		$plan = Mapper::plan(
+			$source,
+			$this->target_schema(),
+			[ [ 'source' => 'EMAIL', 'target' => 'email', 'transform' => ' direct ', 'value' => null ] ]
+		);
+		self::assertIsArray( $plan );
+		self::assertFalse( $plan['valid'] );
+		self::assertSame( 'cb_core_data_mapper_invalid_transform', $plan['errors'][0]['code'] ?? null );
+	}
+
 	public function test_dm1_mapped_records_feed_the_canonical_data_exchange_envelope(): void {
 		$inspection = Mapper::inspect_csv( "EMAIL,FNAME\nada@example.test,Ada\n" );
 		self::assertIsArray( $inspection );
@@ -141,6 +164,27 @@ final class CB_Base_Data_Mapper_Foundation_Contract_Test extends WP_UnitTestCase
 		self::assertStringNotContainsString( 'data-cb-design-shell-sidebar-role="layers"', $html );
 		self::assertStringNotContainsString( 'document-fixed', $html );
 		self::assertStringNotContainsString( 'document-flow', $html );
+	}
+
+	public function test_dm1_import_intake_can_start_without_a_source_schema_and_stays_in_the_shared_shell(): void {
+		$html = Renderer::render( [
+			'direction'     => Foundation::DIRECTION_IMPORT,
+			'intake'        => true,
+			'target_fields' => $this->target_schema(),
+			'launch_mode'   => 'manual',
+		] );
+		self::assertIsString( $html );
+		self::assertStringContainsString( 'data-cb-data-mapper-file', $html );
+		self::assertStringContainsString( 'Choose a source file to begin mapping.', $html );
+		self::assertStringContainsString( 'data-cb-design-shell', $html );
+
+		$export_intake = Renderer::render( [
+			'direction'     => Foundation::DIRECTION_EXPORT,
+			'intake'        => true,
+			'target_fields' => $this->target_schema(),
+		] );
+		self::assertWPError( $export_intake );
+		self::assertSame( 'cb_core_data_mapper_missing_source_schema', $export_intake->get_error_code() );
 	}
 
 	public function test_dm1_renderer_refuses_a_structurally_invalid_initial_mapping(): void {
