@@ -5,8 +5,12 @@ declare(strict_types=1);
  * top-level product menus.
  *
  * Extensions register one MenuGroup plus its Page implementations during the
- * existing cb_core_register_pages lifecycle. Base validates the declaration,
+ * existing cb_core_register_pages lifecycle. Base validates declarations,
  * wires WordPress menus/hooks and resolves shared semantic UI requirements.
+ *
+ * A product-group slug is menu identity only. Page slugs are distinct screen
+ * identities. This guarantees one canonical render callback per WordPress
+ * admin screen and avoids top-level/submenu hook collisions.
  *
  * @package Core_Blueprint
  * @since   1.0.0
@@ -30,22 +34,33 @@ final class MenuGroupRegistry {
 	/** @var array<string,array{foundations:string[],components:string[]}> */
 	private static array $requirements = [];
 
-	/** @var array<string,string> page slug -> primary WordPress hook suffix */
+	/** @var array<string,string> page slug -> WordPress hook suffix */
 	private static array $hooks = [];
 
 	/** @var array<string,string> top-level hook suffix -> group slug */
 	private static array $landing_hooks = [];
 
-	private static bool $finalizer_hooked = false;
-	private static bool $enqueue_hooked = false;
+	private static bool $initialized = false;
 	private static bool $finalized = false;
+
+	/** Boot menu wiring before WordPress begins the admin_menu lifecycle. */
+	public static function init(): void {
+		if ( self::$initialized ) {
+			return;
+		}
+		self::$initialized = true;
+
+		// PageRegistry collects declarations at priority 20. Product groups wire
+		// immediately afterwards from the completed declaration set.
+		add_action( 'admin_menu', [ self::class, 'finalize' ], 21 );
+		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_requirements_for_hook' ], 20 );
+	}
 
 	/**
 	 * Register a top-level product menu and all pages it owns.
 	 *
-	 * The page whose slug equals the group slug is the canonical landing page.
-	 * Base may render the first accessible child instead when the current user
-	 * can see the product group but cannot access that landing page.
+	 * The product-group slug and every page slug MUST be distinct. Selecting the
+	 * top-level item renders the first accessible page in canonical page order.
 	 *
 	 * @param Page[] $pages
 	 * @param array<string,array{foundations?:string[],components?:string[]}> $requirements
@@ -86,6 +101,10 @@ final class MenuGroupRegistry {
 				self::diagnostic( "Top-level product page slug '{$slug}' is invalid. Use lower-case kebab-case." );
 				return false;
 			}
+			if ( $slug === $group_slug ) {
+				self::diagnostic( "Top-level product page '{$slug}' collides with its product-group slug. Group and page identities must be distinct." );
+				return false;
+			}
 			if ( isset( $seen[ $slug ] ) || isset( self::$pages[ $slug ] ) ) {
 				self::diagnostic( "Top-level product page '{$slug}' is already registered; duplicates are rejected." );
 				return false;
@@ -109,11 +128,6 @@ final class MenuGroupRegistry {
 			$normalized_requirements[ $slug ] = $normalized;
 		}
 
-		if ( ! isset( $normalized_pages[ $group_slug ] ) ) {
-			self::diagnostic( "Top-level product menu '{$group_slug}' must include a landing page with the same slug." );
-			return false;
-		}
-
 		$unknown_requirement_pages = array_diff( array_keys( $requirements ), array_keys( $normalized_pages ) );
 		if ( [] !== $unknown_requirement_pages ) {
 			self::diagnostic( "Top-level product menu '{$group_slug}' contains requirements for an unknown page." );
@@ -127,7 +141,6 @@ final class MenuGroupRegistry {
 			self::$requirements[ $slug ] = $normalized_requirements[ $slug ];
 		}
 
-		self::ensure_hooks();
 		return true;
 	}
 
@@ -139,14 +152,38 @@ final class MenuGroupRegistry {
 		return self::$groups[ $slug ] ?? null;
 	}
 
+	/** Return the dedicated submenu hook for a registered product page. */
 	public static function hook_suffix( string $page_slug ): string {
 		return self::$hooks[ $page_slug ] ?? '';
 	}
 
 	/**
-	 * Finalize WordPress menu wiring after every cb_core_register_pages callback.
+	 * Whether one WordPress screen hook currently represents this product page.
 	 *
-	 * @internal
+	 * A page matches either its dedicated submenu hook or the top-level product
+	 * hook when it is the first accessible landing page for the current user.
+	 */
+	public static function is_page_hook( string $page_slug, string $hook ): bool {
+		if ( '' === $hook || ! isset( self::$pages[ $page_slug ] ) ) {
+			return false;
+		}
+		if ( ( self::$hooks[ $page_slug ] ?? '' ) === $hook ) {
+			return true;
+		}
+
+		$group_slug = self::$page_groups[ $page_slug ] ?? '';
+		if ( '' === $group_slug || ( self::$landing_hooks[ $hook ] ?? '' ) !== $group_slug ) {
+			return false;
+		}
+
+		$landing = self::accessible_landing_page( $group_slug );
+		return null !== $landing && $landing->slug() === $page_slug;
+	}
+
+	/**
+	 * Wire all collected product groups into WordPress.
+	 *
+	 * @internal admin_menu callback registered by init().
 	 */
 	public static function finalize(): void {
 		if ( self::$finalized ) {
@@ -154,9 +191,15 @@ final class MenuGroupRegistry {
 		}
 		self::$finalized = true;
 
+		foreach ( self::$groups as $group_slug => $_group ) {
+			if ( null !== PageRegistry::get( $group_slug ) ) {
+				self::diagnostic( "Top-level product menu '{$group_slug}' collides with a registered Core Admin page." );
+				return;
+			}
+		}
 		foreach ( array_keys( self::$pages ) as $slug ) {
 			if ( null !== PageRegistry::get( $slug ) ) {
-				self::diagnostic( "Admin page slug '{$slug}' is registered in both PageRegistry and MenuGroupRegistry. The top-level product menu was not wired." );
+				self::diagnostic( "Admin page slug '{$slug}' is registered in both PageRegistry and MenuGroupRegistry. Product-menu wiring was aborted." );
 				return;
 			}
 		}
@@ -175,25 +218,27 @@ final class MenuGroupRegistry {
 			);
 
 			if ( $landing_hook ) {
-				self::$hooks[ $group_slug ] = $landing_hook;
 				self::$landing_hooks[ $landing_hook ] = $group_slug;
 			}
 
 			foreach ( self::pages_for_group( $group_slug ) as $page ) {
-				$is_landing = $page->slug() === $group_slug;
 				$suffix = add_submenu_page(
 					$group_slug,
 					$page->title(),
 					$page->menu_title(),
 					$page->capability(),
 					$page->slug(),
-					$is_landing ? '' : [ $page, 'render' ],
+					[ $page, 'render' ],
 					$page->position()
 				);
-				if ( $suffix && ! $is_landing ) {
+				if ( $suffix ) {
 					self::$hooks[ $page->slug() ] = $suffix;
 				}
 			}
+
+			// WordPress auto-inserts the top-level item as the first submenu when
+			// child slugs differ. Product groups expose only their declared pages.
+			remove_submenu_page( $group_slug, $group_slug );
 		}
 	}
 
@@ -222,17 +267,6 @@ final class MenuGroupRegistry {
 		self::$hooks = [];
 		self::$landing_hooks = [];
 		self::$finalized = false;
-	}
-
-	private static function ensure_hooks(): void {
-		if ( ! self::$finalizer_hooked ) {
-			self::$finalizer_hooked = true;
-			add_action( 'cb_core_register_pages', [ self::class, 'finalize' ], PHP_INT_MAX );
-		}
-		if ( ! self::$enqueue_hooked ) {
-			self::$enqueue_hooked = true;
-			add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue_requirements_for_hook' ], 20 );
-		}
 	}
 
 	private static function render_landing( string $group_slug ): void {

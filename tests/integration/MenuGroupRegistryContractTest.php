@@ -10,16 +10,18 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		MenuGroupRegistry::_reset_for_testing();
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 	}
 
 	protected function tearDown(): void {
+		wp_set_current_user( 0 );
 		MenuGroupRegistry::_reset_for_testing();
 		parent::tearDown();
 	}
 
-	public function test_registers_typed_product_group_and_pages_without_domain_special_cases(): void {
-		$root = $this->page( 'cb-test-product', 'Workflows', 'manage_options', 10 );
-		$child = $this->page( 'cb-test-product-runs', 'Runs', 'read', 20 );
+	public function test_registers_typed_product_group_with_distinct_page_identities(): void {
+		$workflows = $this->page( 'cb-test-product-workflows', 'Workflows', 'manage_options', 10 );
+		$runs = $this->page( 'cb-test-product-runs', 'Runs', 'read', 20 );
 		$group = new MenuGroup(
 			'cb-test-product',
 			'Test Product',
@@ -32,19 +34,19 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 		self::assertTrue(
 			MenuGroupRegistry::register(
 				$group,
-				[ $root, $child ],
+				[ $workflows, $runs ],
 				[
-					'cb-test-product' => [ 'components' => [ 'cards' ] ],
+					'cb-test-product-workflows' => [ 'components' => [ 'cards' ] ],
 					'cb-test-product-runs' => [ 'components' => [ 'status' ] ],
 				]
 			)
 		);
 		self::assertSame( $group, MenuGroupRegistry::group( 'cb-test-product' ) );
-		self::assertSame( $root, MenuGroupRegistry::get( 'cb-test-product' ) );
-		self::assertSame( $child, MenuGroupRegistry::get( 'cb-test-product-runs' ) );
+		self::assertSame( $workflows, MenuGroupRegistry::get( 'cb-test-product-workflows' ) );
+		self::assertSame( $runs, MenuGroupRegistry::get( 'cb-test-product-runs' ) );
 	}
 
-	public function test_rejects_group_without_same_slug_landing_page(): void {
+	public function test_rejects_page_slug_that_collides_with_group_slug(): void {
 		$group = new MenuGroup(
 			'cb-test-product',
 			'Test Product',
@@ -55,9 +57,36 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 		self::assertFalse(
 			MenuGroupRegistry::register(
 				$group,
-				[ $this->page( 'cb-test-product-runs', 'Runs', 'manage_options', 10 ) ]
+				[ $this->page( 'cb-test-product', 'Workflows', 'manage_options', 10 ) ]
 			)
 		);
+	}
+
+	public function test_top_level_hook_renders_accessible_landing_once_and_matches_page_hook(): void {
+		$workflows = $this->page( 'cb-test-render-workflows', 'Workflows', 'manage_options', 10 );
+		$runs = $this->page( 'cb-test-render-runs', 'Runs', 'read', 20 );
+		$group = new MenuGroup(
+			'cb-test-render',
+			'Test Render',
+			'Test Render',
+			'read',
+			'dashicons-admin-generic',
+			58
+		);
+
+		self::assertTrue( MenuGroupRegistry::register( $group, [ $workflows, $runs ] ) );
+		MenuGroupRegistry::finalize();
+
+		$root_hook = get_plugin_page_hookname( 'cb-test-render', '' );
+		self::assertTrue( MenuGroupRegistry::is_page_hook( 'cb-test-render-workflows', $root_hook ) );
+		self::assertFalse( MenuGroupRegistry::is_page_hook( 'cb-test-render-runs', $root_hook ) );
+		self::assertNotSame( '', MenuGroupRegistry::hook_suffix( 'cb-test-render-workflows' ) );
+		self::assertNotSame( $root_hook, MenuGroupRegistry::hook_suffix( 'cb-test-render-workflows' ) );
+
+		ob_start();
+		do_action( $root_hook );
+		$output = (string) ob_get_clean();
+		self::assertSame( 'cb-test-render-workflows', $output );
 	}
 
 	private function page( string $slug, string $menu_title, string $capability, ?int $position ): Page {
@@ -89,7 +118,9 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 				return $this->position_value;
 			}
 
-			public function render(): void {}
+			public function render(): void {
+				echo esc_html( $this->slug_value );
+			}
 		};
 	}
 }
