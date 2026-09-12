@@ -143,6 +143,23 @@ final class CB_Base_Data_Mapper_Foundation_Contract_Test extends WP_UnitTestCase
 		self::assertStringNotContainsString( 'document-flow', $html );
 	}
 
+	public function test_dm1_renderer_refuses_a_structurally_invalid_initial_mapping(): void {
+		$result = Renderer::render( [
+			'direction'     => Foundation::DIRECTION_IMPORT,
+			'source_fields' => [
+				[ 'id' => 'EMAIL', 'label' => 'Email', 'type' => 'string', 'readable' => true, 'writable' => false ],
+				[ 'id' => 'ALT_EMAIL', 'label' => 'Alt email', 'type' => 'string', 'readable' => true, 'writable' => false ],
+			],
+			'target_fields' => $this->target_schema(),
+			'mapping'       => [
+				[ 'source' => 'EMAIL', 'target' => 'email', 'transform' => Foundation::MAP_DIRECT, 'value' => null ],
+				[ 'source' => 'ALT_EMAIL', 'target' => 'email', 'transform' => Foundation::MAP_DIRECT, 'value' => null ],
+			],
+		] );
+		self::assertWPError( $result );
+		self::assertSame( 'cb_core_data_mapper_invalid_mapping', $result->get_error_code() );
+	}
+
 	public function test_dm1_mapper_source_remains_provider_neutral_and_uses_public_designer_assets(): void {
 		$root = dirname( __DIR__, 2 );
 		$assets = file_get_contents( $root . '/src/DataExchange/Mapper/Assets.php' );
