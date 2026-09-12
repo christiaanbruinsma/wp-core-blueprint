@@ -33,6 +33,7 @@ final class Admin {
 	public static function init(): void {
 		AdminTheme::init();
 		AdminThemeAdapters::init();
+		MenuGroupRegistry::init();
 		add_action( 'admin_menu', [ __CLASS__, 'register_parent_menu' ], 5 );
 		add_action( 'admin_menu', [ __CLASS__, 'remove_duplicate_submenu' ], 999 );
 		add_action( 'cb_core_register_pages', [ __CLASS__, 'register_foundation_pages' ] );

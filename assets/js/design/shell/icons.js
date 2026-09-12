@@ -8,8 +8,8 @@
 // copyright notice and this permission notice appear in all copies.
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
@@ -58,6 +58,16 @@ const ICONS = Object.freeze({
 		['path', { d: 'M20 10h-6V4' }],
 		['path', { d: 'm3 21 7-7' }],
 		['path', { d: 'M4 14h6v6' }],
+	]),
+	x: Object.freeze([
+		['path', { d: 'M18 6 6 18' }],
+		['path', { d: 'm6 6 12 12' }],
+	]),
+	'chevron-left': Object.freeze([
+		['path', { d: 'm15 18-6-6 6-6' }],
+	]),
+	'chevron-right': Object.freeze([
+		['path', { d: 'm9 18 6-6-6-6' }],
 	]),
 	save: Object.freeze([
 		['path', { d: 'M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z' }],

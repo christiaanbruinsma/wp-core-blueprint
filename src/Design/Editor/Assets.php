@@ -20,6 +20,7 @@ final class Assets {
 
 	public const MODULE_ID = '@cb-core/design-editor';
 	public const SHELL_STYLE = 'cb-core-design-editor-shell';
+	public const DESIGNER_MODE_STYLE = 'cb-core-designer-mode';
 	public const DESIGNER_MODE_SCRIPT = 'cb-core-designer-mode';
 	private const MOTION_MODULE_ID = '@cb-core/design-motion';
 
@@ -49,12 +50,24 @@ final class Assets {
 	/**
 	 * Enqueue the canonical Core Blueprint Designer Mode around a consumer shell.
 	 *
-	 * Consumers provide only declarative `data-cb-design-*` shell contracts and
-	 * domain callbacks. Base owns launch/focus chrome, brand, shared labels and
-	 * the private Designer Mode source path.
+	 * Consumers provide their translated mode title plus declarative
+	 * `data-cb-design-*` shell contracts and domain callbacks. Base owns launch/
+	 * focus chrome, brand, shared labels and the private Designer Mode source path.
 	 */
-	public static function enqueue_designer_mode(): void {
+	public static function enqueue_designer_mode( string $title = '' ): void {
 		self::enqueue();
+
+		$title = sanitize_text_field( trim( $title ) );
+		if ( '' === $title ) {
+			$title = __( 'Design with Core Blueprint', 'core-blueprint' );
+		}
+
+		wp_enqueue_style(
+			self::DESIGNER_MODE_STYLE,
+			CB_CORE_URL . 'assets/css/design/designer-mode.css',
+			[ self::SHELL_STYLE ],
+			self::asset_version( 'assets/css/design/designer-mode.css' )
+		);
 
 		wp_enqueue_script(
 			self::DESIGNER_MODE_SCRIPT,
@@ -67,9 +80,16 @@ final class Assets {
 			self::DESIGNER_MODE_SCRIPT,
 			'cbCoreDesignerLaunch',
 			[
+				'title'         => $title,
 				'label'         => __( 'Design with Core Blueprint', 'core-blueprint' ),
 				'ariaLabel'     => __( 'Open Designer Mode', 'core-blueprint' ),
 				'iconUrl'       => CoreBlueprintMark::data_uri(),
+				// WordPress editor vocabulary intentionally uses the default text domain.
+				'closeLabel'    => __( 'Close', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
+				'panelLabels'   => [
+					'collapse' => __( 'Collapse', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
+					'expand'   => __( 'Expand', 'default' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- intentional WordPress platform vocabulary.
+				],
 				'sidebarLabels' => [
 					'inspector' => __( 'Inspector', 'core-blueprint' ),
 					// WordPress editor vocabulary intentionally uses the default text domain.

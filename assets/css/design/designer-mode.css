@@ -1,0 +1,136 @@
+/**
+ * Canonical Designer Mode chrome layered on top of the shared editor shell.
+ *
+ * Consumers own domain panels and canvas semantics. Base owns the panel rails,
+ * collapse affordances and direct-mode chrome composition.
+ */
+
+@media (scripting: enabled) {
+	[data-cb-design-launch-root][data-cb-design-launch-mode="direct"]:not([data-cb-design-launch-initialized="true"]) {
+		visibility: hidden;
+	}
+}
+
+.cb-core-design-shell__workspace--collapsible {
+	--cb-design-left-track: minmax(180px, 220px);
+	--cb-design-right-track: minmax(240px, 300px);
+	display: grid;
+	grid-template-columns:
+		var(--cb-design-left-track)
+		32px
+		minmax(0, 1fr)
+		32px
+		var(--cb-design-right-track);
+	gap: 0;
+}
+
+.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__palette {
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__canvas {
+	grid-column: 3;
+	grid-row: 1;
+}
+
+.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__sidebar {
+	grid-column: 5;
+	grid-row: 1;
+}
+
+.cb-core-design-shell__panel-toggle {
+	appearance: none;
+	align-self: start;
+	justify-self: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	min-width: 28px;
+	height: 36px;
+	min-height: 36px;
+	margin: var(--cb-space-2) 0 0;
+	padding: 0;
+	border: 1px solid var(--cb-border);
+	border-radius: var(--cb-radius-sm);
+	background: var(--cb-surface-1);
+	color: var(--cb-text-muted);
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+.cb-core-design-shell__panel-toggle:hover,
+.cb-core-design-shell__panel-toggle:focus-visible {
+	border-color: var(--cb-accent);
+	color: var(--cb-text-strong);
+}
+
+.cb-core-design-shell__panel-toggle:focus-visible {
+	outline: 2px solid var(--cb-accent);
+	outline-offset: 2px;
+}
+
+.cb-core-design-shell__panel-toggle--left {
+	grid-column: 2;
+	grid-row: 1;
+}
+
+.cb-core-design-shell__panel-toggle--right {
+	grid-column: 4;
+	grid-row: 1;
+}
+
+.cb-core-design-shell.is-left-panel-collapsed .cb-core-design-shell__workspace--collapsible {
+	--cb-design-left-track: 0px;
+}
+
+.cb-core-design-shell.is-right-panel-collapsed .cb-core-design-shell__workspace--collapsible {
+	--cb-design-right-track: 0px;
+}
+
+.cb-core-design-shell.is-left-panel-collapsed .cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__palette,
+.cb-core-design-shell.is-right-panel-collapsed .cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__sidebar {
+	display: none;
+}
+
+.cb-core-design-shell__close {
+	border-color: var(--cb-border) !important;
+	background: transparent !important;
+	color: var(--cb-text-muted) !important;
+}
+
+.cb-core-design-shell__close:hover,
+.cb-core-design-shell__close:focus-visible {
+	border-color: var(--cb-text-muted) !important;
+	color: var(--cb-text-strong) !important;
+}
+
+@media (max-width: 1280px) {
+	.cb-core-design-shell__workspace--collapsible {
+		display: grid;
+		grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+		gap: var(--cb-space-3);
+	}
+
+	.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__palette {
+		display: block !important;
+		grid-column: 1;
+		grid-row: auto;
+	}
+
+	.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__canvas {
+		grid-column: 2;
+		grid-row: auto;
+	}
+
+	.cb-core-design-shell__workspace--collapsible > .cb-core-design-shell__sidebar {
+		display: block !important;
+		grid-column: 1 / -1;
+		grid-row: auto;
+	}
+
+	.cb-core-design-shell__panel-toggle {
+		display: none;
+	}
+}
