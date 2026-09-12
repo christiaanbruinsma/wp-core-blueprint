@@ -16,8 +16,10 @@ Base-owned public interoperability contract. The Foundation is transport and orc
 - full preflight before mutation;
 - preview summaries;
 - deterministic plan fingerprints;
+- bounded provider-plan and provider-error projection;
 - sequential fail-stop apply semantics;
-- CSV spreadsheet-formula protection.
+- CSV spreadsheet-formula protection;
+- the provider-neutral Data Mapper primitives and shared Mapper workspace described in `DATA-MAPPER.md`.
 
 **Provider extensions own:**
 
@@ -27,7 +29,8 @@ Base-owned public interoperability contract. The Foundation is transport and orc
 - record validation and normalization;
 - create/update/skip planning;
 - canonical domain mutations;
-- domain audit events and data-retention meaning.
+- domain audit events and data-retention meaning;
+- authorized upload/download transport and operational routing around the shared Mapper workspace.
 
 Base never writes extension records directly. Providers must delegate `apply_import()` to their canonical domain service/action rather than duplicating business logic inside the Data Exchange adapter.
 
@@ -45,10 +48,11 @@ Supported feature tokens are:
 
 - `export`
 - `import`
+- `mapping`
 - `format.json`
 - `format.csv`
 
-Declaring CSV support additionally requires `CB\Core\DataExchange\CsvEntityInterface`.
+Declaring CSV support additionally requires `CB\Core\DataExchange\CsvEntityInterface`. Declaring mapping support additionally requires `CB\Core\DataExchange\MappingEntityInterface`; see `DATA-MAPPER.md`.
 
 Example registration:
 
@@ -65,6 +69,7 @@ add_action( 'cb_core_register_interoperability_implementations', static function
         'supports'         => [
             \CB\Core\DataExchange\Foundation::SUPPORT_EXPORT,
             \CB\Core\DataExchange\Foundation::SUPPORT_IMPORT,
+            \CB\Core\DataExchange\Foundation::SUPPORT_MAPPING,
             \CB\Core\DataExchange\Foundation::SUPPORT_JSON,
         ],
         'factory'          => static fn() => new ExampleDataExchangeEntity(),
@@ -104,7 +109,7 @@ cb_row_type,cb_format,cb_format_version,cb_extension_id,cb_entity,cb_schema_vers
 
 The header is followed by exactly one `meta` row. Entity-owned columns follow the Base columns. Data rows use `cb_row_type=data` and leave all other Base metadata cells empty.
 
-Entity column ids are stable machine ids. Base owns CSV quoting/parsing and protects cells beginning with spreadsheet formula-trigger characters. The provider maps its canonical records to/from flat CSV rows.
+Entity column ids are stable machine ids. Base owns CSV quoting/parsing and protects cells whose first effective spreadsheet token could be interpreted as a formula, including trigger characters preceded by whitespace. The provider maps its canonical records to/from flat CSV rows.
 
 JSON remains the fidelity format when a domain cannot be represented safely as a flat human-oriented row.
 
@@ -118,7 +123,7 @@ input
   -> envelope + schema validation
   -> provider authorization
   -> provider record planning (no mutation)
-  -> complete preflight
+  -> bounded complete preflight
   -> preview + fingerprint
   -> explicit apply using original input + fingerprint
   -> re-parse + re-plan
@@ -126,9 +131,11 @@ input
   -> sequential canonical domain mutation
 ```
 
-Preview never returns provider plan payloads. It exposes only operation, portable reference, warnings and validation errors.
+Preview never returns provider plan payloads. It exposes only operation, portable reference, bounded warnings and bounded validation errors.
 
 Apply does not trust a plan sent back by a browser or caller. It recomputes the plan from the original source and requires the preview fingerprint to match. If current domain state changes in a way that changes the provider's canonical plan, apply fails with `cb_core_data_exchange_stale_plan` and a new preview is required.
+
+Provider planning must be deterministic for the same source, mode and relevant domain state. Non-deterministic provider plans intentionally fail the preview/apply fingerprint boundary instead of being silently accepted.
 
 ## Import modes
 
@@ -152,9 +159,11 @@ Base rejects an update plan in `create_only` mode and a create plan in `update_e
 
 All records must preflight successfully before Base starts mutation.
 
-Within one import, every planned record must expose a unique portable `reference`; duplicate references fail preflight before any mutation.
+Within one import, every planned record must expose a unique portable `reference`; duplicate references fail preflight before any mutation. Portable references and extension/entity identities are exact contract identities; surrounding whitespace is not silently normalized into validity.
 
-Apply is sequential and fail-stop. Core Blueprint does **not** pretend that unrelated WordPress/domain writes can be wrapped in one universal cross-extension transaction. If an apply callback fails after earlier records have succeeded, the result is explicitly `partial` and includes only safe record indexes/references plus the provider error code/message.
+Apply is sequential and fail-stop. Core Blueprint does **not** pretend that unrelated WordPress/domain writes can be wrapped in one universal cross-extension transaction. If an apply callback fails after earlier records have succeeded, the result is explicitly `partial` and includes only safe record indexes/references plus a bounded provider error code/message.
+
+If a provider explicitly returns an apply `reference`, that reference must satisfy the portable-reference contract. An invalid explicit reference is an apply-contract failure; Base never silently falls back to the planned reference.
 
 Providers should use stable portable identity and idempotent canonical domain actions where their domain permits safe retry/recovery.
 
@@ -163,8 +172,10 @@ Providers should use stable portable identity and idempotent canonical domain ac
 v1 is intentionally bounded:
 
 - maximum input/output transport: 10 MiB;
+- maximum aggregate normalized provider import-plan payload: 10 MiB;
 - maximum records: 5,000;
 - maximum provider CSV columns: 256;
+- provider warning count/length and exposed provider error text are bounded;
 - nested transport values are depth/container bounded;
 - non-finite floats, objects and resources are rejected.
 
@@ -178,4 +189,8 @@ The owning extension should register and record meaningful domain events such as
 
 ## UI boundary
 
-v1 is deliberately headless. Product admin screens call the public engine and keep operational UI in the owning extension's workspace. A shared Data Exchange UI Foundation can be added later without changing the transport/domain contract once Work and Automations have proven the headless API in real usage.
+The Data Exchange engine itself remains headless: it provides canonical transport, preview and apply authority without owning an extension's operational route or browser mutation transport.
+
+Base additionally provides the shared **Data Mapper** workspace documented in `DATA-MAPPER.md`. The Mapper is a consumer of the public Designer Shell and standardizes file intake, field mapping and preview presentation. It does not authorize or apply extension data by itself.
+
+Owning extensions remain responsible for their operational import/export route, nonce/CSRF and capability enforcement, upload/download transport, provider selection and final invocation of the canonical Data Exchange preview/apply methods. A first-party extension must use the same public Data Exchange/Mapper contracts available to third-party providers.
