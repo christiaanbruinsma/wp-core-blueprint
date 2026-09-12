@@ -19,7 +19,10 @@ const convertJsTreeToMjs = async (directory) => {
 		}
 		if (!entry.isFile() || !entry.name.endsWith('.js')) continue;
 		const source = await readFile(path, 'utf8');
-		const esm = source.replaceAll(/(['"])(\.\.?\/[^'"]+)\.js\1/g, '$1$2.mjs$1');
+		let esm = source.replaceAll(/(['"])(\.\.?\/[^'"]+)\.js\1/g, '$1$2.mjs$1');
+		if (entry.name === 'editor.js') {
+			esm = esm.replace("'@cb-core/design-motion'", "'./core/motion.mjs'");
+		}
 		await writeFile(path.replace(/\.js$/, '.mjs'), esm);
 	}
 };
