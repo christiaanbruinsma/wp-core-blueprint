@@ -127,7 +127,7 @@ The `core-blueprint-*` ID namespace is reserved for first-party plugins. A regis
 
 ## Canonical Settings Hub registry
 
-`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. Configuration-only extension surfaces should use this registry instead of registering one flat extension submenu item below Core Blueprint.
+`CB\Core\Admin\SettingsRegistry` is the public v1 boundary for extension configuration contributed to **Core Blueprint → Settings**. Configuration-only extension pages should use this registry instead of registering one flat extension submenu item below Core Blueprint.
 
 A provider must reference an extension that is already valid through `ExtensionRegistry`. Register during the explicit `cb_core_register_settings` lifecycle:
 
