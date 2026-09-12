@@ -17,11 +17,13 @@ defined( 'ABSPATH' ) || exit;
 
 final class Engine {
 
-	private const MAX_DEPTH          = 16;
-	private const MAX_CONTAINER_SIZE = 10000;
-	private const MAX_REFERENCE_LEN  = 191;
-	private const MAX_WARNING_COUNT  = 50;
-	private const MAX_WARNING_LEN    = 500;
+	private const MAX_DEPTH             = 16;
+	private const MAX_CONTAINER_SIZE    = 10000;
+	private const MAX_REFERENCE_LEN     = 191;
+	private const MAX_WARNING_COUNT     = 50;
+	private const MAX_WARNING_LEN       = 500;
+	private const MAX_ERROR_CODE_LEN    = 100;
+	private const MAX_ERROR_MESSAGE_LEN = 1000;
 
 	/** @return array<string,array<string,mixed>> */
 	public static function entities( array $supports = [] ): array {
@@ -115,7 +117,7 @@ final class Engine {
 			}
 			if ( is_wp_error( $row ) ) {
 				fclose( $stream );
-				return $row;
+				return self::bounded_provider_error( $row );
 			}
 			$normalized = self::normalize_csv_export_row( $row, $columns );
 			if ( is_wp_error( $normalized ) ) {
@@ -220,6 +222,7 @@ final class Engine {
 				$result = new WP_Error( 'cb_core_data_exchange_provider_failed', 'Data Exchange provider failed while applying an import record.' );
 			}
 			if ( is_wp_error( $result ) ) {
+				$error = self::bounded_provider_error( $result );
 				return [
 					'status'        => 0 === $applied ? 'failed' : 'partial',
 					'fingerprint'   => $preview['fingerprint'],
@@ -227,7 +230,7 @@ final class Engine {
 					'applied_count' => $applied,
 					'skipped_count' => $skipped,
 					'failed_index'  => $index,
-					'error'         => [ 'code' => $result->get_error_code(), 'message' => $result->get_error_message() ],
+					'error'         => [ 'code' => $error->get_error_code(), 'message' => $error->get_error_message() ],
 					'items'         => $results,
 				];
 			}
@@ -304,6 +307,7 @@ final class Engine {
 		$items      = [];
 		$errors     = [];
 		$references = [];
+		$plan_bytes = 0;
 		$counts     = [ Foundation::OP_CREATE => 0, Foundation::OP_UPDATE => 0, Foundation::OP_SKIP => 0 ];
 		$records    = $decoded['records'];
 		foreach ( $records as $index => $record ) {
@@ -318,13 +322,22 @@ final class Engine {
 				$plan = new WP_Error( 'cb_core_data_exchange_provider_failed', 'Data Exchange provider failed while planning an import record.' );
 			}
 			if ( is_wp_error( $plan ) ) {
-				$errors[] = [ 'index' => $index, 'code' => $plan->get_error_code(), 'message' => $plan->get_error_message() ];
+				$error = self::bounded_provider_error( $plan );
+				$errors[] = [ 'index' => $index, 'code' => $error->get_error_code(), 'message' => $error->get_error_message() ];
 				continue;
 			}
 			$plan = self::normalize_plan( $plan, $mode );
 			if ( is_wp_error( $plan ) ) {
 				$errors[] = [ 'index' => $index, 'code' => $plan->get_error_code(), 'message' => $plan->get_error_message() ];
 				continue;
+			}
+			$encoded_plan = self::encode_json( self::canonicalize( $plan ) );
+			if ( is_wp_error( $encoded_plan ) ) {
+				return $encoded_plan;
+			}
+			$plan_bytes += strlen( $encoded_plan );
+			if ( $plan_bytes > Foundation::MAX_INPUT_BYTES ) {
+				return new WP_Error( 'cb_core_data_exchange_plan_too_large', 'Data Exchange provider import plans exceed the transport limit.' );
 			}
 			if ( isset( $references[ $plan['reference'] ] ) ) {
 				$errors[] = [ 'index' => $index, 'code' => 'cb_core_data_exchange_duplicate_reference', 'message' => 'Data Exchange import contains the same portable reference more than once.' ];
@@ -454,7 +467,7 @@ final class Engine {
 			return new WP_Error( 'cb_core_data_exchange_provider_failed', 'Data Exchange provider failed while exporting records.' );
 		}
 		if ( is_wp_error( $records ) ) {
-			return $records;
+			return self::bounded_provider_error( $records );
 		}
 		$out = [];
 		$transport_bytes = 0;
@@ -623,7 +636,7 @@ final class Engine {
 			}
 			if ( is_wp_error( $record ) ) {
 				fclose( $stream );
-				return $record;
+				return self::bounded_provider_error( $record );
 			}
 			$records[] = $record;
 		}
@@ -770,6 +783,28 @@ final class Engine {
 			&& ! str_contains( $reference, "\0" )
 			? $reference
 			: null;
+	}
+
+	private static function bounded_provider_error( WP_Error $error ): WP_Error {
+		$code = (string) $error->get_error_code();
+		if (
+			$code !== trim( $code )
+			|| strlen( $code ) > self::MAX_ERROR_CODE_LEN
+			|| 1 !== preg_match( '/^[a-z][a-z0-9_.:-]*$/D', $code )
+		) {
+			$code = 'cb_core_data_exchange_provider_error';
+		}
+
+		$message = sanitize_text_field( (string) $error->get_error_message() );
+		if ( '' === $message ) {
+			$message = 'Data Exchange provider returned an error.';
+		}
+		if ( strlen( $message ) > self::MAX_ERROR_MESSAGE_LEN ) {
+			$message = function_exists( 'mb_strcut' )
+				? mb_strcut( $message, 0, self::MAX_ERROR_MESSAGE_LEN, 'UTF-8' )
+				: substr( $message, 0, self::MAX_ERROR_MESSAGE_LEN );
+		}
+		return new WP_Error( $code, $message );
 	}
 
 	private static function transport_safe( mixed $value, int $depth = 0 ): bool {
