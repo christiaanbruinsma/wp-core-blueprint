@@ -51,6 +51,24 @@
 	max-width: none;
 }
 
+.cb-core-data-mapper__file-control {
+	display: grid;
+	gap: var(--cb-space-2);
+	padding: var(--cb-space-3);
+	border: 1px dashed var(--cb-border);
+	border-radius: var(--cb-radius-md);
+	background: var(--cb-surface-2);
+}
+
+.cb-core-data-mapper__file-control > span {
+	font-weight: var(--cb-fw-semibold);
+}
+
+.cb-core-data-mapper__file-control input[type="file"] {
+	width: 100%;
+	max-width: 100%;
+}
+
 .cb-core-data-mapper__source-field {
 	appearance: none;
 	display: flex;
