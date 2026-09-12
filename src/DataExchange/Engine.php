@@ -604,7 +604,8 @@ final class Engine {
 			return new WP_Error( 'cb_core_data_exchange_invalid_csv', 'Data Exchange CSV entity columns do not match the declared schema.' );
 		}
 
-		$records = [];
+		$records      = [];
+		$record_bytes = 0;
 		while ( false !== ( $row = fgetcsv( $stream, 0, ',', '"', '' ) ) ) {
 			if ( [ null ] === $row ) {
 				continue;
@@ -637,6 +638,20 @@ final class Engine {
 			if ( is_wp_error( $record ) ) {
 				fclose( $stream );
 				return self::bounded_provider_error( $record );
+			}
+			if ( ! is_array( $record ) || [] === $record || array_is_list( $record ) || ! self::transport_safe( $record ) ) {
+				fclose( $stream );
+				return new WP_Error( 'cb_core_data_exchange_csv_contract', 'Data Exchange CSV provider returned an invalid canonical record.' );
+			}
+			$encoded_record = self::encode_json( $record );
+			if ( is_wp_error( $encoded_record ) ) {
+				fclose( $stream );
+				return $encoded_record;
+			}
+			$record_bytes += strlen( $encoded_record );
+			if ( $record_bytes > Foundation::MAX_INPUT_BYTES ) {
+				fclose( $stream );
+				return new WP_Error( 'cb_core_data_exchange_output_too_large', 'Data Exchange provider output exceeds the transport limit.' );
 			}
 			$records[] = $record;
 		}
