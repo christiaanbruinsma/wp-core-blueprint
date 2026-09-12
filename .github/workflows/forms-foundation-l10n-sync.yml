@@ -1,0 +1,50 @@
+name: Forms Foundation localization sync
+
+on:
+  push:
+    branches:
+      - forms-foundation-v1
+    paths:
+      - '.github/workflows/forms-foundation-l10n-sync.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forms-foundation-l10n-sync
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Forms Foundation branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: forms-foundation-v1
+          fetch-depth: 0
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Materialize reviewed Forms Foundation translations
+        run: php tools/l10n-forms-foundation-sync.php
+
+      - name: Validate translation freshness and contracts
+        run: php tools/check-translations.php
+
+      - name: Validate PHP syntax and translation gate
+        run: bash tests/bin/php-lint.sh
+
+      - name: Commit synchronized Forms Foundation catalogs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add languages tools/check-translations.php
+          git diff --cached --quiet && { echo 'No synchronized changes found.'; exit 1; }
+          git commit -m 'L10N: synchronize Forms Foundation catalogs'
+          git push origin HEAD:forms-foundation-v1
