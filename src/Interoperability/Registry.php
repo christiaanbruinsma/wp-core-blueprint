@@ -225,7 +225,7 @@ final class Registry {
 	 * Resolution is intentionally explicit and separate from discovery. Public
 	 * descriptors remain serializable and cannot expose factories or objects.
 	 *
-	 * @return object|WP_Error
+	 * @return object Resolved implementation, or WP_Error on failure.
 	 */
 	public static function resolve(
 		string $owner,
@@ -233,7 +233,7 @@ final class Registry {
 		string $version,
 		string $provider,
 		string $id
-	): object|WP_Error {
+	): object {
 		self::collect();
 		$key = self::implementation_key_if_valid( $owner, $contract, $version, $provider, $id );
 		if ( null === $key || ! isset( self::$implementations[ $key ], self::$factories[ $key ] ) ) {
