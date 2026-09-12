@@ -3,6 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
 import './design-editor-public.test.mjs';
 import './design-mail-profile.test.mjs';
+import './design-motion.test.mjs';
 
 const sourceDirectory = new URL('../../assets/js/design/core/', import.meta.url);
 

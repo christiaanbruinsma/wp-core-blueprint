@@ -1,7 +1,10 @@
 import {
 	CommandHistory,
+	DESIGNER_MOTION_DEFAULTS,
+	DESIGNER_MOTION_KEY_ATTRIBUTE,
 	EditorState,
 	ProjectState,
+	animateLayoutChange,
 	buildInspectorContext,
 	handleEditorShortcut,
 	insertNodeCommand,
@@ -185,10 +188,13 @@ export const commands = Object.freeze({
 export {
 	CommandHistory,
 	DESIGNER_ICON_NAMES,
+	DESIGNER_MOTION_DEFAULTS,
+	DESIGNER_MOTION_KEY_ATTRIBUTE,
 	DESIGNER_SIDEBAR_ROLES,
 	DESIGNER_VIEWPORT_ORDER,
 	EditorState,
 	ProjectState,
+	animateLayoutChange,
 	configureDesignerSidebar,
 	configureDesignerViewports,
 	createDesignerIcon,
@@ -200,9 +206,16 @@ export {
 	setPropertyCommand,
 };
 
+const motion = Object.freeze({
+	animateLayoutChange,
+	defaults: DESIGNER_MOTION_DEFAULTS,
+	keyAttribute: DESIGNER_MOTION_KEY_ATTRIBUTE,
+});
+
 const publicApi = Object.freeze({
 	createSession,
 	profiles,
+	motion,
 	shell: Object.freeze({
 		create: createDesignerShell,
 		configureSidebar: configureDesignerSidebar,
