@@ -388,11 +388,15 @@ final class Mapper {
 		$fingerprint = '';
 		if ( [] === $errors ) {
 			try {
-				$fingerprint = hash( 'sha256', json_encode( $normalized, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+				$encoded_mapping = json_encode( $normalized, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 			} catch ( JsonException $exception ) {
 				unset( $exception );
 				return new WP_Error( 'cb_core_data_mapper_json_failed', 'Could not fingerprint the Data Mapper plan.' );
 			}
+			if ( strlen( $encoded_mapping ) > Foundation::MAX_INPUT_BYTES ) {
+				return new WP_Error( 'cb_core_data_mapper_mapping_too_large', 'Data Mapper mapping exceeds the transport limit.' );
+			}
+			$fingerprint = hash( 'sha256', $encoded_mapping );
 		}
 
 		return [
@@ -432,7 +436,8 @@ final class Mapper {
 			return $target;
 		}
 		$target_by_id = self::fields_by_id( $target );
-		$out = [];
+		$out          = [];
+		$output_bytes = 0;
 		foreach ( $records as $index => $record ) {
 			if ( ! is_array( $record ) || array_is_list( $record ) || ! self::transport_safe( $record ) ) {
 				return new WP_Error( 'cb_core_data_mapper_invalid_record', sprintf( 'Data Mapper record %d is invalid.', $index ) );
@@ -458,6 +463,16 @@ final class Mapper {
 			}
 			if ( [] === $mapped ) {
 				return new WP_Error( 'cb_core_data_mapper_empty_record', sprintf( 'Data Mapper record %d produced no target fields.', $index ) );
+			}
+			try {
+				$encoded_record = json_encode( $mapped, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+			} catch ( JsonException $exception ) {
+				unset( $exception );
+				return new WP_Error( 'cb_core_data_mapper_json_failed', sprintf( 'Could not encode Data Mapper record %d.', $index ) );
+			}
+			$output_bytes += strlen( $encoded_record );
+			if ( $output_bytes > Foundation::MAX_INPUT_BYTES ) {
+				return new WP_Error( 'cb_core_data_mapper_output_too_large', 'Mapped Data Exchange output exceeds the transport limit.' );
 			}
 			$out[] = $mapped;
 		}
