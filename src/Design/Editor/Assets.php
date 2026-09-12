@@ -21,6 +21,7 @@ final class Assets {
 	public const MODULE_ID = '@cb-core/design-editor';
 	public const SHELL_STYLE = 'cb-core-design-editor-shell';
 	public const DESIGNER_MODE_SCRIPT = 'cb-core-designer-mode';
+	private const MOTION_MODULE_ID = '@cb-core/design-motion';
 
 	public static function enqueue(): void {
 		wp_enqueue_style(
@@ -30,10 +31,17 @@ final class Assets {
 			self::asset_version( 'assets/css/design/editor-shell.css' )
 		);
 
+		wp_register_script_module(
+			self::MOTION_MODULE_ID,
+			CB_CORE_URL . 'assets/js/design/core/motion.js',
+			[],
+			self::asset_version( 'assets/js/design/core/motion.js' )
+		);
+
 		wp_enqueue_script_module(
 			self::MODULE_ID,
 			CB_CORE_URL . 'assets/js/design/editor.js',
-			[],
+			[ self::MOTION_MODULE_ID ],
 			self::asset_version( 'assets/js/design/editor.js' )
 		);
 	}
@@ -73,11 +81,11 @@ final class Assets {
 	}
 
 	/**
-	 * Return a stable content revision for a public Design Foundation entry asset.
+	 * Return a stable content revision for a public Design Foundation asset.
 	 *
 	 * Base can evolve during one RC without forcing the plugin version to change
 	 * for every internal build. Content fingerprints make the browser request the
-	 * current public entry asset after an update while retaining the plugin version
+	 * current registered asset after an update while retaining the plugin version
 	 * as a safe fallback when the file cannot be read.
 	 */
 	private static function asset_version( string $relative_path ): string {
