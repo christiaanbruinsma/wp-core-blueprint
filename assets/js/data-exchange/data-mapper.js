@@ -119,28 +119,28 @@ const createController = (root, config) => {
 	let selectedSource = readableFields(sourceFields)[0]?.id || '';
 	let selectedFile = null;
 	let externalValidation = null;
-	let disposed = false;
+	let busy = false;
 
 	const history = [clone(mapping)];
 	let historyIndex = 0;
 	const historyState = {};
 	Object.defineProperties(historyState, {
-		canUndo: { get: () => historyIndex > 0 },
-		canRedo: { get: () => historyIndex < history.length - 1 },
+		canUndo: { get: () => !busy && historyIndex > 0 },
+		canRedo: { get: () => !busy && historyIndex < history.length - 1 },
 	});
 
 	let shellController = null;
 	const session = {
 		history: historyState,
 		undo() {
-			if (historyIndex <= 0) return false;
+			if (busy || historyIndex <= 0) return false;
 			historyIndex -= 1;
 			mapping = clone(history[historyIndex]);
 			render();
 			return true;
 		},
 		redo() {
-			if (historyIndex >= history.length - 1) return false;
+			if (busy || historyIndex >= history.length - 1) return false;
 			historyIndex += 1;
 			mapping = clone(history[historyIndex]);
 			render();
@@ -170,6 +170,7 @@ const createController = (root, config) => {
 		externalValidation = null;
 	};
 	const commit = (next) => {
+		if (busy) return false;
 		mapping = clone(next);
 		history.splice(historyIndex + 1);
 		history.push(clone(mapping));
@@ -180,17 +181,19 @@ const createController = (root, config) => {
 			bubbles: true,
 			detail: Object.freeze({ direction: config.direction, mapping: snapshot() }),
 		}));
+		return true;
 	};
 
 	const entryForSource = (sourceId) => mapping.find((entry) => text(entry?.source) === sourceId) || null;
 	const updateSourceEntry = (sourceId, patch) => {
+		if (busy) return false;
 		const next = snapshot();
 		const index = next.findIndex((entry) => text(entry?.source) === sourceId);
 		const current = index >= 0 ? next[index] : { source: sourceId, target: null, transform: 'ignore', value: null };
 		const replacement = { ...current, ...patch, source: sourceId };
 		if (index >= 0) next[index] = replacement;
 		else next.push(replacement);
-		commit(next);
+		return commit(next);
 	};
 
 	const renderSources = () => {
@@ -291,11 +294,13 @@ const createController = (root, config) => {
 		const transformLabel = createElement(document, 'span');
 		transformLabel.textContent = labels.transform || 'Transform';
 		const transform = document.createElement('select');
+		transform.disabled = busy;
 		transform.append(
 			option('direct', labels.direct || 'Direct', entry.transform === 'direct'),
 			option('ignore', labels.ignore || 'Ignore', entry.transform === 'ignore'),
 		);
 		transform.addEventListener('change', () => {
+			if (busy) return;
 			const nextTransform = transform.value;
 			const nextTarget = nextTransform === 'direct' ? (entry.target || '') : null;
 			updateSourceEntry(field.id, { transform: nextTransform, target: nextTarget, value: null });
@@ -306,12 +311,13 @@ const createController = (root, config) => {
 		const targetTitle = createElement(document, 'span');
 		targetTitle.textContent = labels.targetField || 'Target field';
 		const targetSelect = document.createElement('select');
-		targetSelect.disabled = entry.transform !== 'direct';
+		targetSelect.disabled = busy || entry.transform !== 'direct';
 		targetSelect.append(option('', '—', !entry.target));
 		writableFields(targetFields).forEach((targetDef) => {
 			targetSelect.append(option(targetDef.id, targetDef.label || targetDef.id, entry.target === targetDef.id));
 		});
 		targetSelect.addEventListener('change', () => {
+			if (busy) return;
 			updateSourceEntry(field.id, {
 				transform: targetSelect.value ? 'direct' : 'ignore',
 				target: targetSelect.value || null,
@@ -342,9 +348,10 @@ const createController = (root, config) => {
 			summary.classList.toggle('is-valid', result.valid);
 			summary.classList.toggle('is-invalid', sourceFields.length > 0 && !result.valid);
 		}
-		if (primary) primary.disabled = !result.valid;
+		if (primary) primary.disabled = busy || !result.valid;
 		if (search) search.disabled = sourceFields.length === 0;
-		if (auto) auto.disabled = sourceFields.length === 0;
+		if (auto) auto.disabled = busy || sourceFields.length === 0;
+		if (fileInput) fileInput.disabled = busy;
 		return result;
 	};
 
@@ -391,7 +398,6 @@ const createController = (root, config) => {
 	};
 
 	function render() {
-		if (disposed) return;
 		renderSources();
 		renderMappings();
 		renderInspector();
@@ -406,8 +412,12 @@ const createController = (root, config) => {
 	});
 
 	search?.addEventListener('input', renderSources);
-	auto?.addEventListener('click', () => commit(suggestMapping(sourceFields, targetFields)));
+	auto?.addEventListener('click', () => {
+		if (busy) return;
+		commit(suggestMapping(sourceFields, targetFields));
+	});
 	fileInput?.addEventListener('change', () => {
+		if (busy) return;
 		selectedFile = fileInput.files?.item(0) || null;
 		sourceFields = [];
 		selectedSource = '';
@@ -426,6 +436,7 @@ const createController = (root, config) => {
 		}));
 	});
 	primary?.addEventListener('click', () => {
+		if (busy) return;
 		const localValidation = validateMapping(mapping, sourceFields, targetFields);
 		if (!localValidation.valid) {
 			render();
@@ -464,42 +475,35 @@ const createController = (root, config) => {
 			return true;
 		},
 		setTargetFields(nextFields, { autoMatch = true } = {}) {
-			if (!Array.isArray(nextFields) || nextFields.length === 0) return false;
+			if (busy || !Array.isArray(nextFields) || nextFields.length === 0) return false;
 			targetFields = clone(nextFields);
 			resetHistory(autoMatch ? suggestMapping(sourceFields, targetFields) : []);
 			render();
 			return true;
 		},
 		replaceMapping(nextMapping, { recordHistory = true } = {}) {
-			if (!Array.isArray(nextMapping)) return false;
-			if (recordHistory) commit(nextMapping);
-			else {
-				mapping = clone(nextMapping);
-				externalValidation = null;
-				render();
-			}
+			if (busy || !Array.isArray(nextMapping)) return false;
+			if (recordHistory) return commit(nextMapping);
+			mapping = clone(nextMapping);
+			externalValidation = null;
+			render();
 			return true;
 		},
 		autoMatch() {
-			if (sourceFields.length === 0) return false;
-			commit(suggestMapping(sourceFields, targetFields));
-			return true;
+			if (busy || sourceFields.length === 0) return false;
+			return commit(suggestMapping(sourceFields, targetFields));
 		},
 		setValidation(result) {
 			externalValidation = result && typeof result === 'object' ? clone(result) : null;
 			renderPreview();
 		},
-		setBusy(busy, message = '') {
-			if (primary) primary.disabled = Boolean(busy) || !validateMapping(mapping, sourceFields, targetFields).valid;
+		setBusy(nextBusy, message = '') {
+			busy = Boolean(nextBusy);
 			if (status) {
 				status.textContent = text(message);
 				status.setAttribute('aria-busy', busy ? 'true' : 'false');
 			}
-		},
-		destroy() {
-			disposed = true;
-			selectedFile = null;
-			controllers.delete(root);
+			render();
 		},
 	});
 	controllers.set(root, controller);
