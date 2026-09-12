@@ -18,6 +18,7 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 	public static bool $invalid_plan = false;
 	public static bool $invalid_apply_reference = false;
 	public static bool $oversized_plan = false;
+	public static bool $oversized_csv_record = false;
 	public static bool $provider_error = false;
 
 	public function is_available(): bool {
@@ -114,6 +115,14 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 		if ( 1 !== $schema_version ) {
 			return new WP_Error( 'fixture_schema', 'Unsupported fixture schema.' );
 		}
+		if ( self::$oversized_csv_record ) {
+			return [
+				'key'   => (string) ( $row['key'] ?? '' ),
+				'title' => (string) ( $row['title'] ?? '' ),
+				'kind'  => (string) ( $row['kind'] ?? '' ),
+				'blob'  => str_repeat( 'x', Foundation::MAX_INPUT_BYTES + 1 ),
+			];
+		}
 		return [
 			'key'   => (string) ( $row['key'] ?? '' ),
 			'title' => (string) ( $row['title'] ?? '' ),
@@ -145,6 +154,7 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 		CB_Data_Exchange_Fixture_Entity::$invalid_plan            = false;
 		CB_Data_Exchange_Fixture_Entity::$invalid_apply_reference = false;
 		CB_Data_Exchange_Fixture_Entity::$oversized_plan          = false;
+		CB_Data_Exchange_Fixture_Entity::$oversized_csv_record     = false;
 		CB_Data_Exchange_Fixture_Entity::$provider_error          = false;
 
 		add_action( 'cb_core_register_extensions', [ $this, 'register_extension' ] );
@@ -324,6 +334,15 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 		$oversized = Engine::preview_json( $json, Foundation::MODE_CREATE_UPDATE );
 		self::assertWPError( $oversized );
 		self::assertSame( 'cb_core_data_exchange_plan_too_large', $oversized->get_error_code() );
+	}
+
+	public function test_dx1_csv_provider_output_cannot_amplify_beyond_transport_limit(): void {
+		$csv = Engine::export_csv( self::PROVIDER, self::ENTITY );
+		self::assertIsString( $csv );
+		CB_Data_Exchange_Fixture_Entity::$oversized_csv_record = true;
+		$preview = Engine::preview_csv( $csv, Foundation::MODE_CREATE_UPDATE );
+		self::assertWPError( $preview );
+		self::assertSame( 'cb_core_data_exchange_output_too_large', $preview->get_error_code() );
 	}
 
 	public function register_extension(): void {
