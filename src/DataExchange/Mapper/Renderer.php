@@ -53,6 +53,13 @@ final class Renderer {
 		if ( is_wp_error( $plan ) ) {
 			return $plan;
 		}
+		if ( ! $plan['valid'] ) {
+			return new WP_Error(
+				'cb_core_data_mapper_invalid_mapping',
+				'Data Mapper renderer received an invalid initial mapping.',
+				[ 'plan' => $plan ]
+			);
+		}
 
 		$title = self::label( $configuration['title'] ?? null, __( 'Data Mapper', 'core-blueprint' ) );
 		$source_label = self::label( $configuration['source_label'] ?? null, __( 'Source', 'core-blueprint' ) );
