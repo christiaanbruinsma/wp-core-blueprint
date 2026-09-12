@@ -7,6 +7,7 @@ import { after, before, test } from 'node:test';
 
 const shellSource = new URL('../../assets/js/design/shell/index.js', import.meta.url);
 const iconsSource = new URL('../../assets/js/design/shell/icons.js', import.meta.url);
+const launchSource = new URL('../../assets/js/features/designer-launch.js', import.meta.url);
 const shellCss = new URL('../../assets/css/design/editor-shell.css', import.meta.url);
 let tempDirectory;
 let createDesignerShell;
@@ -334,6 +335,32 @@ test('shared fullscreen CSS owns fixed viewport composition and document scroll 
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*\{[\s\S]*height:\s*100dvh/);
 	assert.match(css, /\.cb-core-design-shell\.is-fullscreen\s*>\s*\.cb-core-design-shell__workspace/);
 	assert.match(css, /palette--tabbed\s*>\s*\.cb-core-design-shell__panel:not\(\[hidden\]\)[\s\S]*overflow:\s*auto/);
+});
+
+test('direct Designer mode is server-declared, first-paint fullscreen and exits without exposing the admin page', async () => {
+	const launch = await readFile(launchSource, 'utf8');
+	const css = await readFile(shellCss, 'utf8');
+	const directBody = launch.match(/const initializeDirectLaunch = \([^)]*\) => \{([\s\S]*?)\n\t\};/)?.[1] ?? '';
+
+	assert.match(launch, /DIRECT_MODE\s*=\s*'direct'/);
+	assert.match(launch, /cbDesignLaunchMode/);
+	assert.match(launch, /cbDesignExitUrl/);
+	assert.match(launch, /url\.origin !== window\.location\.origin/);
+	assert.match(launch, /initializeDirectLaunch/);
+	assert.match(directBody, /fullscreen\.click\(\)/);
+	assert.match(directBody, /window\.location\.assign\(exitUrl\)/);
+	assert.doesNotMatch(directBody, /cb-core-design-launch|createElement\('button'\)/);
+	assert.match(launch, /initializeManualLaunch/);
+	assert.match(launch, /cb-core-design-launch/);
+
+	assert.match(
+		css,
+		/\[data-cb-design-launch-root\]\[data-cb-design-launch-mode="direct"\][\s\S]*\.cb-core-design-shell\s*\{[\s\S]*position:\s*fixed[\s\S]*inset:\s*0/
+	);
+	assert.match(
+		css,
+		/\[data-cb-design-launch-root\]\[data-cb-design-launch-mode="direct"\][\s\S]*\.cb-core-design-shell\.is-exiting\s*\{[\s\S]*opacity:\s*1[\s\S]*transition:\s*none/
+	);
 });
 
 test('shared Designer UX defines canonical sidebar roles, Lucide icons and reduced-motion-safe transitions', async () => {
