@@ -17,6 +17,7 @@
 - Module health/status — `cb_core_module_status_definitions`; providers return the canonical `ok|warn|err|off` status shape.
 - Extension registry — `CB\Core\ExtensionRegistry` via `cb_core_register_extensions`; canonical identity/inventory/compatibility boundary.
 - Interoperability Foundation — `CB\Core\Interoperability\Registry` via `cb_core_register_interoperability_contracts` and `cb_core_register_interoperability_implementations`; canonical versioned cross-extension contract registration, discovery and runtime resolution boundary; see `INTEROPERABILITY-FOUNDATION.md`.
+- Forms Foundation — `CB\Core\Forms\ProviderInterface`, `CB\Core\Forms\SubmissionEmitter`, `CB\Core\Forms\SubmissionEvent` and the public contract constants on `CB\Core\Forms\Foundation`; Base-owned normalized form-submission interoperability boundary using Generic Interoperability provider admission; see `FORMS-FOUNDATION.md`.
 - Settings Hub — `CB\Core\Admin\SettingsRegistry` via `cb_core_register_settings`; canonical extension-configuration directory and routing boundary; see `SETTINGS-HUB-FOUNDATION.md`.
 - Capability catalog — `cb_core_capability_catalog`.
 - Access Mode request bypass — prefer `CB\Core\Security\AccessMode::register_bypass()`; advanced policy may use `cb_core_access_mode_bypass_request`.

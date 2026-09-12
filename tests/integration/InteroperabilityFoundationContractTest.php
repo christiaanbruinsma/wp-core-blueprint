@@ -90,6 +90,11 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 
 	public function test_if1_registration_is_refused_outside_controlled_lifecycle(): void {
 		self::assertFalse( Registry::register_contract( $this->contract_definition() ) );
+
+		$base_contract = $this->contract_definition();
+		unset( $base_contract['owner'] );
+		self::assertFalse( Registry::register_base_contract( $base_contract ) );
+
 		self::assertFalse( Registry::register_implementation( $this->implementation_definition( 'outside', [] ) ) );
 	}
 
@@ -142,6 +147,12 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 		do_action( 'cb_core_register_interoperability_implementations' );
 
 		self::assertFalse( $this->results['late'] ?? true, 'A late implementation bypassed the frozen registry.' );
+
+		$late_base_contract = $this->contract_definition();
+		unset( $late_base_contract['owner'] );
+		$late_base_contract['id'] = 'late.base';
+		self::assertFalse( Registry::register_base_contract( $late_base_contract ), 'A late Base-owned contract bypassed the frozen registry.' );
+
 		self::assertCount( 3, Registry::implementations(), 'Frozen registry mutated after canonical collection.' );
 	}
 

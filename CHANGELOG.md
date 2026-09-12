@@ -4,6 +4,13 @@
 
 ## 1.0.0-rc1 — 2026-09-09
 
+### Forms Foundation v1 — normalized form ingress
+
+- Add the Base-owned `core-blueprint::forms.provider@1` platform contract on top of Generic Interoperability while keeping every concrete provider extension-admitted and builder-neutral.
+- Add bounded, immutable, request-local form-submission ingress through `SubmissionEmitter` / `SubmissionEvent`, with multiple-provider support and runtime availability checks.
+- Keep raw submission values out of Base persistence, Audit/Governance and Automation by default; consumers must deliberately own any storage, classification, retention or orchestration they introduce.
+- Add contract coverage for reserved Base ownership, provider spoofing, exact support discovery, multiple providers, bounded transport and lifecycle/freeze behavior.
+
 ### Golden Standard Gate 5B — localization quality
 
 - Align all six shipped locale catalogs with the current 3,216-string `1.0.0-rc1` runtime source.
