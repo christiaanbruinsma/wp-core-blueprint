@@ -63,6 +63,12 @@
 		return [verb, panelLabel].filter(Boolean).join(' ').trim() || (collapsed ? 'Expand' : 'Collapse');
 	};
 
+	const panelHeadingLabel = (panel, side) => String(
+		panel?.dataset?.cbDesignShellPanelTitle
+		|| panel?.getAttribute?.('aria-label')
+		|| (side === 'left' ? 'Panel' : 'Properties')
+	).trim();
+
 	const composePanelToggles = (shell, shellApi) => {
 		const workspace = shell.querySelector('.cb-core-design-shell__workspace');
 		if (!workspace || workspace.dataset.cbDesignShellPanelToggles === 'true') return;
@@ -77,6 +83,16 @@
 		const addToggle = (side, panel) => {
 			if (!panel) return;
 			const className = side === 'left' ? 'is-left-panel-collapsed' : 'is-right-panel-collapsed';
+			const header = document.createElement('div');
+			header.className = `cb-core-design-shell__panel-header cb-core-design-shell__panel-header--${side}`;
+			header.dataset.cbDesignShellPanelHeader = side;
+
+			const heading = document.createElement('span');
+			heading.className = 'cb-core-design-shell__panel-heading';
+			heading.dataset.cbDesignShellPanelHeading = '';
+			heading.setAttribute('aria-hidden', 'true');
+			heading.textContent = panelHeadingLabel(panel, side);
+
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = `cb-core-design-shell__panel-toggle cb-core-design-shell__panel-toggle--${side}`;
@@ -97,7 +113,8 @@
 				sync();
 			});
 			sync();
-			workspace.append(button);
+			header.append(heading, button);
+			panel.prepend(header);
 		};
 
 		addToggle('left', leftPanel);
