@@ -1,0 +1,406 @@
+#!/usr/bin/env python3
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def replace_once(path: str, old: str, new: str) -> None:
+    target = ROOT / path
+    text = target.read_text(encoding="utf-8")
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f"{path}: expected exactly one guarded match, found {count}")
+    target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
+forms_doc = r'''# Forms Foundation — Core API v1
+
+Core Blueprint Base exposes a small, builder-neutral Forms Foundation for normalized form-submission interoperability.
+
+It allows an admitted WordPress extension to identify itself as a forms provider through the Generic Interoperability Foundation and emit one bounded, immutable submission event after its native form runtime has successfully accepted a submission.
+
+The architectural boundary is:
+
+> **Base owns the normalized Forms interoperability contract. Providers own their native form integration and validation. Consumers own what they deliberately do with submitted data.**
+
+Forms Foundation is not a form builder, submission database, inbox, workflow engine or builder-specific adapter.
+
+## Contract identity
+
+The Base-owned v1 contract identity is:
+
+```text
+owner:    core-blueprint
+contract: forms.provider
+version:  1
+```
+
+The canonical constants are:
+
+```php
+CB\Core\Forms\Foundation::CONTRACT_OWNER
+CB\Core\Forms\Foundation::CONTRACT_ID
+CB\Core\Forms\Foundation::CONTRACT_VERSION
+CB\Core\Forms\Foundation::SUPPORT_SUBMISSION_EMIT
+```
+
+`Foundation::boot()` and `Foundation::register_contract()` are Base bootstrap details. Extension code must not call them.
+
+Base publishes this specialized contract internally through the Generic Interoperability lifecycle. Provider implementations still use the normal public Interoperability implementation path and a normal `ExtensionRegistry` identity. There is no private first-party provider path.
+
+## Public v1 surface
+
+The Forms Foundation public v1 surface is:
+
+```php
+CB\Core\Forms\ProviderInterface
+CB\Core\Forms\SubmissionEmitter
+CB\Core\Forms\SubmissionEvent
+```
+
+and the in-request event hook:
+
+```text
+cb_core_forms_submission_emitted
+```
+
+The only Forms v1 support token is:
+
+```text
+submission.emit
+```
+
+Providers must not rely on undocumented support-token meanings. New optional Forms features require an explicit Forms contract addition rather than inference from provider internals.
+
+## Provider admission and implementation registration
+
+A forms adapter is an ordinary Core Blueprint extension. It first registers its canonical platform identity through `CB\Core\ExtensionRegistry`, then registers an implementation during the standard Interoperability implementation lifecycle.
+
+```php
+use CB\Core\ExtensionRegistry;
+use CB\Core\Forms\Foundation;
+use CB\Core\Forms\ProviderInterface;
+use CB\Core\Interoperability\Registry;
+
+add_action( 'cb_core_register_extensions', static function (): void {
+    ExtensionRegistry::register( [
+        'id'            => 'acme-forms',
+        'plugin_file'   => plugin_basename( ACME_FORMS_FILE ),
+        'requires_api'  => '1.0',
+        'requires_base' => '1.0.0-rc1',
+        'menu_url'      => '',
+        'status_id'     => '',
+    ] );
+} );
+
+add_action( 'cb_core_register_interoperability_implementations', static function (): void {
+    Registry::register_implementation( [
+        'provider'         => 'acme-forms',
+        'id'               => 'default',
+        'label'            => __( 'Acme Forms', 'acme-forms' ),
+        'description'      => __( 'Connects Acme form submissions to Core Blueprint.', 'acme-forms' ),
+        'contract_owner'   => Foundation::CONTRACT_OWNER,
+        'contract'         => Foundation::CONTRACT_ID,
+        'contract_version' => Foundation::CONTRACT_VERSION,
+        'supports'         => [ Foundation::SUPPORT_SUBMISSION_EMIT ],
+        'factory'          => static fn (): ProviderInterface => new Acme\Forms\CoreBlueprintProvider(),
+    ] );
+} );
+```
+
+Multiple extensions and multiple implementation IDs may implement the contract simultaneously. Consumers must not assume a single global forms provider.
+
+A provider cannot claim the reserved `core-blueprint` owner identity. `CB\Core\Interoperability\Registry::register_base_contract()` is an internal Base lifecycle API, not an extension API.
+
+## Runtime availability
+
+A resolved implementation must satisfy:
+
+```php
+interface ProviderInterface {
+    public function is_available(): bool;
+}
+```
+
+`is_available()` distinguishes a registered adapter from a runtime that is actually usable, for example when the upstream form/builder plugin is absent or inactive.
+
+Availability is not authorization and does not replace the upstream form system's validation, nonce/CSRF handling, spam protection, rate limiting or business rules. The adapter must call Forms Foundation only after the native provider has accepted the submission according to its own contract.
+
+## Emit a normalized submission
+
+A provider emits through:
+
+```php
+$result = CB\Core\Forms\SubmissionEmitter::emit(
+    'acme-forms',
+    'default',
+    'contact-main',
+    [
+        [ 'id' => 'name',    'value' => 'Ada Lovelace' ],
+        [ 'id' => 'message', 'value' => 'Please contact me.' ],
+        [ 'id' => 'topics',  'value' => [ 'support', 'billing' ] ],
+    ],
+    'submission-42', // optional provider submission id
+    'acme:form:42'   // optional event id
+);
+
+if ( is_wp_error( $result ) ) {
+    // Handle the rejected emission in the adapter according to its own workflow.
+}
+```
+
+The method signature is:
+
+```php
+SubmissionEmitter::emit(
+    string $provider,
+    string $implementation,
+    string $form_id,
+    array $fields,
+    ?string $submission_id = null,
+    ?string $event_id = null
+): SubmissionEvent|WP_Error
+```
+
+The provider and implementation must identify an admitted, registered implementation of `core-blueprint::forms.provider@1` that declares `submission.emit`. The resolved provider must satisfy `ProviderInterface` and report itself available.
+
+## Identifier contract
+
+`form_id` and a non-null `submission_id` are opaque provider identifiers. Base does not convert them into slugs or infer domain meaning.
+
+Each must:
+
+- be non-empty after trimming;
+- be at most 191 bytes;
+- contain no ASCII control characters or DEL.
+
+If `event_id` is omitted, Base generates a WordPress UUID. A supplied event ID must match:
+
+```text
+[A-Za-z0-9][A-Za-z0-9._:-]{0,127}
+```
+
+Base does not persist or deduplicate Forms events. Consumers that need their own deduplication must treat provider + implementation + event ID as the event identity rather than assuming an event ID is globally unique across unrelated providers.
+
+## Field transport contract
+
+`fields` is an ordered PHP list. Each item contains exactly:
+
+```php
+[
+    'id'    => 'field-id',
+    'value' => $value,
+]
+```
+
+The v1 boundary accepts at most 256 fields.
+
+Field IDs use the same opaque identifier bounds as `form_id`, must be unique within one event, and are not converted into labels or schema definitions.
+
+A field value may be:
+
+- `null`;
+- `bool`;
+- `int`;
+- a finite `float`;
+- `string`;
+- a flat list containing only those scalar/null value kinds.
+
+The transport limits are:
+
+- maximum 65,535 bytes per string;
+- maximum 1 MiB of string data across the complete field payload;
+- maximum 100 items in one flat list.
+
+Nested maps, nested lists, objects, resources, non-finite floats, duplicate field IDs and unknown field-entry keys are rejected.
+
+Forms v1 defines no attachment semantics, field-schema discovery, form catalog/discovery or configuration-change contract. A string that happens to contain a URL or filesystem-looking value does not become a stable attachment contract by inference.
+
+## Submission event
+
+A successful emission creates one immutable `CB\Core\Forms\SubmissionEvent` and dispatches it on:
+
+```text
+cb_core_forms_submission_emitted
+```
+
+The event exposes:
+
+```text
+event_id()
+provider()
+implementation()
+form_id()
+submission_id()
+fields()
+occurred_at()
+```
+
+`occurred_at()` is generated by Base at emission time in UTC. The event is an in-request delivery boundary only.
+
+Base does not guarantee persistence, queueing, retries or delivery after the originating WordPress request ends.
+
+## Privacy and data ownership
+
+Submitted values may contain personal or sensitive data. Forms Foundation deliberately does not persist or automatically copy those values elsewhere.
+
+Base does **not** automatically:
+
+- save a submission record;
+- write field values to the Audit/Governance store;
+- write field values to options, posts or custom tables;
+- email submitted values;
+- forward the raw field map into Automation Foundation;
+- classify a submission as medical, sensitive or special-category data;
+- copy uploads into another storage system.
+
+Listeners receive raw validated transport values in-process and become responsible for any persistence, logging, classification, retention, authorization and redaction they deliberately introduce.
+
+Provider adapters remain responsible for not smuggling secrets or unsupported provider objects through scalar strings merely to bypass this contract.
+
+## Relationship to Generic Interoperability
+
+Generic Interoperability owns provider admission, exact contract-version discovery, `supports`, private factory storage and runtime interface enforcement.
+
+Forms Foundation owns the platform-level meaning of `core-blueprint::forms.provider@1`, `submission.emit`, the normalized submission transport and the emitted Forms event.
+
+Do not create a second Forms provider registry.
+
+## Relationship to Automation Foundation
+
+Forms Foundation does not create a second event bus and does not automatically emit an Automation trigger.
+
+Automation Foundation has its own bounded trigger schemas. Arbitrary dynamic form-field maps are therefore not silently flattened, JSON-encoded or copied into Automation merely to make them fit that transport.
+
+A future Automation bridge must define deliberate bounded semantics and privacy behavior. Core Blueprint Automations remains responsible for workflows, conditions, persistence, retries and run history.
+
+## Relationship to Governance / Audit
+
+Forms Foundation does not automatically audit submitted field values.
+
+A consumer may record privacy-safe governance metadata through the normal public Governance facade when that is part of its own product contract. Raw form bodies, free-text answers and attachment contents must not be copied into Audit by default.
+
+## Failure contract
+
+`SubmissionEmitter::emit()` fails closed with these stable v1 error codes:
+
+```text
+cb_core_forms_not_ready
+cb_core_forms_invalid_form_id
+cb_core_forms_invalid_submission_id
+cb_core_forms_invalid_fields
+cb_core_forms_invalid_event_id
+cb_core_forms_unknown_provider
+cb_core_forms_unsupported
+cb_core_forms_provider_unavailable
+```
+
+A rejected emission does not dispatch `cb_core_forms_submission_emitted`.
+
+Provider-resolution failures and exceptions from provider availability checks are normalized to `cb_core_forms_provider_unavailable`; internal exception details are not part of the Forms v1 return contract.
+
+## First-party and third-party parity
+
+Official Core Blueprint adapters and third-party adapters use the same `ExtensionRegistry`, Generic Interoperability implementation lifecycle, Forms contract and submission emitter.
+
+Base contains no builder-specific path. If a future first-party adapter needs shared functionality that the public Forms contract cannot express, the contract must be deliberately evolved rather than adding a private adapter-only escape hatch.
+
+## Non-goals
+
+Forms Foundation v1 is not:
+
+- a visual form builder;
+- a form-submission inbox;
+- a submission database;
+- a form-schema/catalog API;
+- an attachment-storage API;
+- a form-configuration revision system;
+- a workflow/orchestration engine;
+- an audit log for raw form values;
+- a builder-specific adapter;
+- an automatic security or legal-basis decision engine.
+
+## Stable v1 boundary
+
+Only the Forms classes, constants, transport rules, error codes and event hook documented here are intended as the Forms Foundation v1 public contract.
+
+Internal bootstrap methods, private normalization limits not documented above, implementation details of Generic Interoperability, and testing helpers are not third-party API merely because they are callable from PHP.
+'''
+
+forms_path = ROOT / "docs/FORMS-FOUNDATION.md"
+if forms_path.exists():
+    raise SystemExit("docs/FORMS-FOUNDATION.md already exists; refusing to overwrite")
+forms_path.write_text(forms_doc, encoding="utf-8")
+
+replace_once(
+    "docs/PUBLIC-API.md",
+    "- Interoperability Foundation — `CB\\Core\\Interoperability\\Registry` via `cb_core_register_interoperability_contracts` and `cb_core_register_interoperability_implementations`; canonical versioned cross-extension contract registration, discovery and runtime resolution boundary; see `INTEROPERABILITY-FOUNDATION.md`.\n- Settings Hub —",
+    "- Interoperability Foundation — `CB\\Core\\Interoperability\\Registry` via `cb_core_register_interoperability_contracts` and `cb_core_register_interoperability_implementations`; canonical versioned cross-extension contract registration, discovery and runtime resolution boundary; see `INTEROPERABILITY-FOUNDATION.md`.\n- Forms Foundation — `CB\\Core\\Forms\\ProviderInterface`, `CB\\Core\\Forms\\SubmissionEmitter`, `CB\\Core\\Forms\\SubmissionEvent` and the public contract constants on `CB\\Core\\Forms\\Foundation`; Base-owned normalized form-submission interoperability boundary using Generic Interoperability provider admission; see `FORMS-FOUNDATION.md`.\n- Settings Hub —",
+)
+
+replace_once(
+    "docs/INTEROPERABILITY-FOUNDATION.md",
+    "This Foundation is neutral infrastructure. Domain extensions own contract meaning and PHP interfaces. Base owns registration, validation, discovery, lifecycle and runtime contract enforcement.",
+    "This Foundation is neutral infrastructure. Contract owners own contract meaning and PHP interfaces. In the normal public path that owner is an admitted extension; Base may also publish specialized Base-owned platform contracts internally. Base owns registration, validation, discovery, lifecycle and runtime contract enforcement.",
+)
+
+replace_once(
+    "docs/INTEROPERABILITY-FOUNDATION.md",
+    "Both a contract owner and an implementation provider must already be valid registered extensions in:\n\n```php\nCB\\Core\\ExtensionRegistry\n```\n\nThe extension ID used in Interoperability is the same canonical platform identity used elsewhere in Base.\n\nAn unknown owner or provider is rejected.",
+    "An implementation provider must always be a valid registered extension in:\n\n```php\nCB\\Core\\ExtensionRegistry\n```\n\nA contract registered through the public `Registry::register_contract()` path must likewise use a valid registered extension as its owner. The extension ID used in Interoperability is the same canonical platform identity used elsewhere in Base.\n\nBase itself may publish a specialized platform contract under the reserved owner identity `core-blueprint` through its internal lifecycle path. Public extension code cannot claim that owner through `register_contract()`, and provider implementations targeting a Base-owned contract still require their own normal `ExtensionRegistry` identity.\n\nAn unknown public owner or implementation provider is rejected.",
+)
+
+replace_once(
+    "docs/INTEROPERABILITY-FOUNDATION.md",
+    "owner + contract id + exact version\n```\n\n## Register an implementation",
+    "owner + contract id + exact version\n```\n\nSpecialized Base-owned contracts are documented by their own Foundation documents. `Registry::register_base_contract()` is an internal Base bootstrap API used to reserve `core-blueprint` ownership inside the same controlled contract lifecycle; it is not a public third-party registration path.\n\n## Register an implementation",
+)
+
+replace_once(
+    "docs/INTEROPERABILITY-FOUNDATION.md",
+    "The contract-owning extension owns:\n\n- the meaning of the contract;\n- the PHP interface;\n- the meaning of each support token;\n- domain-specific authorization and data semantics;\n- versioning decisions for incompatible contract changes.",
+    "The contract owner owns:\n\n- the meaning of the contract;\n- the PHP interface;\n- the meaning of each support token;\n- domain-specific authorization and data semantics;\n- versioning decisions for incompatible contract changes.\n\nFor public extension-defined contracts, that owner is an admitted extension. For a specialized Base-owned platform contract, Base owns those semantics and documents them in the corresponding Foundation contract.",
+)
+
+replace_once(
+    "docs/INTEROPERABILITY-FOUNDATION.md",
+    "Only the public methods and registration lifecycles documented in this Foundation are intended as the Generic Interoperability v1 contract.\n\nPrivate registry state, diagnostic behavior, key construction and testing helpers are implementation details unless separately documented as public API.",
+    "Only the public methods and registration lifecycles documented in this Foundation are intended as the Generic Interoperability v1 contract.\n\n`Registry::register_base_contract()` is explicitly an internal Base bootstrap API. Its existence does not grant extensions a supported route to publish contracts under the reserved `core-blueprint` owner.\n\nPrivate registry state, diagnostic behavior, key construction and testing helpers are implementation details unless separately documented as public API.",
+)
+
+replace_once(
+    "tests/integration/InteroperabilityFoundationContractTest.php",
+    "\tpublic function test_if1_registration_is_refused_outside_controlled_lifecycle(): void {\n\t\tself::assertFalse( Registry::register_contract( $this->contract_definition() ) );\n\t\tself::assertFalse( Registry::register_implementation( $this->implementation_definition( 'outside', [] ) ) );\n\t}",
+    "\tpublic function test_if1_registration_is_refused_outside_controlled_lifecycle(): void {\n\t\tself::assertFalse( Registry::register_contract( $this->contract_definition() ) );\n\n\t\t$base_contract = $this->contract_definition();\n\t\tunset( $base_contract['owner'] );\n\t\tself::assertFalse( Registry::register_base_contract( $base_contract ) );\n\n\t\tself::assertFalse( Registry::register_implementation( $this->implementation_definition( 'outside', [] ) ) );\n\t}",
+)
+
+replace_once(
+    "tests/integration/InteroperabilityFoundationContractTest.php",
+    "\t\tself::assertFalse( $this->results['late'] ?? true, 'A late implementation bypassed the frozen registry.' );\n\t\tself::assertCount( 3, Registry::implementations(), 'Frozen registry mutated after canonical collection.' );",
+    "\t\tself::assertFalse( $this->results['late'] ?? true, 'A late implementation bypassed the frozen registry.' );\n\n\t\t$late_base_contract = $this->contract_definition();\n\t\tunset( $late_base_contract['owner'] );\n\t\t$late_base_contract['id'] = 'late.base';\n\t\tself::assertFalse( Registry::register_base_contract( $late_base_contract ), 'A late Base-owned contract bypassed the frozen registry.' );\n\n\t\tself::assertCount( 3, Registry::implementations(), 'Frozen registry mutated after canonical collection.' );",
+)
+
+replace_once(
+    "CHANGELOG.md",
+    "## 1.0.0-rc1 — 2026-09-09\n\n### Golden Standard Gate 5B — localization quality",
+    "## 1.0.0-rc1 — 2026-09-09\n\n### Forms Foundation v1 — normalized form ingress\n\n- Add the Base-owned `core-blueprint::forms.provider@1` platform contract on top of Generic Interoperability while keeping every concrete provider extension-admitted and builder-neutral.\n- Add bounded, immutable, request-local form-submission ingress through `SubmissionEmitter` / `SubmissionEvent`, with multiple-provider support and runtime availability checks.\n- Keep raw submission values out of Base persistence, Audit/Governance and Automation by default; consumers must deliberately own any storage, classification, retention or orchestration they introduce.\n- Add contract coverage for reserved Base ownership, provider spoofing, exact support discovery, multiple providers, bounded transport and lifecycle/freeze behavior.\n\n### Golden Standard Gate 5B — localization quality",
+)
+
+# Guard the intended closure state.
+public_api = (ROOT / "docs/PUBLIC-API.md").read_text(encoding="utf-8")
+interop = (ROOT / "docs/INTEROPERABILITY-FOUNDATION.md").read_text(encoding="utf-8")
+test = (ROOT / "tests/integration/InteroperabilityFoundationContractTest.php").read_text(encoding="utf-8")
+changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+
+checks = [
+    ("PUBLIC API Forms entry", "FORMS-FOUNDATION.md" in public_api),
+    ("Base-owned interop docs", "register_base_contract()" in interop and "internal Base bootstrap API" in interop),
+    ("outside lifecycle regression", "Registry::register_base_contract( $base_contract )" in test),
+    ("frozen lifecycle regression", "Registry::register_base_contract( $late_base_contract )" in test),
+    ("changelog closure", "Forms Foundation v1 — normalized form ingress" in changelog),
+]
+for label, ok in checks:
+    if not ok:
+        raise SystemExit(f"closure guard failed: {label}")
+
+print("PASS: Forms Foundation normative closure materialized.")

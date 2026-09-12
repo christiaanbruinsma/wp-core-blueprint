@@ -1,0 +1,56 @@
+name: Forms Foundation normative closure
+
+on:
+  push:
+    branches:
+      - forms-foundation-v1
+    paths:
+      - '.github/workflows/forms-foundation-closure.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forms-foundation-normative-closure
+  cancel-in-progress: false
+
+jobs:
+  close:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Forms Foundation branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: forms-foundation-v1
+          fetch-depth: 0
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Materialize guarded normative closure
+        run: python3 tools/forms-foundation-closure.py
+
+      - name: Validate translation freshness
+        run: php tools/check-translations.php
+
+      - name: Validate PHP syntax and repository gates
+        run: bash tests/bin/php-lint.sh
+
+      - name: Validate patch whitespace
+        run: git diff --check
+
+      - name: Remove one-time closure tooling
+        run: rm -f tools/forms-foundation-closure.py .github/workflows/forms-foundation-closure.yml
+
+      - name: Commit normative closure
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No closure changes found.'; exit 1; }
+          git commit -m 'Docs: close Forms Foundation v1 public contract'
+          git push origin HEAD:forms-foundation-v1
