@@ -21,6 +21,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class Registry {
 
+	private const BASE_OWNER      = 'core-blueprint';
 	private const ID_PATTERN      = '/^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/D';
 	private const VERSION_PATTERN = '/^[1-9][0-9]*$/D';
 
@@ -83,33 +84,26 @@ final class Registry {
 	}
 
 	/**
-	 * Register one domain-owned, versioned interoperability contract.
+	 * Register one extension-owned, versioned interoperability contract.
 	 *
 	 * @param array<string,mixed> $definition
 	 */
 	public static function register_contract( array $definition ): bool {
-		if (
-			self::$frozen
-			|| ! self::$collecting_contracts
-			|| ! doing_action( 'cb_core_register_interoperability_contracts' )
-		) {
-			self::diagnostic( 'Contract registration refused outside the controlled interoperability lifecycle.' );
-			return false;
-		}
+		return self::register_contract_definition( $definition, false );
+	}
 
-		$normalized = self::normalize_contract( $definition );
-		if ( null === $normalized ) {
-			return false;
-		}
-
-		$key = self::contract_key( $normalized['owner'], $normalized['id'], $normalized['version'] );
-		if ( isset( self::$contracts[ $key ] ) ) {
-			self::diagnostic( sprintf( 'Duplicate interoperability contract refused: %s.', $key ) );
-			return false;
-		}
-
-		self::$contracts[ $key ] = $normalized;
-		return true;
+	/**
+	 * Register one Base-owned interoperability contract.
+	 *
+	 * Owner identity is forced to `core-blueprint`; any supplied owner is
+	 * ignored. Internal Base lifecycle API, not a public extension path.
+	 *
+	 * @internal
+	 * @param array<string,mixed> $definition
+	 */
+	public static function register_base_contract( array $definition ): bool {
+		unset( $definition['owner'] );
+		return self::register_contract_definition( $definition, true );
 	}
 
 	/**
@@ -273,25 +267,58 @@ final class Registry {
 		self::$frozen                     = false;
 	}
 
+	/** @param array<string,mixed> $definition */
+	private static function register_contract_definition( array $definition, bool $base_owned ): bool {
+		if (
+			self::$frozen
+			|| ! self::$collecting_contracts
+			|| ! doing_action( 'cb_core_register_interoperability_contracts' )
+		) {
+			self::diagnostic( 'Contract registration refused outside the controlled interoperability lifecycle.' );
+			return false;
+		}
+
+		$normalized = self::normalize_contract( $definition, $base_owned );
+		if ( null === $normalized ) {
+			return false;
+		}
+
+		$key = self::contract_key( $normalized['owner'], $normalized['id'], $normalized['version'] );
+		if ( isset( self::$contracts[ $key ] ) ) {
+			self::diagnostic( sprintf( 'Duplicate interoperability contract refused: %s.', $key ) );
+			return false;
+		}
+
+		self::$contracts[ $key ] = $normalized;
+		return true;
+	}
+
 	/** @param array<string,mixed> $definition
 	 *  @return array{owner:string,id:string,version:string,label:string,description:string,interface:string}|null
 	 */
-	private static function normalize_contract( array $definition ): ?array {
+	private static function normalize_contract( array $definition, bool $base_owned ): ?array {
 		$allowed = [ 'owner', 'id', 'version', 'label', 'description', 'interface' ];
 		if ( [] !== array_diff( array_keys( $definition ), $allowed ) ) {
 			return null;
 		}
 
-		$owner       = isset( $definition['owner'] ) && is_string( $definition['owner'] ) ? trim( $definition['owner'] ) : '';
+		$owner       = $base_owned
+			? self::BASE_OWNER
+			: ( isset( $definition['owner'] ) && is_string( $definition['owner'] ) ? trim( $definition['owner'] ) : '' );
 		$id          = isset( $definition['id'] ) && is_string( $definition['id'] ) ? trim( $definition['id'] ) : '';
 		$version     = isset( $definition['version'] ) && is_string( $definition['version'] ) ? trim( $definition['version'] ) : '';
 		$label       = isset( $definition['label'] ) && is_string( $definition['label'] ) ? trim( wp_strip_all_tags( $definition['label'] ) ) : '';
 		$description = isset( $definition['description'] ) && is_string( $definition['description'] ) ? trim( wp_strip_all_tags( $definition['description'] ) ) : '';
 		$interface   = isset( $definition['interface'] ) && is_string( $definition['interface'] ) ? ltrim( trim( $definition['interface'] ), '\\' ) : '';
 
+		$owner_valid = $base_owned
+			? self::BASE_OWNER === $owner
+			: self::BASE_OWNER !== $owner
+				&& ExtensionRegistry::is_valid_id( $owner )
+				&& null !== ExtensionRegistry::definition( $owner );
+
 		if (
-			! ExtensionRegistry::is_valid_id( $owner )
-			|| null === ExtensionRegistry::definition( $owner )
+			! $owner_valid
 			|| 1 !== preg_match( self::ID_PATTERN, $id )
 			|| 1 !== preg_match( self::VERSION_PATTERN, $version )
 			|| '' === $label
@@ -395,7 +422,7 @@ final class Registry {
 		$id      = trim( $id );
 		$version = trim( $version );
 		if (
-			! ExtensionRegistry::is_valid_id( $owner )
+			( self::BASE_OWNER !== $owner && ! ExtensionRegistry::is_valid_id( $owner ) )
 			|| 1 !== preg_match( self::ID_PATTERN, $id )
 			|| 1 !== preg_match( self::VERSION_PATTERN, $version )
 		) {
