@@ -41,7 +41,8 @@
 }
 
 .cb-core-design-shell__panel-header {
-	position: relative;
+	position: sticky;
+	top: 0;
 	z-index: 2;
 	display: grid;
 	grid-template-columns: var(--cb-design-sidebar-header-height) minmax(0, 1fr) var(--cb-design-sidebar-header-height);
