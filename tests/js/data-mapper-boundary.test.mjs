@@ -30,15 +30,29 @@ test('Data Mapper consumes the public shared Designer Shell without owning docum
 	assert.doesNotMatch(styles, /position\s*:\s*fixed/i);
 });
 
-test('Data Mapper browser contract exposes controlled change, submit and validation boundaries', async () => {
-	const runtime = await readFile(runtimeUrl, 'utf8');
+test('Data Mapper browser contract exposes controlled change, submit, intake and validation boundaries', async () => {
+	const [runtime, renderer] = await Promise.all([
+		readFile(runtimeUrl, 'utf8'),
+		readFile(rendererUrl, 'utf8'),
+	]);
+
 	assert.match(runtime, /cb:data-mapper:ready/);
 	assert.match(runtime, /cb:data-mapper:change/);
+	assert.match(runtime, /cb:data-mapper:file-selected/);
 	assert.match(runtime, /cb:data-mapper:submit/);
+	assert.match(runtime, /file:\s*\(\) => selectedFile/);
+	assert.match(runtime, /setSourceFields\(nextFields/);
+	assert.match(runtime, /setTargetFields\(nextFields/);
 	assert.match(runtime, /setValidation\(result\)/);
 	assert.match(runtime, /setBusy\(busy, message = ''\)/);
 	assert.match(runtime, /replaceMapping\(nextMapping/);
 	assert.match(runtime, /requiredMissing/);
 	assert.match(runtime, /duplicate_or_forbidden/);
+	assert.match(renderer, /data-cb-data-mapper-file/);
+	assert.match(renderer, /Choose a source file to begin mapping/);
+
+	// Base never uploads or applies data from the browser on its own. Consumers
+	// own the authorized transport and server-side Data Exchange invocation.
 	assert.doesNotMatch(runtime, /fetch\s*\(|XMLHttpRequest|wp\.apiFetch/);
+	assert.doesNotMatch(runtime, /sessionStorage|localStorage|indexedDB/i);
 });
