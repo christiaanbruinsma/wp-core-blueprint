@@ -16,6 +16,7 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 	public static bool $available = true;
 	public static bool $authorized = true;
 	public static bool $invalid_plan = false;
+	public static bool $invalid_apply_reference = false;
 
 	public function is_available(): bool {
 		return self::$available;
@@ -77,6 +78,9 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 		if ( ! is_array( $payload ) || ! isset( $payload['key'] ) || ! is_string( $payload['key'] ) ) {
 			return new WP_Error( 'fixture_apply_invalid', 'Fixture apply payload is invalid.' );
 		}
+		if ( self::$invalid_apply_reference ) {
+			return [ 'reference' => '   ' ];
+		}
 		self::$store[ $payload['key'] ] = $payload;
 		return [ 'reference' => 'fixture:' . $payload['key'] ];
 	}
@@ -122,10 +126,11 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 			[ 'key' => 'one', 'title' => 'First', 'kind' => 'demo' ],
 			[ 'key' => 'formula', 'title' => '=1+1', 'kind' => 'demo' ],
 		];
-		CB_Data_Exchange_Fixture_Entity::$store        = [];
-		CB_Data_Exchange_Fixture_Entity::$available    = true;
-		CB_Data_Exchange_Fixture_Entity::$authorized   = true;
-		CB_Data_Exchange_Fixture_Entity::$invalid_plan = false;
+		CB_Data_Exchange_Fixture_Entity::$store                   = [];
+		CB_Data_Exchange_Fixture_Entity::$available               = true;
+		CB_Data_Exchange_Fixture_Entity::$authorized              = true;
+		CB_Data_Exchange_Fixture_Entity::$invalid_plan            = false;
+		CB_Data_Exchange_Fixture_Entity::$invalid_apply_reference = false;
 
 		add_action( 'cb_core_register_extensions', [ $this, 'register_extension' ] );
 		add_action( 'cb_core_register_interoperability_implementations', [ $this, 'register_entity' ] );
@@ -219,6 +224,40 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 		$unsupported = Engine::preview_json( (string) wp_json_encode( $decoded ), Foundation::MODE_CREATE_UPDATE );
 		self::assertWPError( $unsupported );
 		self::assertSame( 'cb_core_data_exchange_unsupported_schema', $unsupported->get_error_code() );
+	}
+
+	public function test_dx1_identity_is_exact_and_never_silently_trimmed_into_canonical_metadata(): void {
+		$bad_export = Engine::export_json( ' ' . self::PROVIDER, self::ENTITY );
+		self::assertWPError( $bad_export );
+		self::assertSame( 'cb_core_data_exchange_invalid_identity', $bad_export->get_error_code() );
+
+		$json = Engine::export_json( self::PROVIDER, self::ENTITY );
+		self::assertIsString( $json );
+		$decoded = json_decode( $json, true );
+		$decoded['extension_id'] = self::PROVIDER . ' ';
+		$bad_import = Engine::preview_json( (string) wp_json_encode( $decoded ), Foundation::MODE_CREATE_UPDATE );
+		self::assertWPError( $bad_import );
+		self::assertSame( 'cb_core_data_exchange_invalid_identity', $bad_import->get_error_code() );
+		self::assertSame( [], CB_Data_Exchange_Fixture_Entity::$store );
+	}
+
+	public function test_dx1_explicit_invalid_apply_reference_fails_instead_of_falling_back(): void {
+		CB_Data_Exchange_Fixture_Entity::$export_records = [
+			[ 'key' => 'one', 'title' => 'First', 'kind' => 'demo' ],
+		];
+		$json = Engine::export_json( self::PROVIDER, self::ENTITY );
+		self::assertIsString( $json );
+		$preview = Engine::preview_json( $json, Foundation::MODE_CREATE_UPDATE );
+		self::assertIsArray( $preview );
+		self::assertTrue( $preview['valid'] );
+
+		CB_Data_Exchange_Fixture_Entity::$invalid_apply_reference = true;
+		$result = Engine::apply_json( $json, Foundation::MODE_CREATE_UPDATE, $preview['fingerprint'] );
+		self::assertIsArray( $result );
+		self::assertSame( 'failed', $result['status'] );
+		self::assertSame( 0, $result['applied_count'] );
+		self::assertSame( 'cb_core_data_exchange_apply_contract', $result['error']['code'] ?? null );
+		self::assertSame( [], CB_Data_Exchange_Fixture_Entity::$store );
 	}
 
 	public function test_dx1_duplicate_portable_references_fail_preflight_before_mutation(): void {
