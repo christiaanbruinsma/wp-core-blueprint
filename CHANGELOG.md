@@ -7,7 +7,9 @@
 ### Forms Foundation v1 — normalized form ingress
 
 - Add the Base-owned `core-blueprint::forms.provider@1` platform contract on top of Generic Interoperability while keeping every concrete provider extension-admitted and builder-neutral.
+- Load Base-owned interoperability contracts from a private read-only catalog before the public extension contract lifecycle; expose no public Base-owned contract mutation route.
 - Add bounded, immutable, request-local form-submission ingress through `SubmissionEmitter` / `SubmissionEvent`, with multiple-provider support and runtime availability checks.
+- Treat `null` as the only omitted optional submission/event identifier value; explicit empty identifiers fail closed and the documented field/value transport limits are regression-locked.
 - Keep raw submission values out of Base persistence, Audit/Governance and Automation by default; consumers must deliberately own any storage, classification, retention or orchestration they introduce.
 - Add contract coverage for reserved Base ownership, provider spoofing, exact support discovery, multiple providers, bounded transport and lifecycle/freeze behavior.
 

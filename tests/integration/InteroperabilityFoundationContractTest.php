@@ -18,12 +18,12 @@ final class CB_Interop_Fixture_Implementation implements CB_Interop_Fixture_Cont
 
 final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTestCase {
 
-	private const OWNER               = 'acme-contract-owner';
-	private const OWNER_PLUGIN_FILE   = self::OWNER . '/' . self::OWNER . '.php';
-	private const PROVIDER            = 'acme-contract-provider';
+	private const OWNER                = 'acme-contract-owner';
+	private const OWNER_PLUGIN_FILE    = self::OWNER . '/' . self::OWNER . '.php';
+	private const PROVIDER             = 'acme-contract-provider';
 	private const PROVIDER_PLUGIN_FILE = self::PROVIDER . '/' . self::PROVIDER . '.php';
-	private const CONTRACT            = 'resource.provider';
-	private const VERSION             = '1';
+	private const CONTRACT             = 'resource.provider';
+	private const VERSION              = '1';
 
 	/** @var array<string,bool> */
 	private array $results = [];
@@ -68,6 +68,7 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 		foreach ( [ 'register_contract', 'register_implementation', 'contracts', 'implementations', 'contract', 'discover', 'implementation', 'resolve' ] as $method ) {
 			self::assertTrue( method_exists( Registry::class, $method ), Registry::class . '::' . $method );
 		}
+		self::assertFalse( method_exists( Registry::class, 'register_base_contract' ) );
 	}
 
 	public function test_if1_collects_contracts_before_multiple_implementations_once(): void {
@@ -90,11 +91,6 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 
 	public function test_if1_registration_is_refused_outside_controlled_lifecycle(): void {
 		self::assertFalse( Registry::register_contract( $this->contract_definition() ) );
-
-		$base_contract = $this->contract_definition();
-		unset( $base_contract['owner'] );
-		self::assertFalse( Registry::register_base_contract( $base_contract ) );
-
 		self::assertFalse( Registry::register_implementation( $this->implementation_definition( 'outside', [] ) ) );
 	}
 
@@ -147,12 +143,6 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 		do_action( 'cb_core_register_interoperability_implementations' );
 
 		self::assertFalse( $this->results['late'] ?? true, 'A late implementation bypassed the frozen registry.' );
-
-		$late_base_contract = $this->contract_definition();
-		unset( $late_base_contract['owner'] );
-		$late_base_contract['id'] = 'late.base';
-		self::assertFalse( Registry::register_base_contract( $late_base_contract ), 'A late Base-owned contract bypassed the frozen registry.' );
-
 		self::assertCount( 3, Registry::implementations(), 'Frozen registry mutated after canonical collection.' );
 	}
 

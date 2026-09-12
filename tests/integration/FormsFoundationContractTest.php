@@ -73,7 +73,7 @@ final class CB_Base_Forms_Foundation_Contract_Test extends WP_UnitTestCase {
 		self::assertSame( 'core-blueprint', $contract['owner'] ?? null );
 		self::assertSame( ProviderInterface::class, $contract['interface'] ?? null );
 		self::assertFalse( $this->results['base_owner_spoof'] ?? true );
-		self::assertTrue( method_exists( Registry::class, 'register_base_contract' ) );
+		self::assertFalse( method_exists( Registry::class, 'register_base_contract' ) );
 	}
 
 	public function test_ff1_multiple_extensions_can_implement_the_same_forms_contract(): void {
@@ -200,6 +200,59 @@ final class CB_Base_Forms_Foundation_Contract_Test extends WP_UnitTestCase {
 		self::assertSame( 'cb_core_forms_invalid_fields', $unknown_shape->get_error_code() );
 
 		self::assertSame( [], $this->events );
+	}
+
+	public function test_ff1_explicit_empty_optional_ids_and_documented_transport_limits_fail_closed(): void {
+		$fields = [ [ 'id' => 'message', 'value' => 'Hello' ] ];
+
+		$empty_submission_id = SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $fields, '' );
+		self::assertWPError( $empty_submission_id );
+		self::assertSame( 'cb_core_forms_invalid_submission_id', $empty_submission_id->get_error_code() );
+
+		$empty_event_id = SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $fields, null, '' );
+		self::assertWPError( $empty_event_id );
+		self::assertSame( 'cb_core_forms_invalid_event_id', $empty_event_id->get_error_code() );
+
+		$max_fields = [];
+		for ( $i = 0; $i < 256; ++$i ) {
+			$max_fields[] = [ 'id' => 'field-' . $i, 'value' => '' ];
+		}
+		self::assertInstanceOf( SubmissionEvent::class, SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $max_fields ) );
+		$too_many_fields = $max_fields;
+		$too_many_fields[] = [ 'id' => 'field-256', 'value' => '' ];
+		self::assertWPError( SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $too_many_fields ) );
+
+		self::assertInstanceOf(
+			SubmissionEvent::class,
+			SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', [ [ 'id' => 'list', 'value' => array_fill( 0, 100, 'x' ) ] ] )
+		);
+		self::assertWPError(
+			SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', [ [ 'id' => 'list', 'value' => array_fill( 0, 101, 'x' ) ] ] )
+		);
+
+		self::assertInstanceOf(
+			SubmissionEvent::class,
+			SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', [ [ 'id' => 'message', 'value' => str_repeat( 'x', 65535 ) ] ] )
+		);
+		self::assertWPError(
+			SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', [ [ 'id' => 'message', 'value' => str_repeat( 'x', 65536 ) ] ] )
+		);
+
+		$exact_budget = [];
+		for ( $i = 0; $i < 16; ++$i ) {
+			$exact_budget[] = [ 'id' => 'chunk-' . $i, 'value' => str_repeat( 'x', 65535 ) ];
+		}
+		$exact_budget[] = [ 'id' => 'tail', 'value' => str_repeat( 'x', 16 ) ];
+		self::assertInstanceOf( SubmissionEvent::class, SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $exact_budget ) );
+		$over_budget = $exact_budget;
+		$over_budget[16]['value'] = str_repeat( 'x', 17 );
+		self::assertWPError( SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', $over_budget ) );
+
+		foreach ( [ INF, NAN ] as $non_finite ) {
+			self::assertWPError(
+				SubmissionEmitter::emit( self::PROVIDER_A, 'default', 'contact', [ [ 'id' => 'score', 'value' => $non_finite ] ] )
+			);
+		}
 	}
 
 	public function test_ff1_foundation_is_builder_neutral_and_does_not_persist_or_copy_raw_submission_data(): void {

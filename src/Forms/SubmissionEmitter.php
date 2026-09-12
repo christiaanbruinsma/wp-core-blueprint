@@ -60,13 +60,11 @@ final class SubmissionEmitter {
 			return new WP_Error( 'cb_core_forms_invalid_form_id', 'Form id is invalid.' );
 		}
 
-		if ( null !== $submission_id && '' !== trim( $submission_id ) ) {
+		if ( null !== $submission_id ) {
 			$submission_id = self::normalize_opaque_id( $submission_id );
 			if ( null === $submission_id ) {
 				return new WP_Error( 'cb_core_forms_invalid_submission_id', 'Submission id is invalid.' );
 			}
-		} else {
-			$submission_id = null;
 		}
 
 		$normalized_fields = self::normalize_fields( $fields );
@@ -74,7 +72,7 @@ final class SubmissionEmitter {
 			return new WP_Error( 'cb_core_forms_invalid_fields', 'Form fields do not match the Forms Foundation transport contract.' );
 		}
 
-		if ( null === $event_id || '' === trim( $event_id ) ) {
+		if ( null === $event_id ) {
 			$event_id = wp_generate_uuid4();
 		} else {
 			$event_id = trim( $event_id );

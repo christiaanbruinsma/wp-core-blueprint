@@ -50,7 +50,8 @@ final class Registry {
 	}
 
 	/**
-	 * Collect contracts first, then implementations, exactly once per request.
+	 * Collect Base-owned contracts, extension contracts, then implementations,
+	 * exactly once per request.
 	 *
 	 * @return bool True when collection is complete, false when called too early.
 	 */
@@ -68,6 +69,10 @@ final class Registry {
 		ExtensionRegistry::collect();
 
 		try {
+			foreach ( BaseContractCatalog::definitions() as $definition ) {
+				self::register_base_contract_definition( $definition );
+			}
+
 			self::$collecting_contracts = true;
 			do_action( 'cb_core_register_interoperability_contracts' );
 			self::$collecting_contracts = false;
@@ -89,21 +94,16 @@ final class Registry {
 	 * @param array<string,mixed> $definition
 	 */
 	public static function register_contract( array $definition ): bool {
-		return self::register_contract_definition( $definition, false );
-	}
+		if (
+			self::$frozen
+			|| ! self::$collecting_contracts
+			|| ! doing_action( 'cb_core_register_interoperability_contracts' )
+		) {
+			self::diagnostic( 'Contract registration refused outside the controlled interoperability lifecycle.' );
+			return false;
+		}
 
-	/**
-	 * Register one Base-owned interoperability contract.
-	 *
-	 * Owner identity is forced to `core-blueprint`; any supplied owner is
-	 * ignored. Internal Base lifecycle API, not a public extension path.
-	 *
-	 * @internal
-	 * @param array<string,mixed> $definition
-	 */
-	public static function register_base_contract( array $definition ): bool {
-		unset( $definition['owner'] );
-		return self::register_contract_definition( $definition, true );
+		return self::register_contract_definition( $definition, false );
 	}
 
 	/**
@@ -234,7 +234,7 @@ final class Registry {
 			return new WP_Error( 'cb_core_interop_unknown_implementation', 'Unknown interoperability implementation.' );
 		}
 
-		$contract_key = self::contract_key( $owner, $contract, $version );
+		$contract_key        = self::contract_key( $owner, $contract, $version );
 		$contract_definition = self::$contracts[ $contract_key ] ?? null;
 		if ( null === $contract_definition ) {
 			return new WP_Error( 'cb_core_interop_unknown_contract', 'Unknown interoperability contract.' );
@@ -268,16 +268,15 @@ final class Registry {
 	}
 
 	/** @param array<string,mixed> $definition */
-	private static function register_contract_definition( array $definition, bool $base_owned ): bool {
-		if (
-			self::$frozen
-			|| ! self::$collecting_contracts
-			|| ! doing_action( 'cb_core_register_interoperability_contracts' )
-		) {
-			self::diagnostic( 'Contract registration refused outside the controlled interoperability lifecycle.' );
+	private static function register_base_contract_definition( array $definition ): bool {
+		if ( self::$frozen ) {
 			return false;
 		}
+		return self::register_contract_definition( $definition, true );
+	}
 
+	/** @param array<string,mixed> $definition */
+	private static function register_contract_definition( array $definition, bool $base_owned ): bool {
 		$normalized = self::normalize_contract( $definition, $base_owned );
 		if ( null === $normalized ) {
 			return false;

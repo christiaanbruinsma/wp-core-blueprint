@@ -29,9 +29,9 @@ CB\Core\Forms\Foundation::CONTRACT_VERSION
 CB\Core\Forms\Foundation::SUPPORT_SUBMISSION_EMIT
 ```
 
-`Foundation::boot()` and `Foundation::register_contract()` are Base bootstrap details. Extension code must not call them.
+`Foundation::contract_definition()` is an internal read-only definition consumed by Base's private interoperability contract catalog. There is no public Base-owned contract registration API.
 
-Base publishes this specialized contract internally through the Generic Interoperability lifecycle. Provider implementations still use the normal public Interoperability implementation path and a normal `ExtensionRegistry` identity. There is no private first-party provider path.
+Base loads this specialized contract from its internal catalog before dispatching the public Interoperability contract-registration lifecycle. Provider implementations still use the normal public Interoperability implementation path and a normal `ExtensionRegistry` identity. There is no private first-party provider path.
 
 ## Public v1 surface
 
@@ -95,7 +95,7 @@ add_action( 'cb_core_register_interoperability_implementations', static function
 
 Multiple extensions and multiple implementation IDs may implement the contract simultaneously. Consumers must not assume a single global forms provider.
 
-A provider cannot claim the reserved `core-blueprint` owner identity. `CB\Core\Interoperability\Registry::register_base_contract()` is an internal Base lifecycle API, not an extension API.
+A provider cannot claim the reserved `core-blueprint` owner identity through the public contract-registration path. Base-owned platform contracts come only from Base's private read-only catalog.
 
 ## Runtime availability
 
@@ -159,7 +159,9 @@ Each must:
 - be at most 191 bytes;
 - contain no ASCII control characters or DEL.
 
-If `event_id` is omitted, Base generates a WordPress UUID. A supplied event ID must match:
+`null` is the only representation of an omitted `submission_id`. Supplying an explicit empty string is invalid.
+
+If `event_id` is `null`, Base generates a WordPress UUID. A supplied event ID, including an explicitly supplied empty string, must match:
 
 ```text
 [A-Za-z0-9][A-Za-z0-9._:-]{0,127}
@@ -193,8 +195,8 @@ A field value may be:
 
 The transport limits are:
 
-- maximum 65,535 bytes per string;
-- maximum 1 MiB of string data across the complete field payload;
+- maximum 65,535 bytes per string value;
+- maximum 1 MiB of string data across all field values in one event;
 - maximum 100 items in one flat list.
 
 Nested maps, nested lists, objects, resources, non-finite floats, duplicate field IDs and unknown field-entry keys are rejected.
@@ -309,4 +311,4 @@ Forms Foundation v1 is not:
 
 Only the Forms classes, constants, transport rules, error codes and event hook documented here are intended as the Forms Foundation v1 public contract.
 
-Internal bootstrap methods, private normalization limits not documented above, implementation details of Generic Interoperability, and testing helpers are not third-party API merely because they are callable from PHP.
+The internal Base contract catalog, `Foundation::contract_definition()`, private normalization details and testing helpers are not third-party API merely because PHP can technically reach them.

@@ -23,7 +23,7 @@ cb_core_register_interoperability_contracts
 cb_core_register_interoperability_implementations
 ```
 
-Contracts are collected before implementations. Registration outside the corresponding collection lifecycle is rejected.
+Base-owned platform contracts are loaded privately before the public contract lifecycle. Extension-owned contracts are then collected before implementations. Registration outside the corresponding public collection lifecycle is rejected.
 
 ## Extension identity is canonical
 
@@ -37,7 +37,7 @@ CB\Core\ExtensionRegistry
 
 A contract registered through the public `Registry::register_contract()` path must likewise use a valid registered extension as its owner. The extension ID used in Interoperability is the same canonical platform identity used elsewhere in Base.
 
-Base itself may publish a specialized platform contract under the reserved owner identity `core-blueprint` through its internal lifecycle path. Public extension code cannot claim that owner through `register_contract()`, and provider implementations targeting a Base-owned contract still require their own normal `ExtensionRegistry` identity.
+Base itself may publish a specialized platform contract under the reserved owner identity `core-blueprint` through its private read-only contract catalog. Public extension code cannot claim that owner through `register_contract()`, and there is no public Base-owned contract mutation API. Provider implementations targeting a Base-owned contract still require their own normal `ExtensionRegistry` identity.
 
 An unknown public owner or implementation provider is rejected.
 
@@ -87,7 +87,7 @@ Duplicate contract identity is rejected. A contract identity is the combination 
 owner + contract id + exact version
 ```
 
-Specialized Base-owned contracts are documented by their own Foundation documents. `Registry::register_base_contract()` is an internal Base bootstrap API used to reserve `core-blueprint` ownership inside the same controlled contract lifecycle; it is not a public third-party registration path.
+Specialized Base-owned contracts are documented by their own Foundation documents and are loaded from Base's private read-only contract catalog before extension-owned contract registration begins. Extensions cannot add to or mutate that catalog.
 
 ## Register an implementation
 
@@ -241,6 +241,8 @@ The order is:
 ```text
 ExtensionRegistry collection
     ↓
+Base private read-only contract catalog
+    ↓
 cb_core_register_interoperability_contracts
     ↓
 cb_core_register_interoperability_implementations
@@ -250,7 +252,7 @@ registry frozen for the remainder of the request
 
 Calling discovery before the registry is ready does not pull extension registration forward.
 
-Collection occurs once per request. Recursive discovery during collection does not dispatch either registration lifecycle twice.
+Collection occurs once per request. Recursive discovery during collection does not dispatch either public registration lifecycle twice.
 
 After canonical collection finishes, late contract or implementation registration is rejected.
 
@@ -293,6 +295,7 @@ Base owns:
 
 - admission through canonical extension identity;
 - controlled registration lifecycle;
+- the private catalog of Base-owned platform contracts;
 - definition validation;
 - exact-version discovery;
 - support-token filtering;
@@ -343,6 +346,6 @@ Domain contracts and integrations are separate consumers of this Foundation.
 
 Only the public methods and registration lifecycles documented in this Foundation are intended as the Generic Interoperability v1 contract.
 
-`Registry::register_base_contract()` is explicitly an internal Base bootstrap API. Its existence does not grant extensions a supported route to publish contracts under the reserved `core-blueprint` owner.
+The private Base-owned contract catalog and its ingestion path are implementation details. No public API exists for extensions to publish a contract under the reserved `core-blueprint` owner.
 
 Private registry state, diagnostic behavior, key construction and testing helpers are implementation details unless separately documented as public API.

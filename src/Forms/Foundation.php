@@ -13,39 +13,31 @@ declare(strict_types=1);
 
 namespace CB\Core\Forms;
 
-use CB\Core\Interoperability\Registry;
-
 defined( 'ABSPATH' ) || exit;
 
 final class Foundation {
 
-	public const CONTRACT_OWNER  = 'core-blueprint';
-	public const CONTRACT_ID     = 'forms.provider';
+	public const CONTRACT_OWNER   = 'core-blueprint';
+	public const CONTRACT_ID      = 'forms.provider';
 	public const CONTRACT_VERSION = '1';
 
 	/** Provider can emit normalized form submissions into Base. */
 	public const SUPPORT_SUBMISSION_EMIT = 'submission.emit';
 
-	private static bool $booted = false;
-
-	/** Attach the Base-owned contract definition to Interoperability collection. */
-	public static function boot(): void {
-		if ( self::$booted ) {
-			return;
-		}
-		self::$booted = true;
-
-		add_action( 'cb_core_register_interoperability_contracts', [ self::class, 'register_contract' ] );
-	}
-
-	/** @internal Base-owned contract registration callback. */
-	public static function register_contract(): void {
-		Registry::register_base_contract( [
+	/**
+	 * Return the immutable Base-owned interoperability contract definition.
+	 *
+	 * @internal Consumed by Base's private interoperability contract catalog.
+	 * @return array{owner:string,id:string,version:string,label:string,description:string,interface:string}
+	 */
+	public static function contract_definition(): array {
+		return [
+			'owner'       => self::CONTRACT_OWNER,
 			'id'          => self::CONTRACT_ID,
 			'version'     => self::CONTRACT_VERSION,
 			'label'       => __( 'Forms provider', 'core-blueprint' ),
 			'description' => __( 'Provides normalized form interoperability to Core Blueprint.', 'core-blueprint' ),
 			'interface'   => ProviderInterface::class,
-		] );
+		];
 	}
 }
