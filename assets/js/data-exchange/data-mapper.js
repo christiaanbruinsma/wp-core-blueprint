@@ -93,7 +93,7 @@ const validateMapping = (mapping, sourceFields, targetFields) => {
 	if (requiredMissing.length) errors.push({ index: null, code: 'required_unmapped', fields: requiredMissing });
 
 	return Object.freeze({
-		valid: errors.length === 0,
+		valid: source.size > 0 && errors.length === 0,
 		errors,
 		mapped,
 		ignored: (Array.isArray(mapping) ? mapping : []).filter((entry) => entry?.transform === 'ignore').length,
@@ -111,12 +111,13 @@ const createController = (root, config) => {
 	const shell = root.querySelector('[data-cb-design-shell]');
 	if (!shell) return null;
 
-	const sourceFields = Array.isArray(config.sourceFields) ? clone(config.sourceFields) : [];
-	const targetFields = Array.isArray(config.targetFields) ? clone(config.targetFields) : [];
+	let sourceFields = Array.isArray(config.sourceFields) ? clone(config.sourceFields) : [];
+	let targetFields = Array.isArray(config.targetFields) ? clone(config.targetFields) : [];
 	let mapping = Array.isArray(config.mapping) && config.mapping.length
 		? clone(config.mapping)
 		: suggestMapping(sourceFields, targetFields);
 	let selectedSource = readableFields(sourceFields)[0]?.id || '';
+	let selectedFile = null;
 	let externalValidation = null;
 	let disposed = false;
 
@@ -156,10 +157,18 @@ const createController = (root, config) => {
 	const auto = shell.querySelector('[data-cb-data-mapper-auto]');
 	const primary = shell.querySelector('[data-cb-data-mapper-primary]');
 	const status = shell.querySelector('[data-cb-design-shell-status]');
+	const fileInput = shell.querySelector('[data-cb-data-mapper-file]');
+	const fileName = shell.querySelector('[data-cb-data-mapper-file-name]');
 	const labels = config.labels || {};
-	const targetById = byId(targetFields);
 
+	const targetMap = () => byId(targetFields);
 	const snapshot = () => clone(mapping);
+	const resetHistory = (nextMapping) => {
+		mapping = clone(nextMapping);
+		history.splice(0, history.length, clone(mapping));
+		historyIndex = 0;
+		externalValidation = null;
+	};
 	const commit = (next) => {
 		mapping = clone(next);
 		history.splice(historyIndex + 1);
@@ -209,7 +218,7 @@ const createController = (root, config) => {
 
 	const targetLabel = (entry) => {
 		if (!entry || entry.transform === 'ignore' || !entry.target) return labels.ignore || 'Ignore';
-		return targetById.get(entry.target)?.label || entry.target;
+		return targetMap().get(entry.target)?.label || entry.target;
 	};
 
 	const renderMappings = () => {
@@ -263,7 +272,9 @@ const createController = (root, config) => {
 		const field = sourceFields.find((candidate) => candidate.id === selectedSource);
 		if (!field) {
 			const empty = createElement(document, 'p', 'description');
-			empty.textContent = labels.noSelection || 'Select a field mapping to inspect it.';
+			empty.textContent = sourceFields.length === 0 && config.intake
+				? (labels.fileNeeded || 'Choose a source file to begin mapping.')
+				: (labels.noSelection || 'Select a field mapping to inspect it.');
 			inspector.append(empty);
 			return;
 		}
@@ -321,13 +332,19 @@ const createController = (root, config) => {
 	const renderSummary = () => {
 		const result = validateMapping(mapping, sourceFields, targetFields);
 		if (summary) {
-			summary.textContent = result.valid
-				? `${result.mapped} mapped · ${result.ignored} ignored`
-				: `${result.mapped} mapped · ${result.errors.length} need attention`;
+			if (sourceFields.length === 0 && config.intake) {
+				summary.textContent = labels.fileNeeded || 'Choose a source file to begin mapping.';
+			} else {
+				summary.textContent = result.valid
+					? `${result.mapped} mapped · ${result.ignored} ignored`
+					: `${result.mapped} mapped · ${result.errors.length} need attention`;
+			}
 			summary.classList.toggle('is-valid', result.valid);
-			summary.classList.toggle('is-invalid', !result.valid);
+			summary.classList.toggle('is-invalid', sourceFields.length > 0 && !result.valid);
 		}
 		if (primary) primary.disabled = !result.valid;
+		if (search) search.disabled = sourceFields.length === 0;
+		if (auto) auto.disabled = sourceFields.length === 0;
 		return result;
 	};
 
@@ -390,6 +407,24 @@ const createController = (root, config) => {
 
 	search?.addEventListener('input', renderSources);
 	auto?.addEventListener('click', () => commit(suggestMapping(sourceFields, targetFields)));
+	fileInput?.addEventListener('change', () => {
+		selectedFile = fileInput.files?.item(0) || null;
+		sourceFields = [];
+		selectedSource = '';
+		resetHistory([]);
+		if (fileName) fileName.textContent = selectedFile?.name || (labels.fileNeeded || 'Choose a source file to begin mapping.');
+		if (status) status.textContent = selectedFile ? (labels.inspectingFile || 'Inspecting source file…') : '';
+		render();
+		root.dispatchEvent(new CustomEvent('cb:data-mapper:file-selected', {
+			bubbles: true,
+			detail: Object.freeze({
+				file: selectedFile,
+				name: selectedFile?.name || '',
+				size: selectedFile?.size || 0,
+				type: selectedFile?.type || '',
+			}),
+		}));
+	});
 	primary?.addEventListener('click', () => {
 		const localValidation = validateMapping(mapping, sourceFields, targetFields);
 		if (!localValidation.valid) {
@@ -401,6 +436,7 @@ const createController = (root, config) => {
 			cancelable: true,
 			detail: Object.freeze({
 				direction: config.direction,
+				file: selectedFile,
 				mapping: snapshot(),
 				localValidation,
 			}),
@@ -410,8 +446,30 @@ const createController = (root, config) => {
 	const controller = Object.freeze({
 		root,
 		shell: shellController,
+		file: () => selectedFile,
+		sourceFields: () => clone(sourceFields),
+		targetFields: () => clone(targetFields),
 		mapping: snapshot,
 		validation: () => validateMapping(mapping, sourceFields, targetFields),
+		setSourceFields(nextFields, { mapping: nextMapping = null, autoMatch = true } = {}) {
+			if (!Array.isArray(nextFields) || nextFields.length === 0) return false;
+			sourceFields = clone(nextFields);
+			selectedSource = readableFields(sourceFields)[0]?.id || '';
+			const replacement = Array.isArray(nextMapping)
+				? nextMapping
+				: (autoMatch ? suggestMapping(sourceFields, targetFields) : []);
+			resetHistory(replacement);
+			if (status) status.textContent = labels.fileSelected || 'Source file selected.';
+			render();
+			return true;
+		},
+		setTargetFields(nextFields, { autoMatch = true } = {}) {
+			if (!Array.isArray(nextFields) || nextFields.length === 0) return false;
+			targetFields = clone(nextFields);
+			resetHistory(autoMatch ? suggestMapping(sourceFields, targetFields) : []);
+			render();
+			return true;
+		},
 		replaceMapping(nextMapping, { recordHistory = true } = {}) {
 			if (!Array.isArray(nextMapping)) return false;
 			if (recordHistory) commit(nextMapping);
@@ -423,7 +481,9 @@ const createController = (root, config) => {
 			return true;
 		},
 		autoMatch() {
+			if (sourceFields.length === 0) return false;
 			commit(suggestMapping(sourceFields, targetFields));
+			return true;
 		},
 		setValidation(result) {
 			externalValidation = result && typeof result === 'object' ? clone(result) : null;
@@ -438,6 +498,7 @@ const createController = (root, config) => {
 		},
 		destroy() {
 			disposed = true;
+			selectedFile = null;
 			controllers.delete(root);
 		},
 	});
