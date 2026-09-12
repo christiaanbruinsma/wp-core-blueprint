@@ -4,7 +4,10 @@
 	const config = window.cbCoreDesignerLaunch || {};
 	const BOOT_RETRY_DELAY_MS = 50;
 	const BOOT_RETRY_LIMIT = 200;
+	const DIRECT_ENTER_RETRY_DELAY_MS = 25;
+	const DIRECT_ENTER_RETRY_LIMIT = 80;
 	const SAVE_EVENT = 'cb:design-shell:savechange';
+	const DIRECT_MODE = 'direct';
 
 	const sharedShellApi = () => window.cbCore?.designEditor?.shell ?? null;
 
@@ -144,6 +147,120 @@
 		toolbar.replaceChildren(start, center, end);
 	};
 
+	const syncFullscreenIcon = (fullscreen, active, shellApi) => {
+		const labelText = String(fullscreen.getAttribute('aria-label') || 'Fullscreen mode').trim();
+		shellApi.icons.decorate(fullscreen, active ? 'minimize-2' : 'maximize-2', {
+			iconOnly: true,
+			label: labelText,
+		});
+	};
+
+	const directExitUrl = (root) => {
+		const raw = String(root.dataset.cbDesignExitUrl || '').trim();
+		if (!raw) return '';
+		try {
+			const url = new URL(raw, window.location.href);
+			if (!['http:', 'https:'].includes(url.protocol)) return '';
+			if (url.origin !== window.location.origin) return '';
+			return url.href;
+		} catch (error) {
+			return '';
+		}
+	};
+
+	const initializeDirectLaunch = (root, shell, fullscreen, shellApi, exitUrl) => {
+		root.classList.add('is-designer-mode-active');
+		shell.hidden = false;
+
+		let attempts = 0;
+		let timer = 0;
+		let entered = false;
+
+		const stopRetry = () => {
+			if (timer) window.clearTimeout(timer);
+			timer = 0;
+		};
+
+		const attemptEnter = () => {
+			if (fullscreen.getAttribute('aria-pressed') === 'true') {
+				entered = true;
+				stopRetry();
+				return;
+			}
+
+			fullscreen.click();
+			if (fullscreen.getAttribute('aria-pressed') === 'true') {
+				entered = true;
+				stopRetry();
+				return;
+			}
+
+			attempts += 1;
+			if (attempts >= DIRECT_ENTER_RETRY_LIMIT) return;
+			timer = window.setTimeout(attemptEnter, DIRECT_ENTER_RETRY_DELAY_MS);
+		};
+
+		shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
+			const active = Boolean(event.detail?.fullscreen);
+			syncFullscreenIcon(fullscreen, active, shellApi);
+			if (active) {
+				entered = true;
+				stopRetry();
+				return;
+			}
+			if (entered) window.location.assign(exitUrl);
+		});
+
+		attemptEnter();
+	};
+
+	const initializeManualLaunch = (root, shell, fullscreen, context, shellApi) => {
+		const wrapper = document.createElement('div');
+		wrapper.className = 'cb-core-design-launch-wrap';
+		wrapper.dataset.cbDesignLaunch = '';
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'cb-core-button cb-core-button--primary cb-core-design-launch';
+		button.setAttribute('aria-label', String(config.ariaLabel || config.label || 'Design with Core Blueprint'));
+
+		const iconUrl = String(config.iconUrl || '').trim();
+		if (iconUrl) {
+			const icon = document.createElement('img');
+			icon.className = 'cb-core-design-launch__mark';
+			icon.src = iconUrl;
+			icon.alt = '';
+			icon.setAttribute('aria-hidden', 'true');
+			button.append(icon);
+		}
+
+		const label = document.createElement('span');
+		label.className = 'cb-core-design-launch__label';
+		label.textContent = String(config.label || 'Design with Core Blueprint');
+		button.append(label);
+
+		const setDesignerMode = (active) => {
+			root.classList.toggle('is-designer-mode-active', active);
+			wrapper.hidden = active;
+			shell.hidden = !active;
+		};
+
+		button.addEventListener('click', () => {
+			setDesignerMode(true);
+			if (fullscreen.getAttribute('aria-pressed') !== 'true') fullscreen.click();
+		});
+
+		shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
+			const active = Boolean(event.detail?.fullscreen);
+			syncFullscreenIcon(fullscreen, active, shellApi);
+			setDesignerMode(active);
+		});
+
+		wrapper.append(button);
+		context.insertAdjacentElement('afterend', wrapper);
+		setDesignerMode(false);
+	};
+
 	const boot = () => {
 		const shellApi = sharedShellApi();
 		if (
@@ -153,61 +270,32 @@
 		) return false;
 
 		document.querySelectorAll('[data-cb-design-launch-root]').forEach((root) => {
+			if (root.dataset.cbDesignLaunchInitialized === 'true') return;
+
 			const shell = root.querySelector('[data-cb-design-shell]');
 			const fullscreen = shell?.querySelector('[data-cb-design-shell-fullscreen]');
 			const context = root.querySelector('[data-cb-design-launch-context]');
-			if (!shell || !fullscreen || !context || root.querySelector('[data-cb-design-launch]')) return;
+			if (!shell || !fullscreen) return;
 
+			const requestedMode = String(root.dataset.cbDesignLaunchMode || '').trim();
+			const exitUrl = requestedMode === DIRECT_MODE ? directExitUrl(root) : '';
+			const direct = requestedMode === DIRECT_MODE && Boolean(exitUrl);
+
+			if (requestedMode === DIRECT_MODE && !direct) {
+				root.removeAttribute('data-cb-design-launch-mode');
+				root.removeAttribute('data-cb-design-exit-url');
+			}
+			if (!direct && (!context || root.querySelector('[data-cb-design-launch]'))) return;
+
+			root.dataset.cbDesignLaunchInitialized = 'true';
 			composeHeader(shell, shellApi);
 
-			const wrapper = document.createElement('div');
-			wrapper.className = 'cb-core-design-launch-wrap';
-			wrapper.dataset.cbDesignLaunch = '';
-
-			const button = document.createElement('button');
-			button.type = 'button';
-			button.className = 'cb-core-button cb-core-button--primary cb-core-design-launch';
-			button.setAttribute('aria-label', String(config.ariaLabel || config.label || 'Design with Core Blueprint'));
-
-			const iconUrl = String(config.iconUrl || '').trim();
-			if (iconUrl) {
-				const icon = document.createElement('img');
-				icon.className = 'cb-core-design-launch__mark';
-				icon.src = iconUrl;
-				icon.alt = '';
-				icon.setAttribute('aria-hidden', 'true');
-				button.append(icon);
+			if (direct) {
+				initializeDirectLaunch(root, shell, fullscreen, shellApi, exitUrl);
+				return;
 			}
 
-			const label = document.createElement('span');
-			label.className = 'cb-core-design-launch__label';
-			label.textContent = String(config.label || 'Design with Core Blueprint');
-			button.append(label);
-
-			const setDesignerMode = (active) => {
-				root.classList.toggle('is-designer-mode-active', active);
-				wrapper.hidden = active;
-				shell.hidden = !active;
-			};
-
-			button.addEventListener('click', () => {
-				setDesignerMode(true);
-				if (fullscreen.getAttribute('aria-pressed') !== 'true') fullscreen.click();
-			});
-
-			shell.addEventListener('cb:design-shell:fullscreenchange', (event) => {
-				const active = Boolean(event.detail?.fullscreen);
-				const labelText = String(fullscreen.getAttribute('aria-label') || 'Fullscreen mode').trim();
-				shellApi.icons.decorate(fullscreen, active ? 'minimize-2' : 'maximize-2', {
-					iconOnly: true,
-					label: labelText,
-				});
-				setDesignerMode(active);
-			});
-
-			wrapper.append(button);
-			context.insertAdjacentElement('afterend', wrapper);
-			setDesignerMode(false);
+			initializeManualLaunch(root, shell, fullscreen, context, shellApi);
 		});
 		return true;
 	};
