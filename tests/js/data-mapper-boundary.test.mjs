@@ -44,12 +44,24 @@ test('Data Mapper browser contract exposes controlled change, submit, intake and
 	assert.match(runtime, /setSourceFields\(nextFields/);
 	assert.match(runtime, /setTargetFields\(nextFields/);
 	assert.match(runtime, /setValidation\(result\)/);
-	assert.match(runtime, /setBusy\(busy, message = ''\)/);
+	assert.match(runtime, /setBusy\(nextBusy, message = ''\)/);
 	assert.match(runtime, /replaceMapping\(nextMapping/);
 	assert.match(runtime, /requiredMissing/);
 	assert.match(runtime, /duplicate_or_forbidden/);
 	assert.match(renderer, /data-cb-data-mapper-file/);
 	assert.match(renderer, /Choose a source file to begin mapping/);
+
+	// Busy is persistent session state. Re-rendering may not re-enable semantic
+	// mutations while a consumer-owned server preview/apply operation is active.
+	assert.match(runtime, /let busy = false/);
+	assert.match(runtime, /primary\.disabled = busy \|\| !result\.valid/);
+	assert.match(runtime, /auto\.disabled = busy \|\| sourceFields\.length === 0/);
+	assert.match(runtime, /fileInput\.disabled = busy/);
+	assert.match(runtime, /transform\.disabled = busy/);
+	assert.match(runtime, /targetSelect\.disabled = busy \|\| entry\.transform !== 'direct'/);
+	assert.match(runtime, /canUndo: \{ get: \(\) => !busy && historyIndex > 0 \}/);
+	assert.match(runtime, /if \(busy \|\| historyIndex <= 0\) return false/);
+	assert.doesNotMatch(runtime, /\bdestroy\(\)\s*\{/);
 
 	// Base never uploads or applies data from the browser on its own. Consumers
 	// own the authorized transport and server-side Data Exchange invocation.
