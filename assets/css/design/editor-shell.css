@@ -354,6 +354,80 @@ html.cb-core-design-shell-focus-mode body {
 	display: none !important;
 }
 
+/*
+ * Direct Designer Mode is a server-declared route state. It must occupy the
+ * viewport before JavaScript hydration and remain there until its exit URL is
+ * navigated, so the underlying WordPress admin page never becomes a visual
+ * transition surface.
+ */
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell {
+	position: fixed;
+	inset: 0;
+	z-index: 100100;
+	display: flex;
+	flex-direction: column;
+	width: auto;
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	padding: var(--cb-space-3);
+	box-sizing: border-box;
+	overflow: hidden;
+	background: var(--cb-surface-0);
+	color: var(--cb-text);
+	opacity: 1;
+	transform: none;
+	transition: none;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell.is-entering,
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell.is-exiting {
+	opacity: 1;
+	transform: none;
+	transition: none;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell > .cb-core-design-shell__toolbar {
+	flex: 0 0 auto;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell > .cb-core-design-shell__workspace {
+	flex: 1 1 auto;
+	min-height: 0;
+	align-items: stretch;
+	overflow: hidden;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__palette,
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__canvas,
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__sidebar {
+	position: static;
+	min-height: 0;
+	max-height: 100%;
+	overflow: auto;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__palette--tabbed {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__tabs {
+	flex: 0 0 auto;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__palette--tabbed > .cb-core-design-shell__panel:not([hidden]) {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+}
+
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__panel,
+[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell .cb-core-design-shell__sidebar-panel {
+	min-height: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.cb-core-design-shell.is-fullscreen,
 	.cb-core-design-shell.is-fullscreen.is-entering,
@@ -400,7 +474,8 @@ html.cb-core-design-shell-focus-mode body {
 		position: static;
 	}
 
-	.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace {
+	.cb-core-design-shell.is-fullscreen > .cb-core-design-shell__workspace,
+	[data-cb-design-launch-root][data-cb-design-launch-mode="direct"][data-cb-design-exit-url]:not([data-cb-design-exit-url=""]) .cb-core-design-shell > .cb-core-design-shell__workspace {
 		overflow: auto;
 	}
 }
