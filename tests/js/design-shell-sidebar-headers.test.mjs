@@ -17,7 +17,8 @@ test('Designer Mode composes collapse controls inside canonical sidebar headers'
 	assert.match(launch, /header\.append\(heading, button\)/);
 	assert.match(styles, /--cb-design-sidebar-header-height:\s*44px/);
 	assert.match(styles, /\.cb-core-design-shell__panel-header\s*\{[\s\S]*?position:\s*sticky;[\s\S]*?top:\s*0;/);
-	assert.match(styles, /\.cb-core-design-shell__panel-heading[\s\S]*grid-column:\s*2/);
+	assert.match(styles, /\.cb-core-design-shell__panel-heading[\s\S]*grid-column:\s*2;[\s\S]*grid-row:\s*1;/);
+	assert.match(styles, /\.cb-core-design-shell__panel-toggle\s*\{[\s\S]*?grid-row:\s*1;/);
 	assert.match(styles, /\.cb-core-design-shell__panel-toggle--left[\s\S]*grid-column:\s*3/);
 	assert.match(styles, /\.cb-core-design-shell__panel-toggle--right[\s\S]*grid-column:\s*1/);
 	assert.match(styles, /--cb-design-left-track:\s*var\(--cb-design-sidebar-header-height\)/);
