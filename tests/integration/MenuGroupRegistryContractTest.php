@@ -54,6 +54,7 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 			'manage_options'
 		);
 
+		$this->setExpectedIncorrectUsage( MenuGroupRegistry::class );
 		self::assertFalse(
 			MenuGroupRegistry::register(
 				$group,
@@ -63,7 +64,7 @@ final class CB_Base_Menu_Group_Registry_Contract_Test extends WP_UnitTestCase {
 	}
 
 	public function test_top_level_hook_renders_accessible_landing_once_and_matches_page_hook(): void {
-		$workflows = $this->page( 'cb-test-render-workflows', 'Workflows', 'manage_options', 10 );
+		$workflows = $this->page( 'cb-test-render-workflows', 'Workflows', 'read', 10 );
 		$runs = $this->page( 'cb-test-render-runs', 'Runs', 'read', 20 );
 		$group = new MenuGroup(
 			'cb-test-render',
