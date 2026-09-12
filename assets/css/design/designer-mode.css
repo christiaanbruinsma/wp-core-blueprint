@@ -60,6 +60,7 @@
 
 .cb-core-design-shell__panel-heading {
 	grid-column: 2;
+	grid-row: 1;
 	min-width: 0;
 	overflow: hidden;
 	color: var(--cb-text-strong);
@@ -73,6 +74,7 @@
 
 .cb-core-design-shell__panel-toggle {
 	appearance: none;
+	grid-row: 1;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
