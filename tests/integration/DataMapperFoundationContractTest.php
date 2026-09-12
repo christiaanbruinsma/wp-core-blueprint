@@ -145,6 +145,20 @@ final class CB_Base_Data_Mapper_Foundation_Contract_Test extends WP_UnitTestCase
 		self::assertSame( 'cb_core_data_mapper_invalid_extension', $invalid->get_error_code() );
 	}
 
+	public function test_dm1_constant_mapping_cannot_amplify_output_beyond_transport_limit(): void {
+		$source = [ [ 'id' => 'KEY', 'label' => 'Key', 'type' => 'string', 'readable' => true, 'writable' => false ] ];
+		$target = [ [ 'id' => 'blob', 'label' => 'Blob', 'type' => 'string', 'required' => true, 'readable' => false, 'writable' => true ] ];
+		$constant = str_repeat( 'x', intdiv( Foundation::MAX_INPUT_BYTES, 2 ) + 1 );
+		$result = Mapper::map_records(
+			[ [ 'KEY' => 'one' ], [ 'KEY' => 'two' ] ],
+			$source,
+			$target,
+			[ [ 'source' => null, 'target' => 'blob', 'transform' => Foundation::MAP_CONSTANT, 'value' => $constant ] ]
+		);
+		self::assertWPError( $result );
+		self::assertSame( 'cb_core_data_mapper_output_too_large', $result->get_error_code() );
+	}
+
 	public function test_dm1_renderer_consumes_the_shared_designer_shell_without_document_profile_semantics(): void {
 		$html = Renderer::render( [
 			'direction'     => Foundation::DIRECTION_IMPORT,
