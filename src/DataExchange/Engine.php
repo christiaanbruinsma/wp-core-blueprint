@@ -243,11 +243,22 @@ final class Engine {
 					'items'         => $results,
 				];
 			}
-			$reference = isset( $result['reference'] ) && is_string( $result['reference'] )
-				? self::reference( $result['reference'] )
-				: $plan['reference'];
-			if ( null === $reference ) {
-				$reference = $plan['reference'];
+
+			$reference = $plan['reference'];
+			if ( array_key_exists( 'reference', $result ) ) {
+				$reference = is_string( $result['reference'] ) ? self::reference( $result['reference'] ) : null;
+				if ( null === $reference ) {
+					return [
+						'status'        => 0 === $applied ? 'failed' : 'partial',
+						'fingerprint'   => $preview['fingerprint'],
+						'record_count'  => $preview['record_count'],
+						'applied_count' => $applied,
+						'skipped_count' => $skipped,
+						'failed_index'  => $index,
+						'error'         => [ 'code' => 'cb_core_data_exchange_apply_contract', 'message' => 'Data Exchange provider returned an invalid apply reference.' ],
+						'items'         => $results,
+					];
+				}
 			}
 			++$applied;
 			$results[] = [ 'index' => $index, 'operation' => $plan['operation'], 'reference' => $reference ];
@@ -380,12 +391,15 @@ final class Engine {
 		if ( ! Registry::is_ready() ) {
 			return new WP_Error( 'cb_core_data_exchange_not_ready', 'Data Exchange discovery is not available before the Core Blueprint interoperability lifecycle is ready.' );
 		}
+		if ( $extension_id !== trim( $extension_id ) || $entity_id !== trim( $entity_id ) ) {
+			return new WP_Error( 'cb_core_data_exchange_invalid_identity', 'Data Exchange extension and entity identifiers must be canonical.' );
+		}
 		$descriptor = Registry::implementation(
 			Foundation::CONTRACT_OWNER,
 			Foundation::CONTRACT_ID,
 			Foundation::CONTRACT_VERSION,
-			trim( $extension_id ),
-			trim( $entity_id )
+			$extension_id,
+			$entity_id
 		);
 		if ( null === $descriptor ) {
 			return new WP_Error( 'cb_core_data_exchange_unknown_entity', 'Unknown Data Exchange entity.' );
