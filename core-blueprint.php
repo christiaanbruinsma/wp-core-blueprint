@@ -181,6 +181,11 @@ if ( \CB\Core\RequestContext::is_admin_screen() ) {
 
 \CB\Core\Core::instance();
 
+// Forms Foundation is a Base interoperability concern. Boot its Base-owned
+// contract definition during plugin bootstrap; concrete form providers remain
+// external extensions and use the public Interoperability lifecycle.
+\CB\Core\Forms\Foundation::boot();
+
 // AI Governance is a Base foundation concern rather than an extension module.
 // Boot after the canonical Core hook owner so it can register its schema before
 // the priority-5 reconciliation sweep and contribute its Base-owned admin page.
