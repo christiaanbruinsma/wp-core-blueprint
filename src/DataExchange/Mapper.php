@@ -383,6 +383,7 @@ final class Mapper {
 					$errors[] = self::mapping_error( null, 'cb_core_data_mapper_required_unmapped', sprintf( 'Required target field is not mapped: %s.', $field['label'] ) );
 				}
 			}
+		}
 
 		$fingerprint = '';
 		if ( [] === $errors ) {
