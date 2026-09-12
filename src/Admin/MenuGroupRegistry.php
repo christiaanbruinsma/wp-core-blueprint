@@ -273,7 +273,7 @@ final class MenuGroupRegistry {
 		$page = self::accessible_landing_page( $group_slug );
 		if ( null === $page ) {
 			wp_die(
-				esc_html__( 'You do not have permission to access this product area.', 'core-blueprint' ),
+				esc_html__( 'You do not have permission to access this page.', 'core-blueprint' ),
 				esc_html__( 'Forbidden', 'core-blueprint' ),
 				[ 'response' => 403 ]
 			);
