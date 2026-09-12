@@ -1,5 +1,6 @@
 name: Forms Foundation localization sync
 
+# Revision 2: literal diagnostic synchronization.
 on:
   push:
     branches:

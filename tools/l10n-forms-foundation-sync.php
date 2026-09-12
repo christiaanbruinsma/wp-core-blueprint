@@ -126,14 +126,14 @@ if (str_contains($guard, $oldCount)) {
     throw new RuntimeException('Translation source-count guard is in an unexpected state.');
 }
 
-$oldMessage = "fail_translation_check( 'Expected 3344 canonical source keys, found ' . count( $source ) . '.' );";
-$newMessage = "fail_translation_check( 'Expected 3348 canonical source keys, found ' . count( $source ) . '.' );";
-if (str_contains($guard, $oldMessage)) {
-    $guard = str_replace($oldMessage, $newMessage, $guard, $messageReplacements);
-    if (1 !== $messageReplacements) {
+$oldDiagnostic = 'Expected 3344 canonical source keys';
+$newDiagnostic = 'Expected 3348 canonical source keys';
+if (str_contains($guard, $oldDiagnostic)) {
+    $guard = str_replace($oldDiagnostic, $newDiagnostic, $guard, $diagnosticReplacements);
+    if (1 !== $diagnosticReplacements) {
         throw new RuntimeException('Could not update the canonical translation diagnostic exactly once.');
     }
-} elseif (!str_contains($guard, $newMessage)) {
+} elseif (!str_contains($guard, $newDiagnostic)) {
     throw new RuntimeException('Translation source-count diagnostic is in an unexpected state.');
 }
 
