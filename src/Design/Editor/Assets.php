@@ -59,7 +59,7 @@ final class Assets {
 
 		$title = sanitize_text_field( trim( $title ) );
 		if ( '' === $title ) {
-			$title = __( 'Designer', 'core-blueprint' );
+			$title = __( 'Design with Core Blueprint', 'core-blueprint' );
 		}
 
 		wp_enqueue_style(
