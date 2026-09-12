@@ -8,6 +8,13 @@ defined( 'ABSPATH' ) || exit;
 final class Schema {
 	public const TYPES = [ 'php', 'css', 'js', 'html' ];
 
+	private const LOCATION_IDS_BY_TYPE = [
+		'php'  => [ 'plugins_loaded', 'init', 'wp_loaded', 'admin_init', 'wp_head', 'wp_footer', 'admin_head', 'admin_footer', 'shortcode' ],
+		'css'  => [ 'frontend', 'admin', 'both' ],
+		'js'   => [ 'wp_head', 'wp_footer', 'admin_head', 'admin_footer' ],
+		'html' => [ 'shortcode', 'wp_head', 'wp_footer', 'admin_head', 'admin_footer' ],
+	];
+
 	public static function default_meta(): array {
 		return [
 			'id'          => '',
@@ -29,43 +36,11 @@ final class Schema {
 	}
 
 	public static function locations_for_type( string $type ): array {
-		switch ( $type ) {
-			case 'php':
-				return [
-					'plugins_loaded' => __( 'Everywhere / early', 'core-blueprint' ),
-					'init'           => __( 'WordPress init', 'core-blueprint' ),
-					'wp_loaded'      => __( 'WordPress loaded', 'core-blueprint' ),
-					'admin_init'     => __( 'Admin only', 'core-blueprint' ),
-					'wp_head'        => __( 'Frontend head', 'core-blueprint' ),
-					'wp_footer'      => __( 'Frontend footer', 'core-blueprint' ),
-					'admin_head'     => __( 'Admin head', 'core-blueprint' ),
-					'admin_footer'   => __( 'Admin footer', 'core-blueprint' ),
-					'shortcode'      => __( 'Shortcode', 'core-blueprint' ),
-				];
-			case 'css':
-				return [
-					'frontend' => __( 'Frontend', 'core-blueprint' ),
-					'admin'    => __( 'Admin', 'core-blueprint' ),
-					'both'     => __( 'Frontend and admin', 'core-blueprint' ),
-				];
-			case 'js':
-				return [
-					'wp_head'      => __( 'Frontend head', 'core-blueprint' ),
-					'wp_footer'    => __( 'Frontend footer', 'core-blueprint' ),
-					'admin_head'   => __( 'Admin head', 'core-blueprint' ),
-					'admin_footer' => __( 'Admin footer', 'core-blueprint' ),
-				];
-			case 'html':
-				return [
-					'shortcode'    => __( 'Shortcode', 'core-blueprint' ),
-					'wp_head'      => __( 'Frontend head', 'core-blueprint' ),
-					'wp_footer'    => __( 'Frontend footer', 'core-blueprint' ),
-					'admin_head'   => __( 'Admin head', 'core-blueprint' ),
-					'admin_footer' => __( 'Admin footer', 'core-blueprint' ),
-				];
+		$locations = [];
+		foreach ( self::LOCATION_IDS_BY_TYPE[ $type ] ?? [] as $location ) {
+			$locations[ $location ] = self::location_label( $location );
 		}
-
-		return [];
+		return $locations;
 	}
 
 	public static function default_location( string $type ): string {
@@ -79,6 +54,36 @@ final class Schema {
 	}
 
 	public static function valid_location( string $type, string $location ): bool {
-		return isset( self::locations_for_type( $type )[ $location ] );
+		return in_array( $location, self::LOCATION_IDS_BY_TYPE[ $type ] ?? [], true );
+	}
+
+	private static function location_label( string $location ): string {
+		switch ( $location ) {
+			case 'plugins_loaded':
+				return __( 'Everywhere / early', 'core-blueprint' );
+			case 'init':
+				return __( 'WordPress init', 'core-blueprint' );
+			case 'wp_loaded':
+				return __( 'WordPress loaded', 'core-blueprint' );
+			case 'admin_init':
+				return __( 'Admin only', 'core-blueprint' );
+			case 'wp_head':
+				return __( 'Frontend head', 'core-blueprint' );
+			case 'wp_footer':
+				return __( 'Frontend footer', 'core-blueprint' );
+			case 'admin_head':
+				return __( 'Admin head', 'core-blueprint' );
+			case 'admin_footer':
+				return __( 'Admin footer', 'core-blueprint' );
+			case 'shortcode':
+				return __( 'Shortcode', 'core-blueprint' );
+			case 'frontend':
+				return __( 'Frontend', 'core-blueprint' );
+			case 'admin':
+				return __( 'Admin', 'core-blueprint' );
+			case 'both':
+				return __( 'Frontend and admin', 'core-blueprint' );
+		}
+		return $location;
 	}
 }

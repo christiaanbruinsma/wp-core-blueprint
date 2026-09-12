@@ -18,12 +18,12 @@ final class CB_Interop_Fixture_Implementation implements CB_Interop_Fixture_Cont
 
 final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTestCase {
 
-	private const OWNER               = 'acme-contract-owner';
-	private const OWNER_PLUGIN_FILE   = self::OWNER . '/' . self::OWNER . '.php';
-	private const PROVIDER            = 'acme-contract-provider';
+	private const OWNER                = 'acme-contract-owner';
+	private const OWNER_PLUGIN_FILE    = self::OWNER . '/' . self::OWNER . '.php';
+	private const PROVIDER             = 'acme-contract-provider';
 	private const PROVIDER_PLUGIN_FILE = self::PROVIDER . '/' . self::PROVIDER . '.php';
-	private const CONTRACT            = 'resource.provider';
-	private const VERSION             = '1';
+	private const CONTRACT             = 'resource.provider';
+	private const VERSION              = '1';
 
 	/** @var array<string,bool> */
 	private array $results = [];
@@ -68,6 +68,7 @@ final class CB_Base_Interoperability_Foundation_Contract_Test extends WP_UnitTes
 		foreach ( [ 'register_contract', 'register_implementation', 'contracts', 'implementations', 'contract', 'discover', 'implementation', 'resolve' ] as $method ) {
 			self::assertTrue( method_exists( Registry::class, $method ), Registry::class . '::' . $method );
 		}
+		self::assertFalse( method_exists( Registry::class, 'register_base_contract' ) );
 	}
 
 	public function test_if1_collects_contracts_before_multiple_implementations_once(): void {

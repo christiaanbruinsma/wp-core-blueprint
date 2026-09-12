@@ -2,7 +2,7 @@
 
 Core Blueprint Base exposes a generic interoperability registry for versioned cross-extension contracts and their implementations.
 
-This Foundation is neutral infrastructure. Domain extensions own contract meaning and PHP interfaces. Base owns registration, validation, discovery, lifecycle and runtime contract enforcement.
+This Foundation is neutral infrastructure. Contract owners own contract meaning and PHP interfaces. In the normal public path that owner is an admitted extension; Base may also publish specialized Base-owned platform contracts internally. Base owns registration, validation, discovery, lifecycle and runtime contract enforcement.
 
 > **Base owns interoperability. Extensions own domain semantics.**
 
@@ -23,21 +23,23 @@ cb_core_register_interoperability_contracts
 cb_core_register_interoperability_implementations
 ```
 
-Contracts are collected before implementations. Registration outside the corresponding collection lifecycle is rejected.
+Base-owned platform contracts are loaded privately before the public contract lifecycle. Extension-owned contracts are then collected before implementations. Registration outside the corresponding public collection lifecycle is rejected.
 
 ## Extension identity is canonical
 
 Interoperability does not create a second provider identity system.
 
-Both a contract owner and an implementation provider must already be valid registered extensions in:
+An implementation provider must always be a valid registered extension in:
 
 ```php
 CB\Core\ExtensionRegistry
 ```
 
-The extension ID used in Interoperability is the same canonical platform identity used elsewhere in Base.
+A contract registered through the public `Registry::register_contract()` path must likewise use a valid registered extension as its owner. The extension ID used in Interoperability is the same canonical platform identity used elsewhere in Base.
 
-An unknown owner or provider is rejected.
+Base itself may publish a specialized platform contract under the reserved owner identity `core-blueprint` through its private read-only contract catalog. Public extension code cannot claim that owner through `register_contract()`, and there is no public Base-owned contract mutation API. Provider implementations targeting a Base-owned contract still require their own normal `ExtensionRegistry` identity.
+
+An unknown public owner or implementation provider is rejected.
 
 ## Define a contract
 
@@ -84,6 +86,8 @@ Duplicate contract identity is rejected. A contract identity is the combination 
 ```text
 owner + contract id + exact version
 ```
+
+Specialized Base-owned contracts are documented by their own Foundation documents and are loaded from Base's private read-only contract catalog before extension-owned contract registration begins. Extensions cannot add to or mutate that catalog.
 
 ## Register an implementation
 
@@ -237,6 +241,8 @@ The order is:
 ```text
 ExtensionRegistry collection
     ↓
+Base private read-only contract catalog
+    ↓
 cb_core_register_interoperability_contracts
     ↓
 cb_core_register_interoperability_implementations
@@ -246,7 +252,7 @@ registry frozen for the remainder of the request
 
 Calling discovery before the registry is ready does not pull extension registration forward.
 
-Collection occurs once per request. Recursive discovery during collection does not dispatch either registration lifecycle twice.
+Collection occurs once per request. Recursive discovery during collection does not dispatch either public registration lifecycle twice.
 
 After canonical collection finishes, late contract or implementation registration is rejected.
 
@@ -268,13 +274,15 @@ No compatibility-range negotiation or automatic fallback between contract versio
 
 ## Ownership rules
 
-The contract-owning extension owns:
+The contract owner owns:
 
 - the meaning of the contract;
 - the PHP interface;
 - the meaning of each support token;
 - domain-specific authorization and data semantics;
 - versioning decisions for incompatible contract changes.
+
+For public extension-defined contracts, that owner is an admitted extension. For a specialized Base-owned platform contract, Base owns those semantics and documents them in the corresponding Foundation contract.
 
 The implementing extension owns:
 
@@ -287,6 +295,7 @@ Base owns:
 
 - admission through canonical extension identity;
 - controlled registration lifecycle;
+- the private catalog of Base-owned platform contracts;
 - definition validation;
 - exact-version discovery;
 - support-token filtering;
@@ -336,5 +345,7 @@ Domain contracts and integrations are separate consumers of this Foundation.
 ## Stable v1 boundary
 
 Only the public methods and registration lifecycles documented in this Foundation are intended as the Generic Interoperability v1 contract.
+
+The private Base-owned contract catalog and its ingestion path are implementation details. No public API exists for extensions to publish a contract under the reserved `core-blueprint` owner.
 
 Private registry state, diagnostic behavior, key construction and testing helpers are implementation details unless separately documented as public API.
