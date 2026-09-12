@@ -12,6 +12,7 @@ Base owns:
 - deterministic alias/id/label matching;
 - direct, constant and ignore mapping primitives;
 - bounded generic CSV header/record inspection;
+- bounded mapping definitions and mapped canonical output;
 - mapping validation and fingerprints;
 - source-shaped → target-shaped record transformation;
 - the shared Data Mapper workspace and interaction contract;
@@ -175,6 +176,8 @@ Supplies a fixed transport-safe value to a target field.
 ```
 
 Mapping transform identifiers are canonical exact tokens; Base does not trim a malformed token into validity.
+
+The complete normalized mapping definition is bounded by the shared 10 MiB Data Exchange transport limit. `Mapper::map_records()` also applies that limit cumulatively to canonical mapped output, so a reusable `constant` cannot multiply a small source into an unbounded in-memory recordset before the final exchange envelope is encoded.
 
 The headless engine supports all three. The first shared UI focuses on the common direct/ignore field-mapping workflow; richer constant/profile authoring can evolve without changing the canonical mapping shape.
 
@@ -347,6 +350,7 @@ Profile persistence/marketplace distribution is intentionally outside this first
 - Mapping UI validation is convenience only; server-side Data Exchange/provider validation remains authoritative.
 - Browser mutations still require the consumer transport to enforce nonce/CSRF and provider authorization.
 - Selected files remain browser/request local unless the owning extension deliberately submits them to its secured endpoint.
+- Mapping definitions and mapped canonical output are transport-bounded before the Data Exchange handoff.
 - Mapper source/target records are not logged by Base.
 - Preview/apply remains protected by the Data Exchange plan fingerprint.
 - Ambiguous matches fail safe to manual mapping.
