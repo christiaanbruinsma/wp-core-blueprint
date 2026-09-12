@@ -70,7 +70,7 @@ final class Page extends PageBase {
 		$runtime_active            = Runtime::is_active();
 		$has_brevo_secret          = '' !== Secrets::decrypt( (string) $settings['brevo_api_key'] );
 		$has_smtp_password         = '' !== Secrets::decrypt( (string) $settings['smtp_password'] );
-		$provider_label            = Settings::provider_label( $settings['provider'] ?? '' );
+		$provider_label            = Settings::provider_label();
 		$retention_options         = Settings::RETENTION_DAYS;
 		$activation_error          = Settings::activation_error( $settings );
 
