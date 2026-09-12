@@ -19,7 +19,10 @@ const convertJsTreeToMjs = async (directory) => {
 		}
 		if (!entry.isFile() || !entry.name.endsWith('.js')) continue;
 		const source = await readFile(path, 'utf8');
-		const esm = source.replaceAll(/(['"])(\.\.?\/[^'"]+)\.js\1/g, '$1$2.mjs$1');
+		let esm = source.replaceAll(/(['"])(\.\.?\/[^'"]+)\.js\1/g, '$1$2.mjs$1');
+		if (entry.name === 'editor.js') {
+			esm = esm.replace("'@cb-core/design-motion'", "'./core/motion.mjs'");
+		}
 		await writeFile(path.replace(/\.js$/, '.mjs'), esm);
 	}
 };
@@ -66,11 +69,13 @@ const fixedProject = () => ({
 	}),
 });
 
-test('public facade exposes stable session, shell, commands and profile APIs without consumer private-path imports', () => {
+test('public facade exposes stable session, shell, motion, commands and profile APIs without consumer private-path imports', () => {
 	assert.equal(typeof publicEditor.createSession, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.createSession, 'function');
 	assert.equal(typeof publicEditor.createDesignerShell, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.shell?.create, 'function');
+	assert.equal(typeof publicEditor.animateLayoutChange, 'function');
+	assert.equal(typeof window.cbCore?.designEditor?.motion?.animateLayoutChange, 'function');
 	assert.equal(typeof publicEditor.commands?.insertNode, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.commands?.insertNode, 'function');
 	assert.equal(typeof publicEditor.profiles['document-flow'].normalizeFlowLayout, 'function');

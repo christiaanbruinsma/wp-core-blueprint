@@ -1,10 +1,7 @@
 import {
 	CommandHistory,
-	DESIGNER_MOTION_DEFAULTS,
-	DESIGNER_MOTION_KEY_ATTRIBUTE,
 	EditorState,
 	ProjectState,
-	animateLayoutChange,
 	buildInspectorContext,
 	handleEditorShortcut,
 	insertNodeCommand,
@@ -12,6 +9,11 @@ import {
 	reorderNodeCommand,
 	setPropertyCommand,
 } from './core/index.js';
+import {
+	DESIGNER_MOTION_DEFAULTS,
+	DESIGNER_MOTION_KEY_ATTRIBUTE,
+	animateLayoutChange,
+} from '@cb-core/design-motion';
 import * as fixedProfile from './document/fixed/index.js';
 import * as flowProfile from './document/flow/index.js';
 import * as mailProfile from './mail/index.js';
