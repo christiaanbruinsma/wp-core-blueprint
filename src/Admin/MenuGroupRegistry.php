@@ -180,16 +180,17 @@ final class MenuGroupRegistry {
 			}
 
 			foreach ( self::pages_for_group( $group_slug ) as $page ) {
+				$is_landing = $page->slug() === $group_slug;
 				$suffix = add_submenu_page(
 					$group_slug,
 					$page->title(),
 					$page->menu_title(),
 					$page->capability(),
 					$page->slug(),
-					[ $page, 'render' ],
+					$is_landing ? '' : [ $page, 'render' ],
 					$page->position()
 				);
-				if ( $suffix && $page->slug() !== $group_slug ) {
+				if ( $suffix && ! $is_landing ) {
 					self::$hooks[ $page->slug() ] = $suffix;
 				}
 			}
