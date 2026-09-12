@@ -17,6 +17,8 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 	public static bool $authorized = true;
 	public static bool $invalid_plan = false;
 	public static bool $invalid_apply_reference = false;
+	public static bool $oversized_plan = false;
+	public static bool $provider_error = false;
 
 	public function is_available(): bool {
 		return self::$available;
@@ -47,6 +49,17 @@ final class CB_Data_Exchange_Fixture_Entity implements CsvEntityInterface {
 
 	public function plan_import( array $record, string $mode, int $source_schema_version, array $context = [] ): array|WP_Error {
 		unset( $context );
+		if ( self::$provider_error ) {
+			return new WP_Error( 'fixture_provider_error', str_repeat( 'x', 1500 ) );
+		}
+		if ( self::$oversized_plan ) {
+			return [
+				'operation' => Foundation::OP_CREATE,
+				'reference' => 'fixture:oversized',
+				'payload'   => [ 'blob' => str_repeat( 'x', Foundation::MAX_INPUT_BYTES + 1 ) ],
+				'warnings'  => [],
+			];
+		}
 		if ( self::$invalid_plan ) {
 			return [ 'operation' => Foundation::OP_UPDATE, 'reference' => 'fixture:invalid', 'payload' => $record ];
 		}
@@ -131,6 +144,8 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 		CB_Data_Exchange_Fixture_Entity::$authorized              = true;
 		CB_Data_Exchange_Fixture_Entity::$invalid_plan            = false;
 		CB_Data_Exchange_Fixture_Entity::$invalid_apply_reference = false;
+		CB_Data_Exchange_Fixture_Entity::$oversized_plan          = false;
+		CB_Data_Exchange_Fixture_Entity::$provider_error          = false;
 
 		add_action( 'cb_core_register_extensions', [ $this, 'register_extension' ] );
 		add_action( 'cb_core_register_interoperability_implementations', [ $this, 'register_entity' ] );
@@ -291,6 +306,24 @@ final class CB_Base_Data_Exchange_Foundation_Contract_Test extends WP_UnitTestCa
 		self::assertFalse( $preview['valid'] );
 		self::assertSame( '', $preview['fingerprint'] );
 		self::assertSame( 'cb_core_data_exchange_plan_contract', $preview['errors'][0]['code'] ?? null );
+	}
+
+	public function test_dx1_provider_plan_and_error_amplification_are_bounded(): void {
+		$json = Engine::export_json( self::PROVIDER, self::ENTITY );
+		self::assertIsString( $json );
+
+		CB_Data_Exchange_Fixture_Entity::$provider_error = true;
+		$preview = Engine::preview_json( $json, Foundation::MODE_CREATE_UPDATE );
+		self::assertIsArray( $preview );
+		self::assertFalse( $preview['valid'] );
+		self::assertSame( 'fixture_provider_error', $preview['errors'][0]['code'] ?? null );
+		self::assertLessThanOrEqual( 1000, strlen( (string) ( $preview['errors'][0]['message'] ?? '' ) ) );
+
+		CB_Data_Exchange_Fixture_Entity::$provider_error = false;
+		CB_Data_Exchange_Fixture_Entity::$oversized_plan = true;
+		$oversized = Engine::preview_json( $json, Foundation::MODE_CREATE_UPDATE );
+		self::assertWPError( $oversized );
+		self::assertSame( 'cb_core_data_exchange_plan_too_large', $oversized->get_error_code() );
 	}
 
 	public function register_extension(): void {
