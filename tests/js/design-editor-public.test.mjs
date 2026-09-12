@@ -66,11 +66,13 @@ const fixedProject = () => ({
 	}),
 });
 
-test('public facade exposes stable session, shell, commands and profile APIs without consumer private-path imports', () => {
+test('public facade exposes stable session, shell, motion, commands and profile APIs without consumer private-path imports', () => {
 	assert.equal(typeof publicEditor.createSession, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.createSession, 'function');
 	assert.equal(typeof publicEditor.createDesignerShell, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.shell?.create, 'function');
+	assert.equal(typeof publicEditor.animateLayoutChange, 'function');
+	assert.equal(typeof window.cbCore?.designEditor?.motion?.animateLayoutChange, 'function');
 	assert.equal(typeof publicEditor.commands?.insertNode, 'function');
 	assert.equal(typeof window.cbCore?.designEditor?.commands?.insertNode, 'function');
 	assert.equal(typeof publicEditor.profiles['document-flow'].normalizeFlowLayout, 'function');
